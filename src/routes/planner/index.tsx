@@ -39,10 +39,37 @@ function RouteComponent() {
           completed: false,
           id: id,
         });
+        setInputTask("");
       }
       return newTaskMap;
     });
   };
+  return (
+    <div>
+      <ul>
+        {Array.from(tasks).map(([_, item]) => (
+          <TaskComponent key={item.id} item={item} setTasks={setTasks} />
+        ))}
+      </ul>
+      <button className="border-1" type="button" onClick={onAddButtonClick}>
+        Add task
+      </button>
+      <input
+        className="border-1 border-l-0"
+        placeholder="Task name"
+        onChange={onInputChanged}
+        value={inputTask}
+      />
+    </div>
+  );
+}
+
+interface TaskComponentProps {
+  item: TaskProp;
+  setTasks: React.Dispatch<React.SetStateAction<Map<string, TaskProp>>>;
+}
+
+const TaskComponent: React.FC<TaskComponentProps> = ({ item, setTasks }) => {
   const onCheckedChange = (
     key: string,
     event: ChangeEvent<HTMLInputElement>,
@@ -62,27 +89,13 @@ function RouteComponent() {
     });
   };
   return (
-    <div>
-      <ul>
-        {Array.from(tasks).map(([_, item]) => (
-          <li key={item.id}>
-            <input
-              type="checkbox"
-              checked={item.completed}
-              onChange={(event) => onCheckedChange(item.id, event)}
-            />
-            {item.label}
-          </li>
-        ))}
-      </ul>
-      <button className="border-1" type="button" onClick={onAddButtonClick}>
-        Add task
-      </button>
+    <li key={item.id}>
       <input
-        className="border-1 border-l-0"
-        placeholder="Task name"
-        onChange={onInputChanged}
+        type="checkbox"
+        checked={item.completed}
+        onChange={(event) => onCheckedChange(item.id, event)}
       />
-    </div>
+      {item.label}
+    </li>
   );
-}
+};
