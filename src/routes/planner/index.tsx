@@ -88,14 +88,24 @@ const TaskComponent: React.FC<TaskComponentProps> = ({ item, setTasks }) => {
       return newTaskMap;
     });
   };
+  const onTrashButtonClicked = (key: string) => {
+    setTasks((prev) => {
+      const newTasksMap = new Map(prev);
+      newTasksMap.delete(key);
+      return newTasksMap;
+    });
+  };
   return (
-    <li key={item.id}>
+    <li key={item.id} className="flex flex-row gap-2">
       <input
         type="checkbox"
         checked={item.completed}
         onChange={(event) => onCheckedChange(item.id, event)}
       />
       {item.label}
+      <button type="button" onClick={(_) => onTrashButtonClicked(item.id)}>
+        🗑️
+      </button>
     </li>
   );
 };
