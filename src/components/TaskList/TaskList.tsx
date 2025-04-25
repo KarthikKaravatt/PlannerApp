@@ -2,11 +2,12 @@ import type { FILTER_STATE, Task } from "@/types/taskList";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskComponent from "./Task";
+import { DateTime } from "luxon";
 
 const INITAL_TASK_DATA: [string, Task][] = [
-  { label: "Task 1", completed: false },
-  { label: "Task 2", completed: false },
-  { label: "Task 3", completed: false },
+  { label: "Task 1", completed: false, date: DateTime.now() },
+  { label: "Task 2", completed: false, date: DateTime.now() },
+  { label: "Task 3", completed: false, date: DateTime.now() },
 ].map((taskBase) => {
   const id = uuidv4();
   return [id, { ...taskBase, id }];
@@ -17,9 +18,34 @@ function TaskList() {
     const mapString = window.localStorage.getItem("Tasks");
     if (mapString !== null) {
       try {
-        const mapArray: [string, Task][] = JSON.parse(mapString);
-        return new Map(mapArray);
+        const parsedArray: [string, Task][] = JSON.parse(mapString);
+        const transformedArray: [string, Task][] = parsedArray.map(
+          ([key, taskData]) => {
+            const dateString = taskData?.date;
+            let validDate = DateTime.now();
+            if (typeof dateString === "string") {
+              const parsedDate = DateTime.fromISO(dateString);
+              if (parsedDate.isValid) {
+                validDate = parsedDate;
+              } else {
+                console.warn(
+                  `Invalid date string found in localStorage for task ${key}: ${dateString}`,
+                );
+              }
+            } else {
+              console.warn(
+                `Invalid date string found in localStorage for task ${key}`,
+              );
+            }
+            return [key, { ...taskData, id: key, date: validDate }];
+          },
+        );
+        return new Map(transformedArray);
       } catch (error) {
+        console.error(
+          "Failed to parse or transform tasks from localStorage",
+          error,
+        );
         return new Map<string, Task>(INITAL_TASK_DATA);
       }
     }
@@ -43,6 +69,7 @@ function TaskList() {
           label: inputTask,
           completed: false,
           id: id,
+          date: DateTime.now(),
         });
         setInputTask("");
       }
@@ -57,6 +84,12 @@ function TaskList() {
       return filterOptions[nexIndex];
     });
   };
+  const onClearButtonClick = () => {
+    setTasks(
+      (prev) =>
+        new Map(Array.from(prev).filter(([_, task]) => !task.completed)),
+    );
+  };
   const filteredList = Array.from(tasks.values()).filter((task) => {
     switch (currFilterState) {
       case "COMPLETE":
@@ -65,15 +98,26 @@ function TaskList() {
         return !task.completed;
       case "ALL":
         return true;
-      default:
-        return true;
     }
   });
   return (
     <div>
-      <button type="button" className="border-1" onClick={onFilterButtonClick}>
-        Filter:{currFilterState}
-      </button>
+      <div className="flex gap-1">
+        <button
+          type="button"
+          className="border-1 p-1"
+          onClick={onFilterButtonClick}
+        >
+          Filter:{currFilterState}
+        </button>
+        <button
+          type="button"
+          className="border-1 p-1"
+          onClick={onClearButtonClick}
+        >
+          Clear completed
+        </button>
+      </div>
       <ul>
         {Array.from(filteredList).map((item) => {
           return (
@@ -81,15 +125,21 @@ function TaskList() {
           );
         })}
       </ul>
-      <button className="border-1" type="button" onClick={onAddButtonClick}>
-        Add task
-      </button>
-      <input
-        className="border-1 border-l-0"
-        placeholder="Task name"
-        onChange={onInputChanged}
-        value={inputTask}
-      />
+      <div className="flex gap-1">
+        <button
+          className="border-1 p-1"
+          type="button"
+          onClick={onAddButtonClick}
+        >
+          Add task
+        </button>
+        <input
+          className="border-1 p-1"
+          placeholder="Task name"
+          onChange={onInputChanged}
+          value={inputTask}
+        />
+      </div>
     </div>
   );
 }

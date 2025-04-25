@@ -1,7 +1,10 @@
+import type { DateTime } from "luxon";
+
 export interface Task {
   label: string;
   completed: boolean;
   id: string;
+  date: DateTime;
 }
 
 export interface TaskProp {
