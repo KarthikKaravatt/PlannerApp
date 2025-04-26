@@ -1,6 +1,6 @@
 import type { Task, TaskProp } from "@/types/taskList";
 import { DateTime } from "luxon";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, DragEvent } from "react";
 
 const TaskComponent: React.FC<TaskProp> = ({ item, setTasks }) => {
   const onCheckedChange = (
@@ -50,7 +50,7 @@ const TaskComponent: React.FC<TaskProp> = ({ item, setTasks }) => {
       const task = newTasks.get(id);
       if (task !== undefined) {
         const dateString = event.target.value;
-        const newDate = DateTime.fromISO(dateString);
+        const newDate = DateTime.fromFormat(dateString, "yyyy-MM-dd'T'HH:mm");
         if (newDate.isValid) {
           newTasks.set(id, { ...task, date: newDate });
         }
@@ -70,6 +70,7 @@ const TaskComponent: React.FC<TaskProp> = ({ item, setTasks }) => {
         onChange={(event) => onLabelChanged(item.id, event)}
         value={item.label}
       />
+      <span draggable={true}>↕️</span>
       <input
         type="datetime-local"
         value={item.date?.toFormat("yyyy-MM-dd'T'HH:mm") ?? ""}

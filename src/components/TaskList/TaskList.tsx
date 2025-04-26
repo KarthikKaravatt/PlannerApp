@@ -1,8 +1,14 @@
-import type { FILTER_STATE, Task } from "@/types/taskList";
+import {
+  LOCAL_STORAGE_TASKS,
+  type FILTER_STATE,
+  type SORT_STATE,
+  type Task,
+} from "@/types/taskList";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import TaskComponent from "./Task";
 import { DateTime } from "luxon";
+import TaskListOptions from "./TaskListOptions";
 
 const INITAL_TASK_DATA: [string, Task][] = [
   { label: "Task 1", completed: false, date: DateTime.now() },
@@ -13,53 +19,14 @@ const INITAL_TASK_DATA: [string, Task][] = [
   return [id, { ...taskBase, id }];
 });
 
-function TaskList() {
-  const [tasks, setTasks] = useState<Map<string, Task>>(() => {
-    const mapString = window.localStorage.getItem("Tasks");
-    if (mapString !== null) {
-      try {
-        const parsedArray: [string, Task][] = JSON.parse(mapString);
-        const transformedArray: [string, Task][] = parsedArray.map(
-          ([key, taskData]) => {
-            const dateString = taskData?.date;
-            let validDate = DateTime.now();
-            if (typeof dateString === "string") {
-              const parsedDate = DateTime.fromISO(dateString);
-              if (parsedDate.isValid) {
-                validDate = parsedDate;
-              } else {
-                console.warn(
-                  `Invalid date string found in localStorage for task ${key}: ${dateString}`,
-                );
-              }
-            } else {
-              console.warn(
-                `Invalid date string found in localStorage for task ${key}`,
-              );
-            }
-            return [key, { ...taskData, id: key, date: validDate }];
-          },
-        );
-        return new Map(transformedArray);
-      } catch (error) {
-        console.error(
-          "Failed to parse or transform tasks from localStorage",
-          error,
-        );
-        return new Map<string, Task>(INITAL_TASK_DATA);
-      }
-    }
-    return new Map<string, Task>(INITAL_TASK_DATA);
-  });
+const TaskList: React.FC = () => {
+  const [tasks, setTasks] = useState<Map<string, Task>>(GetStoredMap());
   const [inputTask, setInputTask] = useState<string>("");
-  const [currFilterState, setCurrFilterState] = useState<FILTER_STATE>("ALL");
+  const [filterState, setFilterState] = useState<FILTER_STATE>("ALL");
+  const [sortState, setSortState] = useState<SORT_STATE>("NAME");
   const onInputChanged = (event: ChangeEvent<HTMLInputElement>) => {
     setInputTask(event.target.value);
   };
-  useEffect(() => {
-    const mapString = JSON.stringify(Array.from(tasks));
-    window.localStorage.setItem("Tasks", mapString);
-  }, [tasks]);
   const onAddButtonClick = () => {
     setTasks((prev) => {
       const newTaskMap = new Map(prev);
@@ -76,50 +43,42 @@ function TaskList() {
       return newTaskMap;
     });
   };
-  const onFilterButtonClick = () => {
-    const filterOptions: FILTER_STATE[] = ["ALL", "INCOMPLETE", "COMPLETE"];
-    setCurrFilterState((prev) => {
-      const currentIndex = filterOptions.indexOf(prev);
-      const nexIndex = (currentIndex + 1) % filterOptions.length;
-      return filterOptions[nexIndex];
+  const filteredList = Array.from(tasks.values())
+    .filter((task) => {
+      switch (filterState) {
+        case "COMPLETE":
+          return task.completed;
+        case "INCOMPLETE":
+          return !task.completed;
+        case "ALL":
+          return true;
+      }
+    })
+    .sort((a, b) => {
+      switch (sortState) {
+        case "CUSTOM":
+          //TODO: Implement this
+          return 0;
+        case "DATE":
+          return a.date.toMillis() - b.date.toMillis();
+        case "NAME":
+          return a.label.localeCompare(b.label);
+      }
     });
-  };
-  const onClearButtonClick = () => {
-    setTasks(
-      (prev) =>
-        new Map(Array.from(prev).filter(([_, task]) => !task.completed)),
-    );
-  };
-  const filteredList = Array.from(tasks.values()).filter((task) => {
-    switch (currFilterState) {
-      case "COMPLETE":
-        return task.completed;
-      case "INCOMPLETE":
-        return !task.completed;
-      case "ALL":
-        return true;
-    }
-  });
+  useEffect(() => {
+    const mapString = JSON.stringify(Array.from(tasks));
+    window.localStorage.setItem(LOCAL_STORAGE_TASKS, mapString);
+  }, [tasks]);
   return (
     <div>
-      <div className="flex gap-1">
-        <button
-          type="button"
-          className="border-1 p-1"
-          onClick={onFilterButtonClick}
-        >
-          Filter:{currFilterState}
-        </button>
-        <button
-          type="button"
-          className="border-1 p-1"
-          onClick={onClearButtonClick}
-        >
-          Clear completed
-        </button>
-      </div>
+      <TaskListOptions
+        filterState={filterState}
+        setFilterState={setFilterState}
+        setTasks={setTasks}
+        setSortState={setSortState}
+      />
       <ul>
-        {Array.from(filteredList).map((item) => {
+        {filteredList.map((item) => {
           return (
             <TaskComponent key={item.id} item={item} setTasks={setTasks} />
           );
@@ -142,6 +101,44 @@ function TaskList() {
       </div>
     </div>
   );
+};
+
+function GetStoredMap(): Map<string, Task> {
+  const mapString = window.localStorage.getItem(LOCAL_STORAGE_TASKS);
+  if (mapString !== null) {
+    try {
+      const parsedArray: [string, Task][] = JSON.parse(mapString);
+      const transformedArray: [string, Task][] = parsedArray.map(
+        ([key, taskData]) => {
+          const dateString = taskData?.date;
+          let validDate = DateTime.now();
+          if (typeof dateString === "string") {
+            const parsedDate = DateTime.fromISO(dateString);
+            if (parsedDate.isValid) {
+              validDate = parsedDate;
+            } else {
+              console.warn(
+                `Invalid date string found in localStorage:${LOCAL_STORAGE_TASKS} for task ${key}: ${dateString}`,
+              );
+            }
+          } else {
+            console.warn(
+              `Invalid date string found in localStorage for task ${key}`,
+            );
+          }
+          return [key, { ...taskData, id: key, date: validDate }];
+        },
+      );
+      return new Map(transformedArray);
+    } catch (error) {
+      console.error(
+        "Failed to parse or transform tasks from localStorage",
+        error,
+      );
+      return new Map<string, Task>(INITAL_TASK_DATA);
+    }
+  }
+  return new Map<string, Task>(INITAL_TASK_DATA);
 }
 
 export default TaskList;
