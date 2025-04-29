@@ -1,17 +1,8 @@
-import {
-  DRAG_ITEM_ID_KEY,
-  type SORT_OPTION,
-  type TaskProp,
-} from "@/types/taskList";
+import { DRAG_ITEM_ID_KEY, type TaskProp } from "@/types/taskList";
 import { DateTime } from "luxon";
 import type { ChangeEvent, DragEvent } from "react";
 
-const TaskComponent: React.FC<TaskProp> = ({
-  item,
-  sortOption,
-  setSortOption,
-  dispatch,
-}) => {
+const TaskComponent: React.FC<TaskProp> = ({ item, sortOption, dispatch }) => {
   const onCheckedChange = (
     key: string,
     event: ChangeEvent<HTMLInputElement>,
@@ -62,10 +53,6 @@ const TaskComponent: React.FC<TaskProp> = ({
           type: "SWAP_TASK_ORDER",
           taskID_A: item.id,
           taskID_B: swapIDString,
-        });
-        setSortOption((_) => {
-          const refresh: SORT_OPTION = "CUSTOM";
-          return refresh;
         });
       } else {
         console.warn("Swap index string is empty");

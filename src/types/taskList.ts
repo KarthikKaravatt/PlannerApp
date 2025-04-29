@@ -81,7 +81,6 @@ export type SORT_OPTION = (typeof SORT_OPTION)[keyof typeof SORT_OPTION];
 export interface TaskProp {
   item: Task;
   sortOption: SORT_OPTION;
-  setSortOption: React.Dispatch<React.SetStateAction<SORT_OPTION>>;
   dispatch: React.ActionDispatch<[action: TaskListAction]>;
 }
 
