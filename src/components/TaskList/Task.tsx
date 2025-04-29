@@ -1,62 +1,76 @@
-import type { Task, TaskProp } from "@/types/taskList";
+import {
+  DRAG_ITEM_ID_KEY,
+  type SORT_OPTION,
+  type TaskProp,
+} from "@/types/taskList";
 import { DateTime } from "luxon";
 import type { ChangeEvent, DragEvent } from "react";
 
-const TaskComponent: React.FC<TaskProp> = ({ item, setTasks }) => {
+const TaskComponent: React.FC<TaskProp> = ({
+  item,
+  sortOption,
+  setSortOption,
+  dispatch,
+}) => {
   const onCheckedChange = (
     key: string,
     event: ChangeEvent<HTMLInputElement>,
   ) => {
     const isChecked = event.target.checked;
-    setTasks((prev) => {
-      const newTaskMap = new Map(prev);
-      const task = prev.get(key);
-      if (task !== undefined) {
-        const updatedTask: Task = {
-          ...task,
-          completed: isChecked,
-        };
-        newTaskMap.set(key, updatedTask);
-      }
-      return newTaskMap;
+    dispatch({
+      type: "CHANGE_TASK_COMPLETION",
+      taskID: key,
+      completed: isChecked,
     });
   };
   const onTrashButtonClicked = (key: string) => {
-    setTasks((prev) => {
-      const newTasksMap = new Map(prev);
-      newTasksMap.delete(key);
-      return newTasksMap;
-    });
+    dispatch({ type: "REMOVE_TASK", taskID: key });
   };
   const onLabelChanged = (id: string, event: ChangeEvent<HTMLInputElement>) => {
-    setTasks((prev) => {
-      const newTasks = new Map(prev);
-      const task = newTasks.get(id);
-      const newTaskLabel = event.target.value;
-      if (newTaskLabel.trim().length === 0) {
-        newTasks.delete(id);
-      } else if (task !== undefined && newTaskLabel !== null) {
-        newTasks.set(id, { ...task, label: newTaskLabel });
-      }
-      return newTasks;
-    });
+    const newTaskLabel = event.target.value;
+    if (newTaskLabel.trim().length === 0) {
+      dispatch({ type: "REMOVE_TASK", taskID: id });
+    } else {
+      dispatch({ type: "RENAME_TASK", taskID: id, newName: newTaskLabel });
+    }
   };
   const onDateButtonClicked = (
     id: string,
     event: ChangeEvent<HTMLInputElement>,
   ) => {
-    setTasks((prev) => {
-      const newTasks = new Map(prev);
-      const task = newTasks.get(id);
-      if (task !== undefined) {
-        const dateString = event.target.value;
-        const newDate = DateTime.fromFormat(dateString, "yyyy-MM-dd'T'HH:mm");
-        if (newDate.isValid) {
-          newTasks.set(id, { ...task, date: newDate });
-        }
+    const date = DateTime.fromFormat(event.target.value, "yyyy-MM-dd'T'HH:mm");
+    if (date.isValid) {
+      dispatch({ type: "UPDATE_DATE", id: id, date: date });
+    }
+  };
+  const onDragStart = (event: DragEvent<HTMLSpanElement>) => {
+    if (sortOption === "CUSTOM") {
+      event.dataTransfer.setData(DRAG_ITEM_ID_KEY, item.id);
+    }
+  };
+  const onDragOver = (event: DragEvent<HTMLSpanElement>) => {
+    if (sortOption === "CUSTOM") {
+      event.preventDefault();
+    }
+  };
+  const onDrop = (event: DragEvent<HTMLSpanElement>) => {
+    if (sortOption === "CUSTOM") {
+      event.preventDefault();
+      const swapIDString = event.dataTransfer.getData(DRAG_ITEM_ID_KEY);
+      if (swapIDString !== "") {
+        dispatch({
+          type: "SWAP_TASK_ORDER",
+          taskID_A: item.id,
+          taskID_B: swapIDString,
+        });
+        setSortOption((_) => {
+          const refresh: SORT_OPTION = "CUSTOM";
+          return refresh;
+        });
+      } else {
+        console.warn("Swap index string is empty");
       }
-      return newTasks;
-    });
+    }
   };
   return (
     <li key={item.id} className="flex flex-row gap-2">
@@ -70,7 +84,14 @@ const TaskComponent: React.FC<TaskProp> = ({ item, setTasks }) => {
         onChange={(event) => onLabelChanged(item.id, event)}
         value={item.label}
       />
-      <span draggable={true}>↕️</span>
+      <span
+        draggable={true}
+        onDragStart={(event) => onDragStart(event)}
+        onDragOver={(event) => onDragOver(event)}
+        onDrop={(event) => onDrop(event)}
+      >
+        ↕️
+      </span>
       <input
         type="datetime-local"
         value={item.date?.toFormat("yyyy-MM-dd'T'HH:mm") ?? ""}
