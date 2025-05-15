@@ -1,3 +1,4 @@
+import { removeTask } from "@/services/api";
 import type {
 	FILTER_OPTION,
 	SORT_OPTION,
@@ -6,9 +7,10 @@ import type {
 import type { ChangeEvent } from "react";
 
 const TaskListOptions: React.FC<TaskListOptionsProp> = ({
+	data,
+	setData,
 	filterState,
 	setFilterState,
-	dispatch,
 	setSortState,
 }) => {
 	const onFilterButtonClick = () => {
@@ -20,7 +22,30 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 		});
 	};
 	const onClearButtonClick = () => {
-		dispatch({ type: "CLEAR_COMPLETED" });
+		Array.from(data).map(([, value]) => {
+			if (value.completed) {
+				removeTask(value.id)
+					.then(() => {
+						setData((prevData) => {
+							const newData = new Map(prevData);
+							newData.delete(value.id);
+							for (const [, task] of newData.entries()) {
+								if (task.orderIndex > value.orderIndex) {
+									value.orderIndex -= 1;
+								}
+							}
+							return newData;
+						});
+					})
+					.catch((error: unknown) => {
+						if (error instanceof Error) {
+							console.error(`Error removing completed Tasks:${error}`);
+						} else {
+							console.error("Error removing completed Tasks:Uknown error");
+						}
+					});
+			}
+		});
 	};
 	const onSortOrderChanged = (event: ChangeEvent<HTMLSelectElement>) => {
 		const sortChoice = event.target.value as SORT_OPTION;
@@ -46,7 +71,9 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 				<span className="p-1">Sort:</span>
 				<select
 					name="sort"
-					onChange={(event) => onSortOrderChanged(event)}
+					onChange={(event) => {
+						onSortOrderChanged(event);
+					}}
 					className="p-1"
 				>
 					<option value={"CUSTOM"}>Custom</option>
