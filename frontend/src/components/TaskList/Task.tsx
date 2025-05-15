@@ -141,9 +141,16 @@ const TaskComponent: React.FC<TaskProp> = ({ setData, item, sortOption }) => {
 							const swapTask = newData.get(swapIDString);
 							const curTask = newData.get(item.id);
 							if (swapTask !== undefined && curTask !== undefined) {
-								const tempIndex = curTask.orderIndex;
-								curTask.orderIndex = swapTask.orderIndex;
-								swapTask.orderIndex = tempIndex;
+								const updatedCurTask = {
+									...curTask,
+									orderIndex: swapTask.orderIndex,
+								};
+								const updatedSwapTask = {
+									...swapTask,
+									orderIndex: curTask.orderIndex,
+								};
+								newData.set(updatedSwapTask.id, updatedSwapTask);
+								newData.set(updatedCurTask.id, updatedCurTask);
 							}
 							return newData;
 						});
