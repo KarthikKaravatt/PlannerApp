@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { z } from "zod";
 export const TaskSchema = z.object({
-	id: z.string(),
+	id: z.uuidv4(),
 	label: z.string(),
 	completed: z.boolean(),
 	dueDate: z

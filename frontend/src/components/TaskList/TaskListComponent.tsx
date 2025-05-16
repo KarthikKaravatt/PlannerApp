@@ -85,7 +85,7 @@ const TaskListComponent: React.FC = () => {
 		return <p>Error</p>;
 	}
 	return (
-		<div>
+		<div className="p-2">
 			<TaskListOptions
 				data={data}
 				setData={setData}

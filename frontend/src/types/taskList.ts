@@ -34,3 +34,8 @@ export interface TaskListOptionsProp {
 	setFilterState: React.Dispatch<React.SetStateAction<FILTER_OPTION>>;
 	setSortState: React.Dispatch<React.SetStateAction<SORT_OPTION>>;
 }
+
+export interface CheckBoxProp {
+	task: Task;
+	setData: React.Dispatch<React.SetStateAction<Map<string, Task>>>;
+}
