@@ -1,4 +1,5 @@
 import type { Task } from "@/schemas/taskList";
+import type { SetStateAction } from "react";
 
 export const LOCAL_STORAGE_TASKS = "Tasks";
 
@@ -23,13 +24,9 @@ export type SORT_OPTION = (typeof SORT_OPTION)[keyof typeof SORT_OPTION];
 
 export interface TaskProp {
 	item: Task;
-	sortOption: SORT_OPTION;
-	setData: React.Dispatch<React.SetStateAction<Map<string, Task>>>;
 }
 
 export interface TaskListOptionsProp {
-	data: Map<string, Task>;
-	setData: React.Dispatch<React.SetStateAction<Map<string, Task>>>;
 	filterState: FILTER_OPTION;
 	setFilterState: React.Dispatch<React.SetStateAction<FILTER_OPTION>>;
 	setSortState: React.Dispatch<React.SetStateAction<SORT_OPTION>>;
@@ -37,5 +34,16 @@ export interface TaskListOptionsProp {
 
 export interface CheckBoxProp {
 	task: Task;
-	setData: React.Dispatch<React.SetStateAction<Map<string, Task>>>;
+	editable: boolean;
+}
+
+export interface DueDateProp {
+	task: Task;
+	editable: boolean;
+}
+export interface MoreOptionsProp {
+	task: Task;
+	label: string;
+	editable: boolean;
+	setEditable: React.Dispatch<SetStateAction<boolean>>;
 }

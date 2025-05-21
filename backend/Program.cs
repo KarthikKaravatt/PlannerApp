@@ -22,8 +22,10 @@ void Main()
     // Get all tasks
     app.MapGet("/api/tasks", async (PlannerDbContext db) => await db.TaskList.ToListAsync());
     // Add a task
-    app.MapPost("/api/tasks", async (PlannerDbContext db, Task task) =>
+    app.MapPost("/api/tasks", async (PlannerDbContext db, TaskRequest request) =>
     {
+        var orderIndex = (uint)await db.TaskList.CountAsync();
+        var task = new Task(request.Label, request.Completed, request.DueDate, orderIndex);
         await db.AddAsync(task);
         await db.SaveChangesAsync();
         return Results.Created($"/api/tasks/{task.Id}", task);
@@ -36,13 +38,12 @@ void Main()
             : Results.NotFound()
     );
     // Change a task
-    app.MapPut("/api/tasks/{id:guid}", async (PlannerDbContext db, TaskRequest request, Guid id) =>
+    app.MapPut("/api/tasks/{id:guid}", async (PlannerDbContext db, Task taskUpload) =>
     {
-        var oldTask = await db.TaskList.FindAsync(id);
+        var oldTask = await db.TaskList.FindAsync(taskUpload.Id);
         if (oldTask == null) return Results.NotFound();
-        var task = new Task(request.Label, request.Completed, request.DueDate, oldTask.OrderIndex, id);
-        db.Remove(oldTask);
-        await db.AddAsync(task);
+        var task = new Task(taskUpload.Label, taskUpload.Completed, taskUpload.DueDate, taskUpload.OrderIndex, taskUpload.Id);
+        db.Entry(oldTask).CurrentValues.SetValues(task);
         await db.SaveChangesAsync();
         return Results.Ok();
     });
@@ -64,6 +65,18 @@ void Main()
         await db.SaveChangesAsync();
         return Results.Ok();
 
+    });
+    app.MapDelete("/api/tasks/clear", async (PlannerDbContext db) =>
+    {
+        var tasksToDelete = await db.TaskList.Where(t => t.Completed).ToListAsync();
+        if (tasksToDelete.Any())
+        {
+            db.TaskList.RemoveRange(tasksToDelete);
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        }
+
+        return Results.NotFound();
     });
     // swap task orders
     app.MapPut("/api/tasks/{id1:guid}/{id2:guid}", async (Guid id1, Guid id2, PlannerDbContext db) =>

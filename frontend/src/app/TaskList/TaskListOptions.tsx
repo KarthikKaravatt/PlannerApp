@@ -1,4 +1,4 @@
-import { removeTask } from "@/services/api";
+import { useClearCompletedTasksMutation } from "@/features/api/apiSlice";
 import type {
 	FILTER_OPTION,
 	SORT_OPTION,
@@ -7,12 +7,12 @@ import type {
 import type { ChangeEvent } from "react";
 
 const TaskListOptions: React.FC<TaskListOptionsProp> = ({
-	data,
-	setData,
 	filterState,
 	setFilterState,
 	setSortState,
 }) => {
+	//TODO: Use loading state
+	const [clearTasks] = useClearCompletedTasksMutation();
 	const onFilterButtonClick = () => {
 		const filterOptions: FILTER_OPTION[] = ["ALL", "INCOMPLETE", "COMPLETE"];
 		setFilterState((prev) => {
@@ -22,28 +22,9 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 		});
 	};
 	const onClearButtonClick = () => {
-		Array.from(data).map(([, value]) => {
-			if (value.completed) {
-				removeTask(value.id)
-					.then(() => {
-						setData((prevData) => {
-							const newData = new Map(prevData);
-							newData.delete(value.id);
-							for (const [, task] of newData.entries()) {
-								if (task.orderIndex > value.orderIndex) {
-									value.orderIndex -= 1;
-								}
-							}
-							return newData;
-						});
-					})
-					.catch((error: unknown) => {
-						if (error instanceof Error) {
-							console.error(`Error removing completed Tasks:${error}`);
-						} else {
-							console.error("Error removing completed Tasks:Uknown error");
-						}
-					});
+		clearTasks().catch((err: unknown) => {
+			if (err instanceof Error) {
+				console.error(`Error clearing completed tasks:${err}`);
 			}
 		});
 	};
