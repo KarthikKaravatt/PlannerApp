@@ -10,11 +10,11 @@ export const Route = createRootRoute({
         p-4 h-15
         flex justify-end sticky 
         top-0 z-50 
-        bg-white/80 dark:bg-gray-900/80 
+        bg-blue-100 dark:bg-dark-background-c
         backdrop-blur-sm
         "
 			>
-				+ <ThemeSwitcher />+{" "}
+				<ThemeSwitcher />
 			</header>
 			<Outlet />
 			<TanStackRouterDevtools />

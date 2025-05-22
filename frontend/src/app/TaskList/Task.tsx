@@ -43,11 +43,13 @@ const TaskComponent: React.FC<TaskProp> = ({ item }) => {
 			className="
       flex items-center 
       dark:bg-dark-background-c dark:text-white 
-      bg-blue-200 text-blue-950
-      dark:border-gray-50
-      border-blue-950 
-      border-1
-      rounded-lg h-10"
+      bg-sky-100 text-blue-950
+      dark:border-white
+      border-gray-300 
+      border-2
+      shadow
+      rounded-lg 
+      h-10 w-75"
 		>
 			<li
 				draggable={true}
@@ -65,6 +67,12 @@ const TaskComponent: React.FC<TaskProp> = ({ item }) => {
 			>
 				<CheckBox editable={editable} task={item} />
 				<input
+					className={`
+            w-full 
+            outline-none 
+            ${!editable ? "dark:caret-dark-background-c" : "caret-white"}
+            ${!editable ? "caret-blue-200" : "caret-black"}
+          `}
 					readOnly={!editable}
 					draggable={true}
 					onDoubleClick={() => {
@@ -116,7 +124,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, editable }) => {
 		<>
 			<div
 				onClick={onClick}
-				className={`w-4.5 h-4.5 
+				className={`w-5.5 h-4.5 
             ${isClicked ? "bg-green-500" : "dark:bg-dark-background-c"} 
             rounded-full text-xl border-2 
             ${isClicked ? "border-green-900" : "border-gray-500"}`}
@@ -168,7 +176,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 
 	return (
 		<>
-			<div className="text-gray-400 text-xs p-2">
+			<div className="text-xs p-2">
 				<button type="button" onClick={handleButtonClick}>
 					{formatedDate}
 				</button>
@@ -261,9 +269,9 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 					className="w-5 h-5"
 				>
 					<div className="flex flex-row items-center gap-0.5">
-						<div className="w-1 h-1 rounded-full bg-gray-400" />
-						<div className="w-1 h-1 rounded-full bg-gray-400" />
-						<div className="w-1 h-1 rounded-full bg-gray-400" />
+						<div className="w-1 h-1 rounded-full bg-blue-950 dark:bg-white" />
+						<div className="w-1 h-1 rounded-full bg-blue-950 dark:bg-white" />
+						<div className="w-1 h-1 rounded-full bg-blue-950 dark:bg-white" />
 					</div>
 				</button>
 				{/* Kind of cool basically a rectangle rotated 45 degrees with
@@ -285,7 +293,8 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 							className="
               absolute 
               top-[0.25em] left-[0.4em] w-[0.25em] h-[0.5em] 
-              border-solid border-green-500 border-b-[0.1em] border-r-[0.1em] 
+              dark:border-green-500 border-green-700 
+              border-b-[0.1em] border-r-[0.1em] border-solid 
               transform rotate-45"
 						>
 							{}
@@ -300,11 +309,11 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 				popover="auto"
 				className="
           absolute align-middle
-          text-gray-400 text-xs
+          text-xs
+          dark:text-white
           dark:bg-dark-background-c
-          bg-blue-300
+          bg-blue-200
           border-1 
-          border-gray-400
           dark:border-gray-200
           p-1 rounded"
 				style={{ inset: "unset" }}

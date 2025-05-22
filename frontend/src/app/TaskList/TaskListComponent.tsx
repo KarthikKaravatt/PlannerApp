@@ -22,7 +22,7 @@ const TaskListComponent: React.FC = () => {
 	}
 	if (isSuccess) {
 		return (
-			<div className="p-2 flex flex-col">
+			<div className="p-2 flex flex-col items-center gap-1">
 				<TaskListOptions
 					filterState={filterOption}
 					setFilterState={setFilterOption}
@@ -89,7 +89,7 @@ interface ViibleTasksProp {
 
 const VisibleTasks: React.FC<ViibleTasksProp> = ({ filteredList }) => {
 	return (
-		<ul className="flex flex-col gap-0.5">
+		<ul className="flex flex-col gap-1.5">
 			{filteredList.map((item) => (
 				<TaskComponent key={item.id} item={item} />
 			))}

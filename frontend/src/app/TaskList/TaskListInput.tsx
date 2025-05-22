@@ -25,16 +25,40 @@ const InputTask: React.FC = () => {
 	};
 	return (
 		<>
-			<div className="flex">
+			<div
+				className="
+          flex 
+          border-2
+          border-gray-300
+          dark:border-white
+          rounded-lg
+          h-10
+          w-75
+        "
+			>
 				<input
-					className="border-1 p-1"
-					placeholder="Task name"
+					className="
+            dark:text-white
+            dark:placeholder-gray-300
+            outline-none
+            h-10
+            p-1
+          "
+					placeholder="Enter new task"
 					onChange={onInputChanged}
 					value={inputTask}
 				/>
 				<button
 					disabled={isLoading}
-					className="border-1 p-1"
+					className="
+            w-1/3
+            bg-blue-200
+            dark:bg-white
+            dark:text-black
+            rounded-l-lg
+            p-1
+          
+          "
 					type="button"
 					onClick={onAddButtonClick}
 				>
