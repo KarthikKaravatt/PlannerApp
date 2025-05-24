@@ -25,6 +25,8 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 		enableEditMode,
 		handleExitEditMode,
 	} = useTaskLabelEditing(task);
+	//TODO: Swapping tasks is not ideal for custom ordering. You should be able
+	//      drag tasks to new positions in the list makes more sense that way
 	const { onDragStart, onDragOver, onDrop } = useDragAndDrop(task);
 	return (
 		<div
@@ -54,6 +56,11 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 				}}
 			>
 				<CheckBox editable={editable} task={task} />
+				{/* FIX:: prevent text from overflowing
+            Because this is an input text that is too long
+            will overflow. Either use triple dots or wrap
+            the text, splitting it into multiple lines.
+        */}
 				<input
 					className={`
             w-full 
@@ -142,6 +149,9 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 		//FIX: Positioning is not aligned with the button on Firefox
 		dateInputRef.current?.showPicker();
 	};
+	//TODO: This should be optional not all tasks have a new data
+	//TODO: task due in the current week should only display the day of the week
+	//TODO: change colour based on how soon it's due
 
 	return (
 		<>

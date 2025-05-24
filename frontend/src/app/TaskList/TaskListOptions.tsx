@@ -42,12 +42,9 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 	return (
 		<div
 			className="
-        flex
-        w-75
-        items-stretch justify-between
-        gap-2 pb-2
-        text-xs
-        dark:text-white
+        flex items-stretch justify-between
+        w-75 gap-2 pb-2
+        text-xs text-blue-950 dark:text-white
       "
 		>
 			<button
@@ -55,11 +52,9 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 				className="
           flex flex-1 flex-col
           items-center justify-center
-          rounded-md
+          rounded-md shadow-sm
           border border-gray-300
-          p-2
-          text-center
-          shadow-sm
+          p-2 text-center
         "
 				onClick={onFilterButtonClick}
 			>
@@ -73,8 +68,8 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
           flex flex-1 flex-col 
           items-center justify-center 
           rounded-md border border-gray-300 
-          p-2 
           text-center shadow-sm 
+          p-2 
         "
 				onClick={onClearButtonClick}
 			>
@@ -95,10 +90,10 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 					name="sort"
 					onChange={onSortOrderChanged}
 					className="
-            block w-full rounded-md 
-            border-gray-300 
-            dark:bg-dark-background-c
-            py-1.5 text-center 
+              block w-full rounded-md 
+              border-gray-300 
+              dark:bg-dark-background-c
+              py-1.5 text-center 
             "
 				>
 					<option value={"CUSTOM"}>Custom</option>

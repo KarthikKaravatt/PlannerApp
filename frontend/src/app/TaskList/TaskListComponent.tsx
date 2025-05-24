@@ -6,6 +6,7 @@ import { useState } from "react";
 import TaskComponent from "./Task";
 import InputTask from "./TaskListInput";
 import TaskListOptions from "./TaskListOptions";
+import { FaSpinner } from "react-icons/fa";
 
 const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FILTER_OPTION>("ALL");
@@ -82,10 +83,14 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		error,
 	} = useGetTasksQuery();
 	if (isLoading) {
-		return <p>Loading</p>;
+		return <FaSpinner className="text-blue950 dark:text-white" />;
 	}
 	if (isSuccess) {
 		const filteredList = getFinalList(tasks, filterOption, sortOption);
+		//TODO: Adding new tasks makes the page larger. This means the tasks
+		//options component is not visible anymore. Need a way of making this
+		//component scrollable and not the page, need a way of having a limit of
+		//tasks that are displayed.
 		return (
 			<ul className="flex flex-col gap-1.5">
 				{filteredList.map((item) => (
@@ -96,7 +101,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	}
 	if (isError) {
 		console.log(error);
-		return <p>error.status</p>;
+		return <p>Error: Failed to fetch tasks</p>;
 	}
 };
 

@@ -12,6 +12,8 @@ export const apiSlice = createApi({
 	endpoints: (builder) => ({
 		getTasks: builder.query<Task[], void>({
 			query: () => "",
+			//TODO: Need to look into making this better. changing anything about
+			//tasks causes a re-fetch of all tasks
 			providesTags: ["Tasks"],
 		}),
 		getTask: builder.query<Task, string>({

@@ -27,22 +27,18 @@ const InputTask: React.FC = () => {
 		<>
 			<div
 				className="
-          flex 
+          flex rounded-lg
           border-2
-          border-gray-300
-          dark:border-white
-          rounded-lg
-          h-10
-          w-75
+          border-gray-300 dark:border-white
+          h-10 w-75
         "
 			>
 				<input
 					className="
-            dark:text-white
+            text-blue-950 dark:text-white
             dark:placeholder-gray-300
             outline-none
-            h-10
-            p-1
+            h-10 p-1
           "
 					placeholder="Enter new task"
 					onChange={onInputChanged}
