@@ -14,49 +14,63 @@ import {
 import { DateTime } from "luxon";
 import { type ChangeEvent, type DragEvent, useRef, useState } from "react";
 
-const TaskComponent: React.FC<TaskProp> = ({ item }) => {
+const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
+	const [updateTask, { isLoading: isUpdateLoading }] = useUpdateTaskMutation();
+	const [label, setLabel] = useState(task.label);
 	const [editable, setEditable] = useState(false);
-	const [label, setLabel] = useState(item.label);
-	//TODO: Use loading state
 	const [swapTasks] = useSwapTaskOrderMutation();
 
-	const onDragStart = (event: DragEvent<HTMLSpanElement>) => {
+	const onDragStart = (item: Task, event: DragEvent<HTMLSpanElement>) => {
 		event.dataTransfer.setData(DRAG_ITEM_ID_KEY, item.id);
 	};
 	const onDragOver = (event: DragEvent<HTMLSpanElement>) => {
 		event.preventDefault();
 	};
 	const onDrop = (event: DragEvent<HTMLSpanElement>) => {
-		//
 		event.preventDefault();
 		const swapIDString = event.dataTransfer.getData(DRAG_ITEM_ID_KEY);
 		if (swapIDString !== "") {
-			swapTasks({ id1: item.id, id2: swapIDString }).catch((err: unknown) => {
+			swapTasks({ id1: task.id, id2: swapIDString }).catch((err: unknown) => {
 				if (err instanceof Error) {
 					console.error(`Error swapping tasks${err}`);
 				}
 			});
 		}
 	};
+	const handleExitEditMode = () => {
+		if (task.label !== label) {
+			updateTask({ ...task, label: label })
+				.unwrap()
+				.catch((err: unknown) => {
+					setLabel(task.label);
+					if (err instanceof Error) {
+						console.error(`Error updating task: ${err}`);
+					}
+				});
+		}
+		setEditable(false);
+	};
 	return (
 		<div
-			className="
+			className={`
       flex items-center 
-      dark:bg-dark-background-c dark:text-white 
-      bg-sky-100 text-blue-950
+      dark:bg-dark-background-c 
+      ${isUpdateLoading ? "dark:text-gray-300" : "dark:text-white"}
+      bg-sky-100 
+      ${isUpdateLoading ? "text-gray-400" : "text-blue-950"}
       dark:border-white
       border-gray-300 
       border-2
       shadow
       rounded-lg 
-      h-10 w-75"
+      h-10 w-75`}
 		>
 			<li
 				draggable={true}
-				key={item.id}
+				key={task.id}
 				className="flex flex-row gap-2 items-center pr-2 pl-2"
 				onDragStart={(event) => {
-					onDragStart(event);
+					onDragStart(task, event);
 				}}
 				onDragOver={(event) => {
 					onDragOver(event);
@@ -65,13 +79,13 @@ const TaskComponent: React.FC<TaskProp> = ({ item }) => {
 					onDrop(event);
 				}}
 			>
-				<CheckBox editable={editable} task={item} />
+				<CheckBox editable={editable} task={task} />
 				<input
 					className={`
             w-full 
             outline-none 
-            ${!editable ? "dark:caret-dark-background-c" : "caret-white"}
-            ${!editable ? "caret-blue-200" : "caret-black"}
+            ${!editable ? "dark:caret-dark-background-c" : "dark:caret-white"}
+            ${!editable ? "caret-blue-100" : "caret-gray-400"}
           `}
 					readOnly={!editable}
 					draggable={true}
@@ -82,66 +96,69 @@ const TaskComponent: React.FC<TaskProp> = ({ item }) => {
 					onChange={(event) => {
 						setLabel(event.target.value);
 					}}
-					value={label}
+					value={editable ? label : task.label}
 				/>
-				<DueDateDisplay editable={editable} task={item} />
+				<DueDateDisplay editable={editable} task={task} />
 				<MoreOptions
-					label={label}
 					editable={editable}
-					task={item}
-					setEditable={setEditable}
+					task={task}
+					handleExitEditMode={handleExitEditMode}
 				/>
 			</li>
 		</div>
 	);
 };
-
 const CheckBox: React.FC<CheckBoxProp> = ({ task, editable }) => {
-	const [isClicked, setIsClicked] = useState(task.completed);
-	const [updateTask] = useUpdateTaskMutation();
-	const onClick = () => {
-		if (editable) return;
-		updateTask({ ...task, completed: !isClicked })
-			.then(() => {
-				setIsClicked((prev) => {
-					return !prev;
-				});
-			})
-			.catch((err: unknown) => {
-				if (err instanceof Error) {
-					console.error(`Error updating completion of task:${err}`);
-				}
-			});
-	};
-	const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-		if (event.key === "Enter" || event.key === " ") {
-			event.preventDefault();
-			onClick();
+	const [updateTask, { isLoading }] = useUpdateTaskMutation();
+
+	const handleClick = async () => {
+		if (editable || isLoading) {
+			return;
+		}
+		try {
+			await updateTask({ ...task, completed: !task.completed }).unwrap();
+		} catch (err) {
+			console.error("Failed to update task completion:", err);
 		}
 	};
+
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			void handleClick();
+		}
+	};
+
+	const isInteractive = !editable && !isLoading;
 
 	return (
 		<>
 			<div
-				onClick={onClick}
+				onClick={isInteractive ? () => void handleClick() : undefined}
 				className={`w-5.5 h-4.5 
-            ${isClicked ? "bg-green-500" : "dark:bg-dark-background-c"} 
-            rounded-full text-xl border-2 
-            ${isClicked ? "border-green-900" : "border-gray-500"}`}
-				tabIndex={0}
-				onKeyDown={(event) => {
-					onKeyDown(event);
-				}}
-				role="button"
+                    ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
+                    rounded-full text-xl border-2 
+                    ${task.completed ? "border-green-900" : "border-gray-500"}
+                    ${isInteractive ? "cursor-pointer" : "cursor-default"}
+                    ${isLoading ? "opacity-50" : ""}`}
+				tabIndex={isInteractive ? 0 : -1}
+				onKeyDown={
+					isInteractive
+						? (event) => {
+								handleKeyDown(event);
+							}
+						: undefined
+				}
+				role="checkbox"
+				aria-checked={task.completed}
+				aria-disabled={!isInteractive}
 			/>
 		</>
 	);
 };
-
 const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 	const dateInputRef = useRef<HTMLInputElement>(null);
 	const taskDueDate = DateTime.fromISO(task.dueDate);
-	//TODO: Use loading state here
 	const dateFormat = "dd LLL";
 	const [formatedDate, setFormatedDate] = useState(() => {
 		if (taskDueDate.isValid) {
@@ -149,7 +166,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 		}
 		return "Invalid";
 	});
-	const [updateTask] = useUpdateTaskMutation();
+	const [updateTask, { isLoading }] = useUpdateTaskMutation();
 	const [inputDate, setInputDate] = useState(
 		DateTime.fromISO(task.dueDate).toFormat("yyyy-MM-dd'T'HH:mm"),
 	);
@@ -176,7 +193,13 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 
 	return (
 		<>
-			<div className="text-xs p-2">
+			<div
+				className={`
+          ${isLoading ? "dark:text-gray-300" : "dark:text-white"}
+          ${isLoading ? "text-gray-400" : "text-blue-950"}
+          text-xs p-2
+        `}
+			>
 				<button type="button" onClick={handleButtonClick}>
 					{formatedDate}
 				</button>
@@ -195,20 +218,16 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 };
 const MoreOptions: React.FC<MoreOptionsProp> = ({
 	task,
-	label,
-	setEditable,
 	editable,
+	handleExitEditMode,
 }) => {
 	const popOverID = `popOver: ${task.id}`;
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const popoverRef = useRef<HTMLDivElement>(null);
 	//Prevent flickering as the popover position is changed
 	const [isHidden, setIsHidden] = useState(true);
-	//TODO: Add loading states to this
 	const [deleteTask] = useDeleteTaskMutation();
-	const [updateTask] = useUpdateTaskMutation();
 	const onTrashButtonClicked = (task: Task) => {
-		//TODO: Make this optimistic
 		deleteTask(task.id).catch((err: unknown) => {
 			if (err instanceof Error) {
 				console.error(`Error removing tasks:${err}`);
@@ -216,15 +235,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 		});
 	};
 	const onConfirmClicked = () => {
-		updateTask({ ...task, label: label })
-			.then(() => {
-				setEditable(false);
-			})
-			.catch((err: unknown) => {
-				if (err instanceof Error) {
-					console.error(`Error removing tasks:${err}`);
-				}
-			});
+		handleExitEditMode();
 	};
 
 	const handlePopoverToggle = (event: React.SyntheticEvent<HTMLDivElement>) => {
@@ -312,8 +323,9 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
           text-xs
           dark:text-white
           dark:bg-dark-background-c
-          bg-blue-200
-          border-1 
+          bg-blue-100
+          border-2
+          border-gray-300
           dark:border-gray-200
           p-1 rounded"
 				style={{ inset: "unset" }}

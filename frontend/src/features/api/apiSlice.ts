@@ -25,6 +25,10 @@ export const apiSlice = createApi({
 				method: "POST",
 				body: initialPost,
 			}),
+			// TODO : Make this optimistic
+			// async onQueryStarted() {
+			//
+			// },
 			invalidatesTags: ["Tasks"],
 		}),
 		deleteTask: builder.mutation<void, string>({
@@ -32,6 +36,20 @@ export const apiSlice = createApi({
 				url: `/${id}`,
 				method: "DELETE",
 			}),
+			async onQueryStarted(id, { dispatch, queryFulfilled }) {
+				const patchResult = dispatch(
+					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
+						const taskIndex = draftTasks.findIndex((task) => task.id === id);
+						if (taskIndex !== -1) {
+							draftTasks.splice(taskIndex, 1);
+						}
+					}),
+				);
+				await queryFulfilled.catch(() => {
+					console.error("Error deleting task");
+					patchResult.undo();
+				});
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 		updateTask: builder.mutation<void, Task>({
@@ -40,6 +58,25 @@ export const apiSlice = createApi({
 				method: "PUT",
 				body: task,
 			}),
+			async onQueryStarted(task, { dispatch, queryFulfilled }) {
+				const patchResult = dispatch(
+					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
+						const taskIndex = draftTasks.findIndex(
+							(curTask) => curTask.id === task.id,
+						);
+						if (taskIndex !== -1) {
+							draftTasks[taskIndex] = {
+								...draftTasks[taskIndex],
+								...task,
+							};
+						}
+					}),
+				);
+				await queryFulfilled.catch(() => {
+					console.error("Updating task failed rolling back");
+					patchResult.undo();
+				});
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 		swapTaskOrder: builder.mutation<void, { id1: string; id2: string }>({
@@ -47,6 +84,7 @@ export const apiSlice = createApi({
 				url: `/${updateTasks.id1}/${updateTasks.id2}`,
 				method: "PUT",
 			}),
+			//TODO: Make this optimistic
 			invalidatesTags: ["Tasks"],
 		}),
 		clearCompletedTasks: builder.mutation<void, void>({
@@ -54,6 +92,17 @@ export const apiSlice = createApi({
 				url: "/clear",
 				method: "DELETE",
 			}),
+			async onQueryStarted(_, { dispatch, queryFulfilled }) {
+				const patchResult = dispatch(
+					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
+						return draft.filter((item) => !item.completed);
+					}),
+				);
+				await queryFulfilled.catch(() => {
+					console.error("Removing completed tasks failed rolling back");
+					patchResult.undo();
+				});
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 	}),

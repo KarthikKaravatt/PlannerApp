@@ -43,7 +43,6 @@ export interface DueDateProp {
 }
 export interface MoreOptionsProp {
 	task: Task;
-	label: string;
 	editable: boolean;
-	setEditable: React.Dispatch<SetStateAction<boolean>>;
+	handleExitEditMode: () => void;
 }

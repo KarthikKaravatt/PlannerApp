@@ -10,35 +10,17 @@ import TaskListOptions from "./TaskListOptions";
 const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FILTER_OPTION>("ALL");
 	const [sortOption, setSortOption] = useState<SORT_OPTION>("CUSTOM");
-	const {
-		data: tasks = [],
-		isLoading,
-		isSuccess,
-		isError,
-		error,
-	} = useGetTasksQuery();
-	if (isLoading) {
-		return <p>Loading</p>;
-	}
-	if (isSuccess) {
-		return (
-			<div className="p-2 flex flex-col items-center gap-1">
-				<TaskListOptions
-					filterState={filterOption}
-					setFilterState={setFilterOption}
-					setSortState={setSortOption}
-				/>
-				<InputTask />
-				<VisibleTasks
-					filteredList={getFinalList(tasks, filterOption, sortOption)}
-				/>
-			</div>
-		);
-	}
-	if (isError) {
-		console.log(error);
-		return <p>error.status</p>;
-	}
+	return (
+		<div className="p-2 flex flex-col items-center gap-1">
+			<TaskListOptions
+				filterState={filterOption}
+				setFilterState={setFilterOption}
+				setSortState={setSortOption}
+			/>
+			<InputTask />
+			<VisibleTasks sortOption={sortOption} filterOption={filterOption} />
+		</div>
+	);
 };
 
 function getFinalList(
@@ -84,17 +66,38 @@ function getFinalList(
 }
 
 interface ViibleTasksProp {
-	filteredList: Task[];
+	filterOption: FILTER_OPTION;
+	sortOption: SORT_OPTION;
 }
 
-const VisibleTasks: React.FC<ViibleTasksProp> = ({ filteredList }) => {
-	return (
-		<ul className="flex flex-col gap-1.5">
-			{filteredList.map((item) => (
-				<TaskComponent key={item.id} item={item} />
-			))}
-		</ul>
-	);
+const VisibleTasks: React.FC<ViibleTasksProp> = ({
+	filterOption,
+	sortOption,
+}) => {
+	const {
+		data: tasks = [],
+		isLoading,
+		isSuccess,
+		isError,
+		error,
+	} = useGetTasksQuery();
+	if (isLoading) {
+		return <p>Loading</p>;
+	}
+	if (isSuccess) {
+		const filteredList = getFinalList(tasks, filterOption, sortOption);
+		return (
+			<ul className="flex flex-col gap-1.5">
+				{filteredList.map((item) => (
+					<TaskComponent key={item.id} item={item} />
+				))}
+			</ul>
+		);
+	}
+	if (isError) {
+		console.log(error);
+		return <p>error.status</p>;
+	}
 };
 
 export default TaskListComponent;
