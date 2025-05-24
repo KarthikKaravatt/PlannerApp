@@ -1,5 +1,4 @@
 import type { Task } from "@/schemas/taskList";
-import type { SetStateAction } from "react";
 
 export const LOCAL_STORAGE_TASKS = "Tasks";
 

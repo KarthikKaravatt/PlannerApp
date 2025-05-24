@@ -7,9 +7,9 @@ import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
 import { Provider } from "react-redux";
+import { ThemeProvider } from "./app/ThemeContext.tsx";
 import { store } from "./app/store.ts";
 import reportWebVitals from "./reportWebVitals.ts";
-import { ThemeProvider } from "./app/ThemeContext.tsx";
 
 scan({
 	enabled: true,

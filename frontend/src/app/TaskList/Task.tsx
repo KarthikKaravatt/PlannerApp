@@ -1,69 +1,43 @@
 import {
 	useDeleteTaskMutation,
-	useSwapTaskOrderMutation,
 	useUpdateTaskMutation,
 } from "@/features/api/apiSlice";
+import { useDragAndDrop } from "@/hooks/taslkList/useDragAndDrop";
+import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
+import { useTaskLabelEditing } from "@/hooks/taslkList/useTaskLabelEdditing";
 import type { Task } from "@/schemas/taskList";
-import {
-	type CheckBoxProp,
-	DRAG_ITEM_ID_KEY,
-	type DueDateProp,
-	type MoreOptionsProp,
-	type TaskProp,
+import type {
+	CheckBoxProp,
+	DueDateProp,
+	MoreOptionsProp,
+	TaskProp,
 } from "@/types/taskList";
-import { DateTime } from "luxon";
-import { type ChangeEvent, type DragEvent, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { BsThreeDots } from "react-icons/bs";
+import { FaCheck } from "react-icons/fa6";
 
 const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
-	const [updateTask, { isLoading: isUpdateLoading }] = useUpdateTaskMutation();
-	const [label, setLabel] = useState(task.label);
-	const [editable, setEditable] = useState(false);
-	const [swapTasks] = useSwapTaskOrderMutation();
-
-	const onDragStart = (item: Task, event: DragEvent<HTMLSpanElement>) => {
-		event.dataTransfer.setData(DRAG_ITEM_ID_KEY, item.id);
-	};
-	const onDragOver = (event: DragEvent<HTMLSpanElement>) => {
-		event.preventDefault();
-	};
-	const onDrop = (event: DragEvent<HTMLSpanElement>) => {
-		event.preventDefault();
-		const swapIDString = event.dataTransfer.getData(DRAG_ITEM_ID_KEY);
-		if (swapIDString !== "") {
-			swapTasks({ id1: task.id, id2: swapIDString }).catch((err: unknown) => {
-				if (err instanceof Error) {
-					console.error(`Error swapping tasks${err}`);
-				}
-			});
-		}
-	};
-	const handleExitEditMode = () => {
-		if (task.label !== label) {
-			updateTask({ ...task, label: label })
-				.unwrap()
-				.catch((err: unknown) => {
-					setLabel(task.label);
-					if (err instanceof Error) {
-						console.error(`Error updating task: ${err}`);
-					}
-				});
-		}
-		setEditable(false);
-	};
+	const {
+		isUpdateLoading,
+		label,
+		handleLabelChange,
+		editable,
+		enableEditMode,
+		handleExitEditMode,
+	} = useTaskLabelEditing(task);
+	const { onDragStart, onDragOver, onDrop } = useDragAndDrop(task);
 	return (
 		<div
 			className={`
-      flex items-center 
-      dark:bg-dark-background-c 
-      ${isUpdateLoading ? "dark:text-gray-300" : "dark:text-white"}
-      bg-sky-100 
-      ${isUpdateLoading ? "text-gray-400" : "text-blue-950"}
-      dark:border-white
-      border-gray-300 
-      border-2
-      shadow
-      rounded-lg 
-      h-10 w-75`}
+        flex items-center 
+        dark:bg-dark-background-c bg-sky-100 
+        ${isUpdateLoading ? "dark:text-gray-300" : "dark:text-white"}
+        ${isUpdateLoading ? "text-gray-400" : "text-blue-950"}
+        dark:border-white border-gray-300 
+        border-2
+        rounded-lg h-10 w-75
+        shadow
+      `}
 		>
 			<li
 				draggable={true}
@@ -88,13 +62,10 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
             ${!editable ? "caret-blue-100" : "caret-gray-400"}
           `}
 					readOnly={!editable}
-					draggable={true}
-					onDoubleClick={() => {
-						setEditable(true);
-					}}
+					onDoubleClick={enableEditMode}
 					type="text"
 					onChange={(event) => {
-						setLabel(event.target.value);
+						handleLabelChange(event.target.value);
 					}}
 					value={editable ? label : task.label}
 				/>
@@ -110,22 +81,21 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 };
 const CheckBox: React.FC<CheckBoxProp> = ({ task, editable }) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
-
-	const handleClick = async () => {
+	const handleClick = () => {
 		if (editable || isLoading) {
 			return;
 		}
-		try {
-			await updateTask({ ...task, completed: !task.completed }).unwrap();
-		} catch (err) {
-			console.error("Failed to update task completion:", err);
-		}
+		updateTask({ ...task, completed: !task.completed }).catch(
+			(err: unknown) => {
+				console.error("Failed to update task completion:", err);
+			},
+		);
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
 		if (event.key === "Enter" || event.key === " ") {
 			event.preventDefault();
-			void handleClick();
+			handleClick();
 		}
 	};
 
@@ -134,13 +104,21 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, editable }) => {
 	return (
 		<>
 			<div
-				onClick={isInteractive ? () => void handleClick() : undefined}
-				className={`w-5.5 h-4.5 
-                    ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
-                    rounded-full text-xl border-2 
-                    ${task.completed ? "border-green-900" : "border-gray-500"}
-                    ${isInteractive ? "cursor-pointer" : "cursor-default"}
-                    ${isLoading ? "opacity-50" : ""}`}
+				onClick={
+					isInteractive
+						? () => {
+								handleClick();
+							}
+						: undefined
+				}
+				className={`
+          w-5.5 h-4.5 
+          ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
+          rounded-full text-xl border-2 
+          ${task.completed ? "border-green-900" : "border-gray-500"}
+          ${isInteractive ? "cursor-pointer" : "cursor-default"}
+          ${isLoading ? "opacity-50" : ""}
+        `}
 				tabIndex={isInteractive ? 0 : -1}
 				onKeyDown={
 					isInteractive
@@ -158,34 +136,8 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, editable }) => {
 };
 const DueDateDisplay: React.FC<DueDateProp> = ({ task, editable }) => {
 	const dateInputRef = useRef<HTMLInputElement>(null);
-	const taskDueDate = DateTime.fromISO(task.dueDate);
-	const dateFormat = "dd LLL";
-	const [formatedDate, setFormatedDate] = useState(() => {
-		if (taskDueDate.isValid) {
-			return DateTime.fromISO(task.dueDate).toFormat(dateFormat);
-		}
-		return "Invalid";
-	});
-	const [updateTask, { isLoading }] = useUpdateTaskMutation();
-	const [inputDate, setInputDate] = useState(
-		DateTime.fromISO(task.dueDate).toFormat("yyyy-MM-dd'T'HH:mm"),
-	);
-	const onDateButtonClicked = (event: ChangeEvent<HTMLInputElement>) => {
-		if (editable) return;
-		const date = DateTime.fromFormat(event.target.value, "yyyy-MM-dd'T'HH:mm");
-		if (date.isValid) {
-			updateTask({ ...task, dueDate: date.toISO() })
-				.then(() => {
-					setInputDate(event.target.value);
-					setFormatedDate(date.toFormat(dateFormat));
-				})
-				.catch((err: unknown) => {
-					if (err instanceof Error) {
-						console.log(`Error updating task:${err}`);
-					}
-				});
-		}
-	};
+	const { isLoading, formatedDate, inputDate, onDateButtonClicked } =
+		useTaskDueDate(task, editable);
 	const handleButtonClick = () => {
 		//FIX: Positioning is not aligned with the button on Firefox
 		dateInputRef.current?.showPicker();
@@ -270,47 +222,24 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 		<>
 			<div
 				className="
-        flex flex-row items-center gap-0
+          flex flex-row items-center gap-0
         "
 			>
 				<button
 					ref={buttonRef}
 					popoverTarget={popOverID}
 					type="button"
-					className="w-5 h-5"
+					className="text-lg"
 				>
-					<div className="flex flex-row items-center gap-0.5">
-						<div className="w-1 h-1 rounded-full bg-blue-950 dark:bg-white" />
-						<div className="w-1 h-1 rounded-full bg-blue-950 dark:bg-white" />
-						<div className="w-1 h-1 rounded-full bg-blue-950 dark:bg-white" />
-					</div>
+					<BsThreeDots className="text-blue-950 dark:text-white" />
 				</button>
-				{/* Kind of cool basically a rectangle rotated 45 degrees with
-          only the bottom and right border*/}
 				<button
 					type="button"
-					className="w-5 h-5.5"
+					className="text-sm pl-2 text-green-700 dark:text-green-400"
 					hidden={!editable}
 					onClick={onConfirmClicked}
 				>
-					<div
-						className="
-            relative inline-block 
-            w-4 h-4 
-            overflow-hidden
-            "
-					>
-						<div
-							className="
-              absolute 
-              top-[0.25em] left-[0.4em] w-[0.25em] h-[0.5em] 
-              dark:border-green-500 border-green-700 
-              border-b-[0.1em] border-r-[0.1em] border-solid 
-              transform rotate-45"
-						>
-							{}
-						</div>
-					</div>
+					<FaCheck />
 				</button>
 			</div>
 			<div
@@ -320,14 +249,11 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 				popover="auto"
 				className="
           absolute align-middle
-          text-xs
-          dark:text-white
-          dark:bg-dark-background-c
-          bg-blue-100
-          border-2
-          border-gray-300
-          dark:border-gray-200
-          p-1 rounded"
+          text-xs dark:text-white
+          dark:bg-dark-background-c bg-blue-100
+          border-2 border-gray-300 dark:border-gray-200
+          p-1 rounded
+        "
 				style={{ inset: "unset" }}
 				onToggle={handlePopoverToggle}
 			>
