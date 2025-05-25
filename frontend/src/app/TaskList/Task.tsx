@@ -142,8 +142,6 @@ interface InputFieldProps {
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
-	//BUG: Input field does not reset with original task name if task mutation
-	//fails
 	return (
 		<input
 			className={`
