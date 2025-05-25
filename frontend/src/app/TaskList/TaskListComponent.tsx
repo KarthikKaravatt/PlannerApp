@@ -1,4 +1,4 @@
-import { useGetTasksQuery } from "@/features/api/apiSlice";
+import { useGetTasksQuery } from "@/redux/api/apiSlice";
 import type { Task } from "@/schemas/taskList";
 import type { FILTER_OPTION, SORT_OPTION } from "@/types/taskList";
 import { DateTime } from "luxon";

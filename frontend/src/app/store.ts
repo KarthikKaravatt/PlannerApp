@@ -1,5 +1,5 @@
-import { apiSlice } from "@/features/api/apiSlice";
-import tasksReducer from "@/features/tasks/tasksSlice";
+import { apiSlice } from "@/redux/api/apiSlice";
+import tasksReducer from "@/redux/tasks/tasksListSlice";
 import { configureStore } from "@reduxjs/toolkit";
 import { listenerMiddleware } from "./listenerMiddleware";
 

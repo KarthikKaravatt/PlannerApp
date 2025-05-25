@@ -1,5 +1,3 @@
-import type { Task } from "@/schemas/taskList";
-
 export const LOCAL_STORAGE_TASKS = "Tasks";
 
 export const LOCAL_STORAGE_TASKS_CUSTOM_SORT = "TasksCustomSortOrder";
@@ -20,28 +18,3 @@ const SORT_OPTION = {
 } as const;
 
 export type SORT_OPTION = (typeof SORT_OPTION)[keyof typeof SORT_OPTION];
-
-export interface TaskProp {
-	item: Task;
-}
-
-export interface TaskListOptionsProp {
-	filterState: FILTER_OPTION;
-	setFilterState: React.Dispatch<React.SetStateAction<FILTER_OPTION>>;
-	setSortState: React.Dispatch<React.SetStateAction<SORT_OPTION>>;
-}
-
-export interface CheckBoxProp {
-	task: Task;
-	editable: boolean;
-}
-
-export interface DueDateProp {
-	task: Task;
-	editable: boolean;
-}
-export interface MoreOptionsProp {
-	task: Task;
-	editable: boolean;
-	handleExitEditMode: () => void;
-}

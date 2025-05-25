@@ -5,7 +5,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState: Task[] = [];
 export type NewTask = Pick<Task, "label" | "dueDate" | "completed">;
 
-const tasksSlice = createSlice({
+const tasksListSlice = createSlice({
 	name: "tasks",
 	initialState,
 	reducers: {
@@ -15,5 +15,5 @@ const tasksSlice = createSlice({
 	},
 });
 
-export const { taskAdded } = tasksSlice.actions;
-export default tasksSlice.reducer;
+export const { taskAdded } = tasksListSlice.actions;
+export default tasksListSlice.reducer;

@@ -1,4 +1,4 @@
-import { useClearCompletedTasksMutation } from "@/features/api/apiSlice";
+import { useClearCompletedTasksMutation } from "@/redux/api/apiSlice";
 import type {
 	FILTER_OPTION,
 	SORT_OPTION,
