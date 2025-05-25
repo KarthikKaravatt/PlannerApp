@@ -3,10 +3,10 @@ import type { Task } from "@/schemas/taskList";
 import type { FILTER_OPTION, SORT_OPTION } from "@/types/taskList";
 import { DateTime } from "luxon";
 import { useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 import TaskComponent from "./Task";
 import InputTask from "./TaskListInput";
 import TaskListOptions from "./TaskListOptions";
-import { FaSpinner } from "react-icons/fa";
 
 const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FILTER_OPTION>("ALL");

@@ -1,13 +1,14 @@
 import { useClearCompletedTasksMutation } from "@/redux/api/apiSlice";
-import type {
-	FILTER_OPTION,
-	SORT_OPTION,
-	TaskListOptionsProp,
-} from "@/types/taskList";
+import type { FILTER_OPTION, SORT_OPTION } from "@/types/taskList";
 import type { ChangeEvent } from "react";
 import { FaFilter } from "react-icons/fa6";
 import { MdClearAll } from "react-icons/md";
 
+export interface TaskListOptionsProp {
+	filterState: FILTER_OPTION;
+	setFilterState: React.Dispatch<React.SetStateAction<FILTER_OPTION>>;
+	setSortState: React.Dispatch<React.SetStateAction<SORT_OPTION>>;
+}
 const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 	filterState,
 	setFilterState,

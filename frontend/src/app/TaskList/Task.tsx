@@ -1,26 +1,25 @@
+import { useDragAndDrop } from "@/hooks/taslkList/useDragAndDrop";
+import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
+import { taskComponentReducer } from "@/reducers/taskReducer";
 import {
 	useDeleteTaskMutation,
 	useUpdateTaskMutation,
 } from "@/redux/api/apiSlice";
-import { useDragAndDrop } from "@/hooks/taslkList/useDragAndDrop";
-import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import type { Task } from "@/schemas/taskList";
 import type {} from "@/types/taskList";
-import { useReducer, useRef, useState } from "react";
-import { BsThreeDots } from "react-icons/bs";
-import { FaCheck } from "react-icons/fa6";
-import { taskComponentReducer } from "@/reducers/taskReducer";
 import type {
 	TaskComponentAction,
 	TaskComponentState,
 } from "@/types/taskReducer";
+import { useReducer, useRef, useState } from "react";
+import { BsThreeDots } from "react-icons/bs";
+import { FaCheck } from "react-icons/fa6";
 
 export interface TaskProp {
 	item: Task;
 }
 const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 	const initalTaskComponentState: TaskComponentState = {
-		task: task,
 		inputTaskName: task.label,
 		editable: false,
 		isLoading: false,
@@ -59,35 +58,40 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 					onDrop(event);
 				}}
 			>
-				<CheckBox state={state} dispatch={dispatch} />
+				<CheckBox task={task} state={state} dispatch={dispatch} />
 				{/* BUG:: prevent text from overflowing
             Because this is an input text that is too long
             will overflow. Either use triple dots or wrap
             the text, splitting it into multiple lines.
         */}
-				<InputField state={state} dispatch={dispatch} />
-				<DueDateDisplay state={state} />
-				<MoreOptions state={state} dispatch={dispatch} />
+				<InputField task={task} state={state} dispatch={dispatch} />
+				<DueDateDisplay task={task} state={state} />
+				<MoreOptions task={task} state={state} dispatch={dispatch} />
 			</li>
 		</div>
 	);
 };
 
 interface CheckBoxProp {
+	task: Task;
 	state: TaskComponentState;
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
-const CheckBox: React.FC<CheckBoxProp> = ({ state, dispatch }) => {
+const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
 	const handleClick = () => {
 		if (state.editable || isLoading || state.isLoading) {
 			return;
 		}
-		updateTask({ ...state.task, completed: !state.task.completed }).catch(
-			(err: unknown) => {
+		dispatch({ type: "MUTATE_LOADING", payload: true });
+		updateTask({ ...task, completed: !task.completed })
+			.then(() => {
+				dispatch({ type: "MUTATE_LOADING", payload: false });
+			})
+			.catch((err: unknown) => {
+				dispatch({ type: "MUTATE_LOADING", payload: false });
 				console.error("Failed to update task completion:", err);
-			},
-		);
+			});
 	};
 
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -111,9 +115,9 @@ const CheckBox: React.FC<CheckBoxProp> = ({ state, dispatch }) => {
 				}
 				className={`
           w-5.5 h-4.5 
-          ${state.task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
+          ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
           rounded-full text-xl border-2 
-          ${state.task.completed ? "border-green-900" : "border-gray-500"}
+          ${task.completed ? "border-green-900" : "border-gray-500"}
           ${isInteractive ? "cursor-pointer" : "cursor-default"}
           ${isLoading ? "opacity-50" : ""}
         `}
@@ -126,17 +130,18 @@ const CheckBox: React.FC<CheckBoxProp> = ({ state, dispatch }) => {
 						: undefined
 				}
 				role="checkbox"
-				aria-checked={state.task.completed}
+				aria-checked={task.completed}
 				aria-disabled={!isInteractive}
 			/>
 		</>
 	);
 };
 interface InputFieldProps {
+	task: Task;
 	state: TaskComponentState;
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
-const InputField: React.FC<InputFieldProps> = ({ state, dispatch }) => {
+const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 	//BUG: Input field does not reset with original task name if task mutation
 	//fails
 	return (
@@ -149,23 +154,25 @@ const InputField: React.FC<InputFieldProps> = ({ state, dispatch }) => {
           `}
 			readOnly={!state.editable}
 			onDoubleClick={() => {
+				dispatch({ type: "MUTATE_INPUT", payload: task.label });
 				dispatch({ type: "MUTATE_EDITABLE", payload: true });
 			}}
 			type="text"
 			onChange={(event) => {
 				dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
 			}}
-			value={state.editable ? state.inputTaskName : state.task.label}
+			value={state.editable ? state.inputTaskName : task.label}
 		/>
 	);
 };
 interface DueDateProp {
+	task: Task;
 	state: TaskComponentState;
 }
-const DueDateDisplay: React.FC<DueDateProp> = ({ state }) => {
+const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
 	const dateInputRef = useRef<HTMLInputElement>(null);
 	const { isLoading, formatedDate, inputDate, onDateButtonClicked } =
-		useTaskDueDate(state);
+		useTaskDueDate(task, state);
 	const handleButtonClick = () => {
 		//BUG: Positioning is not aligned with the button on Firefox
 		dateInputRef.current?.showPicker();
@@ -200,12 +207,13 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ state }) => {
 	);
 };
 interface MoreOptionsProp {
+	task: Task;
 	state: TaskComponentState;
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
-const MoreOptions: React.FC<MoreOptionsProp> = ({ state, dispatch }) => {
+const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
-	const popOverID = `popOver: ${state.task.id}`;
+	const popOverID = `popOver: ${task.id}`;
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const popoverRef = useRef<HTMLDivElement>(null);
 	//Prevent flickering as the popover position is changed
@@ -219,14 +227,14 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ state, dispatch }) => {
 		});
 	};
 	const onConfirmClicked = () => {
-		if (state.task.label !== state.inputTaskName) {
+		if (task.label !== state.inputTaskName) {
 			dispatch({ type: "MUTATE_LOADING", payload: true });
-			updateTask({ ...state.task, label: state.inputTaskName })
+			updateTask({ ...task, label: state.inputTaskName })
 				.then(() => {
 					dispatch({ type: "MUTATE_LOADING", payload: false });
 				})
 				.catch((err: unknown) => {
-					dispatch({ type: "MUTATE_INPUT", payload: state.task.label });
+					dispatch({ type: "MUTATE_INPUT", payload: task.label });
 					dispatch({ type: "MUTATE_LOADING", payload: false });
 					if (err instanceof Error) {
 						console.error(`Error updating task: ${err}`);
@@ -309,7 +317,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ state, dispatch }) => {
 			>
 				<button
 					onClick={() => {
-						onTrashButtonClicked(state.task);
+						onTrashButtonClicked(task);
 					}}
 					type="button"
 				>

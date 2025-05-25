@@ -1,7 +1,4 @@
-import type { Task } from "@/schemas/taskList";
-
 export interface TaskComponentState {
-	task: Task;
 	inputTaskName: string;
 	editable: boolean;
 	isLoading: boolean;
