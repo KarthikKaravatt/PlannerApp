@@ -10,8 +10,10 @@ const AutoResizeTextInput: React.FC<AutoResizeTextInputProps> = ({
 	readOnly,
 	className,
 	onDoubleClick,
+	placeholder,
 }) => {
 	const textAreaRef = useRef<HTMLTextAreaElement>(null);
+	//BUG: When the screen size changes the component size does not adjust
 	useEffect(() => {
 		const textArea = textAreaRef.current;
 		if (textArea && value) {
@@ -24,13 +26,14 @@ const AutoResizeTextInput: React.FC<AutoResizeTextInputProps> = ({
 	return (
 		<textarea
 			onDoubleClick={onDoubleClick}
+			placeholder={placeholder}
 			readOnly={readOnly}
 			// Default is like 3 for some reason
 			rows={1}
 			onChange={onChange}
 			value={value}
 			ref={textAreaRef}
-			className={`resize-none ${className ?? ""}`}
+			className={`overflow-hidden resize-none ${className ?? ""}`}
 		/>
 	);
 };

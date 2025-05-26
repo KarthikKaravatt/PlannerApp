@@ -12,7 +12,7 @@ export const taskComponentReducer = (
 			return {
 				...state,
 				//Remove new lines and normalise spaces
-				inputTaskName: action.payload.replace(/\n/g, " ").replace(/\s+/g, " "),
+				inputTaskName: action.payload.replace(/\s+/g, " "),
 			};
 		case "MUTATE_LOADING":
 			return { ...state, isLoading: action.payload };

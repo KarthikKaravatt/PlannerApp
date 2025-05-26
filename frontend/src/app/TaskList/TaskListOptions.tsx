@@ -1,8 +1,6 @@
 import { useClearCompletedTasksMutation } from "@/redux/api/apiSlice";
 import type { FILTER_OPTION, SORT_OPTION } from "@/types/taskList";
 import type { ChangeEvent } from "react";
-import { FaFilter } from "react-icons/fa6";
-import { MdClearAll } from "react-icons/md";
 
 export interface TaskListOptionsProp {
 	filterState: FILTER_OPTION;
@@ -44,8 +42,8 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 		<div
 			className="
         flex items-stretch justify-between
-        w-75 gap-2 pb-2
-        text-xs text-blue-950 dark:text-white
+        w-full gap-1
+        text-blue-950 dark:text-white
       "
 		>
 			<button
@@ -55,11 +53,10 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
           items-center justify-center
           rounded-md shadow-sm
           border border-gray-300
-          p-2 text-center
+          text-center
         "
 				onClick={onFilterButtonClick}
 			>
-				<FaFilter className="mb-0.5 h-4 w-4" />
 				{filterState[0] + filterState.slice(1).toLocaleLowerCase()}
 			</button>
 
@@ -70,20 +67,18 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
           items-center justify-center 
           rounded-md border border-gray-300 
           text-center shadow-sm 
-          p-2 
         "
 				onClick={onClearButtonClick}
 			>
-				<MdClearAll className="mb-0.5 h-4 w-4" />
 				Clear
 			</button>
 
 			<div
 				className="
           flex flex-1 flex-col 
-          items-stretch justify-center 
+          items-center justify-center 
           rounded-md border border-gray-300 
-          p-2 shadow-sm
+          shadow-sm
         "
 			>
 				<select
@@ -91,10 +86,11 @@ const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 					name="sort"
 					onChange={onSortOrderChanged}
 					className="
-              block w-full rounded-md 
+              block rounded-md 
               border-gray-300 
               dark:bg-dark-background-c
-              py-1.5 text-center 
+              text-center
+              w-full         
             "
 				>
 					<option value={"CUSTOM"}>Custom</option>

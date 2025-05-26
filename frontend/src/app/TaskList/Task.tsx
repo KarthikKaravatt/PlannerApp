@@ -35,19 +35,17 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 	return (
 		<div
 			className={`
-        flex items-center 
         dark:bg-dark-background-c bg-sky-100 
         ${state.isLoading ? "dark:text-gray-300" : "dark:text-white"}
         ${state.isLoading ? "text-gray-400" : "text-blue-950"}
         dark:border-white border-gray-300 
         border-2
-        rounded-lg h-fit w-75
+        rounded-lg
         shadow
       `}
 		>
-			<li
+			<div
 				draggable={!state.editable}
-				key={task.id}
 				className="flex flex-row gap-2 items-center pr-2 pl-2"
 				onDragStart={(event) => {
 					onDragStart(task, event);
@@ -63,7 +61,7 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 				<InputField task={task} state={state} dispatch={dispatch} />
 				<DueDateDisplay task={task} state={state} />
 				<MoreOptions task={task} state={state} dispatch={dispatch} />
-			</li>
+			</div>
 		</div>
 	);
 };
@@ -111,9 +109,9 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 				}
 				className={`
           ${state.editable ? "opacity-0" : "opacity-100"}
-          w-6.5 h-4.5 
+          w-4.5 h-3.5 
           ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
-          rounded-full text-xl border-2 
+          rounded-full border-2 
           ${task.completed ? "border-green-900" : "border-gray-500"}
           ${isInteractive ? "cursor-pointer" : "cursor-default"}
           ${isLoading ? "opacity-50" : ""}
@@ -143,8 +141,7 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 		<AutoResizeTextInput
 			value={state.editable ? state.inputTaskName : task.label}
 			className={`
-        p-0.5
-        w-full outline-none 
+        w-full outline-none leading-tight
         ${state.editable ? "caret-gray-400" : "caret-blue-100 dark:caret-dark-background-c"}
       `}
 			readOnly={!state.editable}
@@ -180,8 +177,9 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
 				className={`
           ${isLoading ? "dark:text-gray-300" : "dark:text-white"}
           ${isLoading ? "text-gray-400" : "text-blue-950"}
-          text-xs p-2
           ${state.editable ? "opacity-0" : "opacity-100"}
+          text-xs
+          w-15
         `}
 			>
 				<button type="button" onClick={handleButtonClick}>
@@ -213,7 +211,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 	//Prevent flickering as the popover position is changed
 	const [isHidden, setIsHidden] = useState(true);
 	const [deleteTask] = useDeleteTaskMutation();
-	const onTrashButtonClicked = (task: Task) => {
+	const onDeleteButtonClicked = (task: Task) => {
 		deleteTask(task.id).catch((err: unknown) => {
 			if (err instanceof Error) {
 				console.error(`Error removing tasks:${err}`);
@@ -258,7 +256,8 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				buttonRect.left +
 					buttonRect.width / 2 -
 					popoverElement.offsetWidth / 2 +
-					window.scrollX
+					window.scrollX -
+					30
 			).toString()}px`;
 			setIsHidden(false);
 		} else {
@@ -270,8 +269,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 		<>
 			<div
 				className="
-          flex flex-row items-center gap-0
-          text-xl
+          flex flex-row items-center
         "
 			>
 				<button
@@ -285,7 +283,6 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				<button
 					type="button"
 					className={`"
-            text-sm 
             ${isLoading || state.isLoading ? "text-gray-400" : "text-green-700 dark:text-green-400 "}
           "`}
 					hidden={!state.editable}
@@ -300,18 +297,18 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				id={popOverID}
 				popover="auto"
 				className="
-          absolute align-middle
+          align-middle
           dark:text-white
           dark:bg-dark-background-c bg-blue-100
           border-2 border-gray-300 dark:border-gray-200
-          p-1 rounded
+          rounded
         "
 				style={{ inset: "unset" }}
 				onToggle={handlePopoverToggle}
 			>
 				<button
 					onClick={() => {
-						onTrashButtonClicked(task);
+						onDeleteButtonClicked(task);
 					}}
 					type="button"
 				>

@@ -8,7 +8,11 @@ export const Route = createFileRoute("/planner/")({
 function Planner() {
 	return (
 		<>
-			<TaskListComponent />
+			<div className="flex items-center justify-center w-full h-full">
+				<div className="w-full h-full overflow-scroll">
+					<TaskListComponent />
+				</div>
+			</div>
 		</>
 	);
 }

@@ -12,7 +12,7 @@ const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FILTER_OPTION>("ALL");
 	const [sortOption, setSortOption] = useState<SORT_OPTION>("CUSTOM");
 	return (
-		<div className="p-2 flex flex-col items-center gap-1">
+		<div className="text-sm p-2 flex flex-col items-center gap-1 h-full w-full">
 			<TaskListOptions
 				filterState={filterOption}
 				setFilterState={setFilterOption}
@@ -22,6 +22,47 @@ const TaskListComponent: React.FC = () => {
 			<VisibleTasks sortOption={sortOption} filterOption={filterOption} />
 		</div>
 	);
+};
+
+interface ViibleTasksProp {
+	filterOption: FILTER_OPTION;
+	sortOption: SORT_OPTION;
+}
+
+const VisibleTasks: React.FC<ViibleTasksProp> = ({
+	filterOption,
+	sortOption,
+}) => {
+	const {
+		data: tasks = [],
+		isLoading,
+		isSuccess,
+		isError,
+		error,
+	} = useGetTasksQuery();
+	if (isLoading) {
+		return <FaSpinner className="text-blue950 dark:text-white" />;
+	}
+	if (isSuccess) {
+		const filteredList = getFinalList(tasks, filterOption, sortOption);
+		//TODO: Adding new tasks makes the page larger. This means the tasks
+		//options component is not visible anymore. Need a way of making this
+		//component scrollable and not the page, need a way of having a limit of
+		//tasks that are displayed.
+		return (
+			<ul className="overflow-scroll w-full">
+				{filteredList.map((item) => (
+					<li key={item.id}>
+						<TaskComponent item={item} />
+					</li>
+				))}
+			</ul>
+		);
+	}
+	if (isError) {
+		console.log(error);
+		return <p>Error: Failed to fetch tasks</p>;
+	}
 };
 
 function getFinalList(
@@ -65,44 +106,5 @@ function getFinalList(
 		});
 	return filteredList;
 }
-
-interface ViibleTasksProp {
-	filterOption: FILTER_OPTION;
-	sortOption: SORT_OPTION;
-}
-
-const VisibleTasks: React.FC<ViibleTasksProp> = ({
-	filterOption,
-	sortOption,
-}) => {
-	const {
-		data: tasks = [],
-		isLoading,
-		isSuccess,
-		isError,
-		error,
-	} = useGetTasksQuery();
-	if (isLoading) {
-		return <FaSpinner className="text-blue950 dark:text-white" />;
-	}
-	if (isSuccess) {
-		const filteredList = getFinalList(tasks, filterOption, sortOption);
-		//TODO: Adding new tasks makes the page larger. This means the tasks
-		//options component is not visible anymore. Need a way of making this
-		//component scrollable and not the page, need a way of having a limit of
-		//tasks that are displayed.
-		return (
-			<ul className="flex flex-col gap-1.5">
-				{filteredList.map((item) => (
-					<TaskComponent key={item.id} item={item} />
-				))}
-			</ul>
-		);
-	}
-	if (isError) {
-		console.log(error);
-		return <p>Error: Failed to fetch tasks</p>;
-	}
-};
 
 export default TaskListComponent;

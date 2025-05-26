@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import type { Task } from "@/schemas/taskList";
 import type { NewTask } from "../tasks/tasksListSlice";
-const apiURL: string | undefined = import.meta.env.VITE_BACKEND_APP_API_URL;
+const apiURL: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
 export const apiSlice = createApi({
 	reducerPath: "api",
