@@ -59,12 +59,8 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 					onDrop(event);
 				}}
 			>
-				<div className="flex items-baseline gap-x-2">
-					<div className="relative top-[0.2rem]">
-						<CheckBox task={task} state={state} dispatch={dispatch} />
-					</div>
-					<InputField task={task} state={state} dispatch={dispatch} />
-				</div>
+				<CheckBox task={task} state={state} dispatch={dispatch} />
+				<InputField task={task} state={state} dispatch={dispatch} />
 				<DueDateDisplay task={task} state={state} />
 				<MoreOptions task={task} state={state} dispatch={dispatch} />
 			</li>
@@ -114,7 +110,8 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 						: undefined
 				}
 				className={`
-          w-4.5 h-4.5 
+          ${state.editable ? "opacity-0" : "opacity-100"}
+          w-6.5 h-4.5 
           ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
           rounded-full text-xl border-2 
           ${task.completed ? "border-green-900" : "border-gray-500"}
@@ -184,6 +181,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
           ${isLoading ? "dark:text-gray-300" : "dark:text-white"}
           ${isLoading ? "text-gray-400" : "text-blue-950"}
           text-xs p-2
+          ${state.editable ? "opacity-0" : "opacity-100"}
         `}
 			>
 				<button type="button" onClick={handleButtonClick}>
@@ -273,13 +271,14 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 			<div
 				className="
           flex flex-row items-center gap-0
+          text-xl
         "
 			>
 				<button
 					ref={buttonRef}
 					popoverTarget={popOverID}
 					type="button"
-					className="text-lg"
+					hidden={state.editable}
 				>
 					<BsThreeDots className="text-blue-950 dark:text-white" />
 				</button>
@@ -288,7 +287,6 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 					className={`"
             text-sm 
             ${isLoading || state.isLoading ? "text-gray-400" : "text-green-700 dark:text-green-400 "}
-            pl-2
           "`}
 					hidden={!state.editable}
 					onClick={onConfirmClicked}
@@ -303,7 +301,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				popover="auto"
 				className="
           absolute align-middle
-          text-xs dark:text-white
+          dark:text-white
           dark:bg-dark-background-c bg-blue-100
           border-2 border-gray-300 dark:border-gray-200
           p-1 rounded
