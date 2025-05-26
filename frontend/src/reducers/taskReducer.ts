@@ -9,7 +9,7 @@ export const taskComponentReducer = (
 ): TaskComponentState => {
 	switch (action.type) {
 		case "MUTATE_INPUT":
-			return { ...state, inputTaskName: action.payload };
+			return { ...state, inputTaskName: action.payload.replace(/\n/g, " ") };
 		case "MUTATE_LOADING":
 			return { ...state, isLoading: action.payload };
 		case "MUTATE_EDITABLE":

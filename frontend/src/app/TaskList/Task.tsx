@@ -14,6 +14,7 @@ import type {
 import { useReducer, useRef, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa6";
+import AutoResizeTextInput from "../General/AutoResizeTextArea";
 
 export interface TaskProp {
 	item: Task;
@@ -40,12 +41,12 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
         ${state.isLoading ? "text-gray-400" : "text-blue-950"}
         dark:border-white border-gray-300 
         border-2
-        rounded-lg h-10 w-75
+        rounded-lg h-fit w-75
         shadow
       `}
 		>
 			<li
-				draggable={true}
+				draggable={!state.editable}
 				key={task.id}
 				className="flex flex-row gap-2 items-center pr-2 pl-2"
 				onDragStart={(event) => {
@@ -58,13 +59,12 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 					onDrop(event);
 				}}
 			>
-				<CheckBox task={task} state={state} dispatch={dispatch} />
-				{/* BUG:: prevent text from overflowing
-            Because this is an input text that is too long
-            will overflow. Either use triple dots or wrap
-            the text, splitting it into multiple lines.
-        */}
-				<InputField task={task} state={state} dispatch={dispatch} />
+				<div className="flex items-baseline gap-x-2">
+					<div className="relative top-[0.2rem]">
+						<CheckBox task={task} state={state} dispatch={dispatch} />
+					</div>
+					<InputField task={task} state={state} dispatch={dispatch} />
+				</div>
 				<DueDateDisplay task={task} state={state} />
 				<MoreOptions task={task} state={state} dispatch={dispatch} />
 			</li>
@@ -114,7 +114,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 						: undefined
 				}
 				className={`
-          w-5.5 h-4.5 
+          w-4.5 h-4.5 
           ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
           rounded-full text-xl border-2 
           ${task.completed ? "border-green-900" : "border-gray-500"}
@@ -143,23 +143,21 @@ interface InputFieldProps {
 }
 const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 	return (
-		<input
+		<AutoResizeTextInput
+			value={state.editable ? state.inputTaskName : task.label}
 			className={`
-            w-full 
-            outline-none 
-            ${!state.editable ? "dark:caret-dark-background-c" : "dark:caret-white"}
-            ${!state.editable ? "caret-blue-100" : "caret-gray-400"}
-          `}
+        p-0.5
+        w-full outline-none 
+        ${state.editable ? "caret-gray-400" : "caret-blue-100 dark:caret-dark-background-c"}
+      `}
 			readOnly={!state.editable}
 			onDoubleClick={() => {
 				dispatch({ type: "MUTATE_INPUT", payload: task.label });
 				dispatch({ type: "MUTATE_EDITABLE", payload: true });
 			}}
-			type="text"
 			onChange={(event) => {
 				dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
 			}}
-			value={state.editable ? state.inputTaskName : task.label}
 		/>
 	);
 };
