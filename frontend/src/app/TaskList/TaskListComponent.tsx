@@ -12,7 +12,7 @@ const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FILTER_OPTION>("ALL");
 	const [sortOption, setSortOption] = useState<SORT_OPTION>("CUSTOM");
 	return (
-		<div className="text-sm p-2 flex flex-col items-center gap-1 h-full w-full">
+		<div className="p-2 flex flex-col items-center gap-1 h-full w-full">
 			<TaskListOptions
 				filterState={filterOption}
 				setFilterState={setFilterOption}

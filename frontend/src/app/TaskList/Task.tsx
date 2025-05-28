@@ -39,7 +39,7 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
         ${state.isLoading ? "dark:text-gray-300" : "dark:text-white"}
         ${state.isLoading ? "text-gray-400" : "text-blue-950"}
         dark:border-white border-gray-300 
-        border-2
+        border-1
         rounded-lg
         shadow
       `}
@@ -141,7 +141,7 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 		<AutoResizeTextInput
 			value={state.editable ? state.inputTaskName : task.label}
 			className={`
-        w-full outline-none leading-tight
+        w-full outline-none leading-4.5
         ${state.editable ? "caret-gray-400" : "caret-blue-100 dark:caret-dark-background-c"}
       `}
 			readOnly={!state.editable}
@@ -298,7 +298,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				popover="auto"
 				className="
           align-middle
-          dark:text-white
+          text-blue-950 dark:text-white
           dark:bg-dark-background-c bg-blue-100
           border-2 border-gray-300 dark:border-gray-200
           rounded
