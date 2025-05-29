@@ -1,16 +1,15 @@
 import { useDragAndDrop } from "@/hooks/taslkList/useDragAndDrop";
+import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
-import {
-	useDeleteTaskMutation,
-	useUpdateTaskMutation,
-} from "@/redux/api/apiSlice";
+import { useUpdateTaskMutation } from "@/redux/api/apiSlice";
 import type { Task } from "@/schemas/taskList";
 import type {} from "@/types/taskList";
 import type {
 	TaskComponentAction,
 	TaskComponentState,
 } from "@/types/taskReducer";
+import { DateTime } from "luxon";
 import { useReducer, useRef, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa6";
@@ -20,10 +19,21 @@ export interface TaskProp {
 	item: Task;
 }
 const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
+	const dateFormat = "dd LLL";
+	const formatedDate = (() => {
+		if (task.kind === "withDate") {
+			if (DateTime.fromISO(task.dueDate).isValid) {
+				return DateTime.fromISO(task.dueDate).toFormat(dateFormat);
+			}
+			return DateTime.now().toFormat(dateFormat);
+		}
+		return "";
+	})();
 	const initalTaskComponentState: TaskComponentState = {
 		inputTaskName: task.label,
 		editable: false,
 		isLoading: false,
+		formatedDate: formatedDate,
 	};
 	const [state, dispatch] = useReducer(
 		taskComponentReducer,
@@ -59,7 +69,7 @@ const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 			>
 				<CheckBox task={task} state={state} dispatch={dispatch} />
 				<InputField task={task} state={state} dispatch={dispatch} />
-				<DueDateDisplay task={task} state={state} />
+				<DueDateDisplay task={task} state={state} dispatch={dispatch} />
 				<MoreOptions task={task} state={state} dispatch={dispatch} />
 			</div>
 		</div>
@@ -158,11 +168,15 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 interface DueDateProp {
 	task: Task;
 	state: TaskComponentState;
+	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
-const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
+const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
 	const dateInputRef = useRef<HTMLInputElement>(null);
-	const { isLoading, formatedDate, inputDate, onDateButtonClicked } =
-		useTaskDueDate(task, state);
+	const { isLoading, inputDate, onDateButtonClicked } = useTaskDueDate(
+		task,
+		state,
+		dispatch,
+	);
 	const handleButtonClick = () => {
 		//BUG: Positioning is not aligned with the button on Firefox
 		dateInputRef.current?.showPicker();
@@ -183,7 +197,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
         `}
 			>
 				<button type="button" onClick={handleButtonClick}>
-					{formatedDate}
+					{state.formatedDate}
 				</button>
 				<input
 					type="datetime-local"
@@ -204,37 +218,17 @@ interface MoreOptionsProp {
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
-	const [updateTask, { isLoading }] = useUpdateTaskMutation();
 	const popOverID = `popOver: ${task.id}`;
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const popoverRef = useRef<HTMLDivElement>(null);
 	//Prevent flickering as the popover position is changed
 	const [isHidden, setIsHidden] = useState(true);
-	const [deleteTask] = useDeleteTaskMutation();
-	const onDeleteButtonClicked = (task: Task) => {
-		deleteTask(task.id).catch((err: unknown) => {
-			if (err instanceof Error) {
-				console.error(`Error removing tasks:${err}`);
-			}
-		});
-	};
-	const onConfirmClicked = () => {
-		if (task.label !== state.inputTaskName) {
-			dispatch({ type: "MUTATE_LOADING", payload: true });
-			updateTask({ ...task, label: state.inputTaskName })
-				.then(() => {
-					dispatch({ type: "MUTATE_LOADING", payload: false });
-				})
-				.catch((err: unknown) => {
-					dispatch({ type: "MUTATE_INPUT", payload: task.label });
-					dispatch({ type: "MUTATE_LOADING", payload: false });
-					if (err instanceof Error) {
-						console.error(`Error updating task: ${err}`);
-					}
-				});
-		}
-		dispatch({ type: "MUTATE_EDITABLE", payload: false });
-	};
+	const {
+		isLoading,
+		handleConfirmClick,
+		handleDeleteButtonClick,
+		handleRemoveDateClicked,
+	} = useMoreOptions(task, state, dispatch);
 
 	const handlePopoverToggle = (event: React.SyntheticEvent<HTMLDivElement>) => {
 		const popoverElement = popoverRef.current;
@@ -257,7 +251,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 					buttonRect.width / 2 -
 					popoverElement.offsetWidth / 2 +
 					window.scrollX -
-					30
+					65
 			).toString()}px`;
 			setIsHidden(false);
 		} else {
@@ -286,7 +280,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
             ${isLoading || state.isLoading ? "text-gray-400" : "text-green-700 dark:text-green-400 "}
           "`}
 					hidden={!state.editable}
-					onClick={onConfirmClicked}
+					onClick={handleConfirmClick}
 				>
 					<FaCheck />
 				</button>
@@ -306,13 +300,16 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				style={{ inset: "unset" }}
 				onToggle={handlePopoverToggle}
 			>
-				<button
-					onClick={() => {
-						onDeleteButtonClicked(task);
-					}}
-					type="button"
-				>
-					Delete
+				<div>
+					<button onClick={handleDeleteButtonClick} type="button">
+						Delete
+					</button>
+				</div>
+				<hr />
+				<button type="button">Add Date</button>
+				<hr />
+				<button type="button" onClick={handleRemoveDateClicked}>
+					Remove Date
 				</button>
 			</div>
 		</>

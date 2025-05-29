@@ -1,10 +1,17 @@
+import { ApiResponseTaskSchema, type Task } from "@/schemas/taskList";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-import type { Task } from "@/schemas/taskList";
-import type { NewTask } from "../tasks/tasksListSlice";
+import { z } from "zod/v4";
 const apiURL: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
+interface NewTaskRequestWithoutDate {
+	label: string;
+	completed: boolean;
+}
+interface NewTaskRequestWithDate extends NewTaskRequestWithoutDate {
+	dueDate: string;
+}
+type NewTaskRequest = NewTaskRequestWithDate | NewTaskRequestWithoutDate;
 export const apiSlice = createApi({
 	reducerPath: "api",
 	baseQuery: fetchBaseQuery({ baseUrl: apiURL }),
@@ -12,6 +19,28 @@ export const apiSlice = createApi({
 	endpoints: (builder) => ({
 		getTasks: builder.query<Task[], void>({
 			query: () => "",
+			transformResponse: (response) => {
+				const transformedTaskSchema = z
+					.array(ApiResponseTaskSchema)
+					.transform((data) => {
+						return data.map((t) => {
+							if ("dueDate" in t) {
+								return { ...t, kind: "withDate" } as Task;
+							}
+							return { ...t, kind: "withoutDate" } as Task;
+						});
+					});
+
+				const result = transformedTaskSchema.safeParse(response);
+
+				if (result.success) {
+					return result.data;
+				}
+				console.error("Validation error:", result.error);
+				throw new Error(
+					"Failed to validate API response. Data format is incorrect.",
+				);
+			},
 			//TODO: Need to look into making this better. changing anything about
 			//tasks causes a re-fetch of all tasks
 			providesTags: ["Tasks"],
@@ -21,11 +50,11 @@ export const apiSlice = createApi({
 				url: `/${id}`,
 			}),
 		}),
-		addNewTask: builder.mutation<Task, NewTask>({
-			query: (initialPost) => ({
+		addNewTask: builder.mutation<Task, NewTaskRequest>({
+			query: (initialTask) => ({
 				url: "",
 				method: "POST",
-				body: initialPost,
+				body: initialTask,
 			}),
 			// TODO : Make this optimistic
 			// async onQueryStarted() {
@@ -55,11 +84,28 @@ export const apiSlice = createApi({
 			invalidatesTags: ["Tasks"],
 		}),
 		updateTask: builder.mutation<void, Task>({
-			query: (task) => ({
-				url: `/${task.id}`,
-				method: "PUT",
-				body: task,
-			}),
+			query: (task) => {
+				type TaskRequest = Omit<Task, "kind"> & {
+					dueDate: string | null;
+				};
+				let newBody: TaskRequest;
+				switch (task.kind) {
+					case "withDate": {
+						const { kind: _kind, ...transformedBody } = task;
+						newBody = transformedBody;
+						break;
+					}
+					case "withoutDate": {
+						const { kind: _kind, ...transformedBody } = task;
+						newBody = { dueDate: null, ...transformedBody };
+					}
+				}
+				return {
+					url: `/${task.id}`,
+					method: "PUT",
+					body: newBody,
+				};
+			},
 			async onQueryStarted(task, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
@@ -68,7 +114,6 @@ export const apiSlice = createApi({
 						);
 						if (taskIndex !== -1) {
 							draftTasks[taskIndex] = {
-								...draftTasks[taskIndex],
 								...task,
 							};
 						}

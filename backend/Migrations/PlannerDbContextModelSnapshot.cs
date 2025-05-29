@@ -26,7 +26,7 @@ namespace backend.Migrations
                     b.Property<bool>("Completed")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTimeOffset>("DueDate")
+                    b.Property<DateTimeOffset?>("DueDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Label")

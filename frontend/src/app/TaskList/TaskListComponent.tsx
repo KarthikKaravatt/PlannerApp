@@ -82,24 +82,29 @@ function getFinalList(
 			}
 		})
 		.sort((a, b) => {
-			const aDate = DateTime.fromISO(a.dueDate);
-			const bDate = DateTime.fromISO(b.dueDate);
 			switch (sortState) {
 				case "CUSTOM": {
 					const aIndex = a.orderIndex;
 					const bIndex = b.orderIndex;
-					let pos = aIndex - bIndex;
 					if (aIndex === -1 && bIndex === -1) {
-						pos = 0;
-					} else if (aIndex === -1) {
-						pos = 1;
-					} else if (bIndex === -1) {
-						pos = -1;
+						return 0;
 					}
-					return pos;
+					if (aIndex === -1) {
+						return 1;
+					}
+					if (bIndex === -1) {
+						return -1;
+					}
+					return aIndex - bIndex;
 				}
-				case "DATE":
-					return aDate.toMillis() - bDate.toMillis();
+				case "DATE": {
+					if (a.kind === "withDate" && b.kind === "withDate") {
+						const aDate = DateTime.fromISO(a.dueDate);
+						const bDate = DateTime.fromISO(b.dueDate);
+						return aDate.toMillis() - bDate.toMillis();
+					}
+					return 0;
+				}
 				case "NAME":
 					return a.label.localeCompare(b.label);
 			}

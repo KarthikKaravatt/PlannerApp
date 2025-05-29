@@ -37,7 +37,7 @@ void Main()
             ? Results.Ok(task)
             : Results.NotFound()
     );
-    // Change a task
+    // Update a task
     app.MapPut("/api/tasks/{id:guid}", async (PlannerDbContext db, Task taskUpload) =>
     {
         var oldTask = await db.TaskList.FindAsync(taskUpload.Id);

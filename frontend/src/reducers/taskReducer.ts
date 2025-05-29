@@ -2,6 +2,7 @@ import type {
 	TaskComponentAction,
 	TaskComponentState,
 } from "@/types/taskReducer";
+import { DateTime } from "luxon";
 
 export const taskComponentReducer = (
 	state: TaskComponentState,
@@ -18,5 +19,15 @@ export const taskComponentReducer = (
 			return { ...state, isLoading: action.payload };
 		case "MUTATE_EDITABLE":
 			return { ...state, editable: action.payload };
+		case "MUTATE_FORMATED_DATE": {
+			const dateFormat = "dd LLL";
+			const formatedDate = (() => {
+				if (DateTime.fromISO(action.payload).isValid) {
+					return DateTime.fromISO(action.payload).toFormat(dateFormat);
+				}
+				return "";
+			})();
+			return { ...state, formatedDate: formatedDate };
+		}
 	}
 };
