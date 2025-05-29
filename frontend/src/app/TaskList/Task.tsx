@@ -225,9 +225,10 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 	const [isHidden, setIsHidden] = useState(true);
 	const {
 		isLoading,
-		handleConfirmClick,
+		handleConfirmButtonClick,
 		handleDeleteButtonClick,
-		handleRemoveDateClicked,
+		handleAddDateButtonClicked,
+		handleRemoveButtonDateClicked,
 	} = useMoreOptions(task, state, dispatch);
 
 	const handlePopoverToggle = (event: React.SyntheticEvent<HTMLDivElement>) => {
@@ -280,7 +281,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
             ${isLoading || state.isLoading ? "text-gray-400" : "text-green-700 dark:text-green-400 "}
           "`}
 					hidden={!state.editable}
-					onClick={handleConfirmClick}
+					onClick={handleConfirmButtonClick}
 				>
 					<FaCheck />
 				</button>
@@ -301,14 +302,16 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				onToggle={handlePopoverToggle}
 			>
 				<div>
+					<button type="button" onClick={handleAddDateButtonClicked}>
+						Add Date
+					</button>
+					<hr />
 					<button onClick={handleDeleteButtonClick} type="button">
 						Delete
 					</button>
 				</div>
 				<hr />
-				<button type="button">Add Date</button>
-				<hr />
-				<button type="button" onClick={handleRemoveDateClicked}>
+				<button type="button" onClick={handleRemoveButtonDateClicked}>
 					Remove Date
 				</button>
 			</div>

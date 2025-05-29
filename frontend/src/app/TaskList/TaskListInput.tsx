@@ -1,5 +1,4 @@
 import { useAddNewTaskMutation } from "@/redux/api/apiSlice";
-import { DateTime } from "luxon";
 import { type ChangeEvent, useState } from "react";
 import AutoResizeTextInput from "../General/AutoResizeTextArea";
 
@@ -12,7 +11,6 @@ const InputTask: React.FC = () => {
 	const onAddButtonClick = () => {
 		addNewTask({
 			label: inputTask,
-			dueDate: DateTime.now().toISO(),
 			completed: false,
 		})
 			.then(() => {
