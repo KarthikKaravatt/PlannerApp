@@ -14,7 +14,7 @@ import type {
 import { useReducer, useRef, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa6";
-import AutoResizeTextArea from "../General/AutoResizeTextArea";
+import AutoResizeTextInput from "../General/AutoResizeTextArea";
 
 export interface TaskProp {
 	item: Task;
@@ -138,7 +138,7 @@ interface InputFieldProps {
 }
 const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 	return (
-		<AutoResizeTextArea
+		<AutoResizeTextInput
 			value={state.editable ? state.inputTaskName : task.label}
 			className={`
         w-full outline-none leading-4.5

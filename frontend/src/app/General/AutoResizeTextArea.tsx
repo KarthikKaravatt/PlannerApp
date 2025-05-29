@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const AutoResizeTextArea: React.FC<
+const AutoResizeTextInput: React.FC<
 	React.ComponentPropsWithoutRef<"textarea">
 > = ({
 	value,
@@ -60,4 +60,4 @@ const AutoResizeTextArea: React.FC<
 	);
 };
 
-export default AutoResizeTextArea;
+export default AutoResizeTextInput;
