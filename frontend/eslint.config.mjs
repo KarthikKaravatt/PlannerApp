@@ -9,6 +9,7 @@ export default tseslint.config({
 	files: ["**/*.ts", "**/*.tsx"],
 	extends: [
 		eslintJs.configs.recommended,
+		tseslint.configs.recommended,
 		tseslint.configs.strictTypeChecked,
 		tseslint.configs.stylisticTypeChecked,
 		eslintReact.configs["recommended-type-checked"],

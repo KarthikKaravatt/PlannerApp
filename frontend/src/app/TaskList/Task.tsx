@@ -142,7 +142,7 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 			value={state.editable ? state.inputTaskName : task.label}
 			className={`
         w-full outline-none leading-4.5
-        ${state.editable ? "caret-gray-400" : "caret-blue-100 dark:caret-dark-background-c"}
+        ${state.editable ? "caret-gray-400" : "caret-transparent"}
       `}
 			readOnly={!state.editable}
 			onDoubleClick={() => {
