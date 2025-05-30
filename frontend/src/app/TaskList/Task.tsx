@@ -254,6 +254,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 					buttonRect.width / 2 -
 					popoverElement.offsetWidth / 2 +
 					window.scrollX -
+					//Offset
 					70
 			).toString()}px`;
 			setIsHidden(false);

@@ -2,6 +2,7 @@ import { ApiResponseTaskSchema, type Task } from "@/schemas/taskList";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { z } from "zod/v4";
+import { v4 as uuidv4 } from "uuid";
 const apiURL: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
 interface NewTaskRequestWithoutDate {
@@ -57,9 +58,23 @@ export const apiSlice = createApi({
 				body: initialTask,
 			}),
 			// TODO : Make this optimistic
-			// async onQueryStarted() {
-			//
-			// },
+			async onQueryStarted(taskRequest, { dispatch, queryFulfilled }) {
+				const patchResult = dispatch(
+					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
+						const task: Task = {
+							id: uuidv4(),
+							kind: "withoutDate",
+							orderIndex: draftTasks.length,
+							...taskRequest,
+						};
+						draftTasks.push(task);
+					}),
+				);
+				await queryFulfilled.catch(() => {
+					console.error("Error adding task");
+					patchResult.undo();
+				});
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 		deleteTask: builder.mutation<void, string>({
