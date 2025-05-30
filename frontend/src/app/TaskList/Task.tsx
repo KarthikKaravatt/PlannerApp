@@ -181,9 +181,11 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
 		//BUG: Positioning is not aligned with the button on Firefox
 		dateInputRef.current?.showPicker();
 	};
-	//TODO: This should be optional not all tasks have a new data
 	//TODO: task due in the current week should only display the day of the week
 	//TODO: change colour based on how soon it's due
+	if (state.formatedDate === "") {
+		return <></>;
+	}
 
 	return (
 		<>
@@ -252,7 +254,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 					buttonRect.width / 2 -
 					popoverElement.offsetWidth / 2 +
 					window.scrollX -
-					65
+					70
 			).toString()}px`;
 			setIsHidden(false);
 		} else {
@@ -292,28 +294,29 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				id={popOverID}
 				popover="auto"
 				className="
-          align-middle
+          flex flex-col     
+          justify-center
           text-blue-950 dark:text-white
           dark:bg-dark-background-c bg-blue-100
           border-2 border-gray-300 dark:border-gray-200
           rounded
+          p-0.5
         "
 				style={{ inset: "unset" }}
 				onToggle={handlePopoverToggle}
 			>
-				<div>
-					<button type="button" onClick={handleAddDateButtonClicked}>
-						Add Date
-					</button>
-					<hr />
-					<button onClick={handleDeleteButtonClick} type="button">
-						Delete
-					</button>
-				</div>
+				<button type="button" onClick={handleAddDateButtonClicked}>
+					Add Date
+				</button>
 				<hr />
 				<button type="button" onClick={handleRemoveButtonDateClicked}>
 					Remove Date
 				</button>
+				<hr />
+				<button onClick={handleDeleteButtonClick} type="button">
+					Delete
+				</button>
+				<hr />
 			</div>
 		</>
 	);
