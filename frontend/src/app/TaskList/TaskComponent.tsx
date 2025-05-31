@@ -20,21 +20,10 @@ export interface TaskProp {
 	item: Task;
 }
 export const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
-	const dateFormat = "dd LLL";
-	const formatedDate = (() => {
-		if (task.kind === "withDate") {
-			if (DateTime.fromISO(task.dueDate).isValid) {
-				return DateTime.fromISO(task.dueDate).toFormat(dateFormat);
-			}
-			return DateTime.now().toFormat(dateFormat);
-		}
-		return "";
-	})();
 	const initalTaskComponentState: TaskComponentState = {
 		inputTaskName: task.label,
 		editable: false,
 		isLoading: false,
-		formatedDate: formatedDate,
 	};
 	const [state, dispatch] = useReducer(
 		taskComponentReducer,
@@ -175,18 +164,20 @@ interface DueDateProp {
 }
 const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
 	const dateInputRef = useRef<HTMLInputElement>(null);
-	const { isLoading, inputDate, onDateButtonClicked } = useTaskDueDate(
+	const { isLoading, onDateButtonClicked } = useTaskDueDate(
 		task,
 		state,
 		dispatch,
 	);
 	const handleButtonClick = () => {
 		//BUG: Positioning is not aligned with the button on Firefox
-		dateInputRef.current?.showPicker();
+		if (dateInputRef.current) {
+			dateInputRef.current.showPicker();
+		}
 	};
 	//TODO: task due in the current week should only display the day of the week
 	//TODO: change colour based on how soon it's due
-	if (state.formatedDate === "") {
+	if (task.kind === "withoutDate") {
 		return <></>;
 	}
 
@@ -202,17 +193,20 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
         `}
 			>
 				<button type="button" onClick={handleButtonClick}>
-					{state.formatedDate}
+					{DateTime.fromISO(task.dueDate).toFormat("dd LLL")}
+
+					<input
+						type="datetime-local"
+						value={DateTime.fromISO(task.dueDate).toFormat(
+							"yyyy-MM-dd'T'HH:mm",
+						)}
+						ref={dateInputRef}
+						onChange={(event) => {
+							onDateButtonClicked(event.target.value);
+						}}
+						hidden={true}
+					/>
 				</button>
-				<input
-					type="datetime-local"
-					ref={dateInputRef}
-					value={inputDate}
-					onChange={(event) => {
-						onDateButtonClicked(event);
-					}}
-					hidden={true}
-				/>
 			</div>
 		</>
 	);
@@ -309,15 +303,33 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 				style={{ inset: "unset" }}
 				onToggle={handlePopoverToggle}
 			>
-				<button type="button" onClick={handleAddDateButtonClicked}>
+				<button
+					type="button"
+					onClick={() => {
+						setIsHidden(true);
+						handleAddDateButtonClicked();
+					}}
+				>
 					Add Date
 				</button>
 				<hr />
-				<button type="button" onClick={handleRemoveButtonDateClicked}>
+				<button
+					type="button"
+					onClick={() => {
+						setIsHidden(true);
+						handleRemoveButtonDateClicked();
+					}}
+				>
 					Remove Date
 				</button>
 				<hr />
-				<button onClick={handleDeleteButtonClick} type="button">
+				<button
+					onClick={() => {
+						setIsHidden(true);
+						handleDeleteButtonClick();
+					}}
+					type="button"
+				>
 					Delete
 				</button>
 				<hr />

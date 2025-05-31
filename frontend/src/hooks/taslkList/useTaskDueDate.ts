@@ -6,7 +6,6 @@ import type {
 } from "@/types/taskReducer";
 import { logError } from "@/util/console";
 import { DateTime } from "luxon";
-import { type ChangeEvent, useState } from "react";
 
 export const useTaskDueDate = (
 	task: Task,
@@ -14,43 +13,34 @@ export const useTaskDueDate = (
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>,
 ) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
-	const [inputDate, setInputDate] = useState(() => {
-		if (task.kind === "withDate") {
-			return DateTime.fromISO(task.dueDate).toFormat("yyyy-MM-dd'T'HH:mm");
-		}
-		return "";
-	});
-	const onDateButtonClicked = (event: ChangeEvent<HTMLInputElement>) => {
+	const onDateButtonClicked = (inputValue: string) => {
+		dispatch({ type: "MUTATE_LOADING", payload: true });
 		if (state.editable) {
 			return;
 		}
-		const date = DateTime.fromFormat(event.target.value, "yyyy-MM-dd'T'HH:mm");
+		const date = DateTime.fromFormat(inputValue, "yyyy-MM-dd'T'HH:mm");
 		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
 				if (date.isValid) {
 					const isoDate = date.toISO();
-					updateTask({ ...task, dueDate: isoDate })
-						.then(() => {
-							setInputDate(event.target.value);
-							dispatch({ type: "MUTATE_FORMATED_DATE", payload: isoDate });
-						})
-						.catch((err: unknown) => {
-							if (err instanceof Error) {
-								logError("Error updating task:", err);
-							}
-						});
+					updateTask({ ...task, dueDate: isoDate }).catch((err: unknown) => {
+						if (err instanceof Error) {
+							logError("Error updating task:", err);
+						}
+					});
 				}
+				dispatch({ type: "MUTATE_LOADING", payload: false });
 				break;
 			}
 			case "withoutDate": {
-				setInputDate("");
+				dispatch({ type: "MUTATE_LOADING", payload: false });
+				return;
 			}
 		}
 	};
 	return {
 		isLoading,
-		inputDate,
 		onDateButtonClicked,
 	};
 };

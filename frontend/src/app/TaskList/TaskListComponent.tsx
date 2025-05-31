@@ -11,12 +11,20 @@ import { TaskListOptions } from "./TaskListOptions.tsx";
 
 export const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
-	const [sortOption, setSortOption] = useState<SortOption>("CUSTOM");
+	const [sortOption, setSortOption] = useState<SortOption>(() => {
+		const selection = localStorage.getItem("SORT_OPTION") as SortOption | null;
+		if (!selection) {
+			localStorage.setItem("SORT_OPTION", "CUSTOM");
+			return "CUSTOM";
+		}
+		return selection;
+	});
 	return (
 		<div className="p-2 flex flex-col items-center gap-1 h-full w-full">
 			<TaskListOptions
 				filterState={filterOption}
 				setFilterState={setFilterOption}
+				sortOrder={sortOption}
 				setSortState={setSortOption}
 			/>
 			<TaskListInput />

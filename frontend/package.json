@@ -36,7 +36,7 @@
 		"@types/node": "^22.15.29",
 		"@types/react": "^19.1.6",
 		"@types/react-dom": "^19.1.5",
-		"@typescript/native-preview": "^7.0.0-dev.20250530.1",
+		"@typescript/native-preview": "^7.0.0-dev.20250531.1",
 		"@vitejs/plugin-react": "^4.5.0",
 		"autoprefixer": "^10.4.21",
 		"babel-plugin-react-compiler": "^19.1.0-rc.2",

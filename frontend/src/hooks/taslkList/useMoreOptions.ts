@@ -43,7 +43,6 @@ export const useMoreOptions = (
 	};
 	const handleRemoveButtonDateClicked = () => {
 		dispatch({ type: "MUTATE_LOADING", payload: false });
-		dispatch({ type: "MUTATE_FORMATED_DATE", payload: "" });
 		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
@@ -54,7 +53,6 @@ export const useMoreOptions = (
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 					})
 					.catch((err: unknown) => {
-						dispatch({ type: "MUTATE_FORMATED_DATE", payload: task.dueDate });
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 						if (err instanceof Error) {
 							logError(`Error removing date:${err}`);
@@ -69,11 +67,11 @@ export const useMoreOptions = (
 		}
 	};
 	const handleAddDateButtonClicked = () => {
-		dispatch({ type: "MUTATE_LOADING", payload: false });
-		dispatch({ type: "MUTATE_FORMATED_DATE", payload: DateTime.now().toISO() });
+		dispatch({ type: "MUTATE_LOADING", payload: true });
 		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
+				dispatch({ type: "MUTATE_LOADING", payload: false });
 				return;
 			}
 			case "withoutDate": {
@@ -88,7 +86,6 @@ export const useMoreOptions = (
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 					})
 					.catch((err: unknown) => {
-						dispatch({ type: "MUTATE_FORMATED_DATE", payload: "" });
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 						if (err instanceof Error) {
 							logError("Error removing date:", err);

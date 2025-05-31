@@ -1,20 +1,20 @@
 import { useClearCompletedTasksMutation } from "@/redux/api/apiSlice";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console";
-import type { ChangeEvent } from "react";
 
 export interface TaskListOptionsProp {
 	filterState: FilterOption;
 	setFilterState: React.Dispatch<React.SetStateAction<FilterOption>>;
+	sortOrder: SortOption;
 	setSortState: React.Dispatch<React.SetStateAction<SortOption>>;
 }
 export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 	filterState,
 	setFilterState,
+	sortOrder,
 	setSortState,
 }) => {
-	const [clearTasks] = useClearCompletedTasksMutation(); // Kept as original
-
+	const [clearTasks] = useClearCompletedTasksMutation();
 	const onFilterButtonClick = () => {
 		const filterOptions: FilterOption[] = ["ALL", "INCOMPLETE", "COMPLETE"];
 		setFilterState((prev) => {
@@ -34,11 +34,11 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 		});
 	};
 
-	const onSortOrderChanged = (event: ChangeEvent<HTMLSelectElement>) => {
-		const sortChoice = event.target.value as SortOption;
+	const onSortOrderChanged = (value: string) => {
+		const sortChoice = value as SortOption;
+		localStorage.setItem("SORT_OPTION", sortChoice.toString());
 		setSortState(sortChoice);
 	};
-
 	return (
 		<div
 			className="
@@ -84,8 +84,11 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 			>
 				<select
 					id="sort-select"
+					value={sortOrder}
 					name="sort"
-					onChange={onSortOrderChanged}
+					onChange={(event) => {
+						onSortOrderChanged(event.target.value);
+					}}
 					className="
               block rounded-md 
               border-gray-300 
