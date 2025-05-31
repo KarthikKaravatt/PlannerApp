@@ -1,4 +1,4 @@
-import TaskListComponent from "@/app/TaskList/TaskListComponent";
+import { TaskListComponent } from "@/app/TaskList/TaskListComponent";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/planner/")({

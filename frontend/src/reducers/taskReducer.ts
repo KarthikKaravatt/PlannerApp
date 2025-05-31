@@ -8,6 +8,7 @@ export const taskComponentReducer = (
 	state: TaskComponentState,
 	action: TaskComponentAction,
 ): TaskComponentState => {
+	// biome-ignore lint/style/useDefaultSwitchClause: This is using and "enum" so adding a default case means we may not deal with all cases
 	switch (action.type) {
 		case "MUTATE_INPUT":
 			return {

@@ -43,6 +43,7 @@ export const useMoreOptions = (
 	const handleRemoveButtonDateClicked = () => {
 		dispatch({ type: "MUTATE_LOADING", payload: false });
 		dispatch({ type: "MUTATE_FORMATED_DATE", payload: "" });
+		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
 				const { kind: _kind, dueDate: _dueDate, ...transformedTask } = task;
@@ -69,6 +70,7 @@ export const useMoreOptions = (
 	const handleAddDateButtonClicked = () => {
 		dispatch({ type: "MUTATE_LOADING", payload: false });
 		dispatch({ type: "MUTATE_FORMATED_DATE", payload: DateTime.now().toISO() });
+		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
 				return;

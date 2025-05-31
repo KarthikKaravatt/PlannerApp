@@ -1,9 +1,9 @@
 import { ApiResponseTaskSchema, type Task } from "@/schemas/taskList";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { z } from "zod/v4";
 import { v4 as uuidv4 } from "uuid";
-const apiURL: string = import.meta.env.VITE_BACKEND_APP_API_URL;
+import { z } from "zod/v4";
+const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
 interface NewTaskRequestWithoutDate {
 	label: string;
@@ -15,7 +15,7 @@ interface NewTaskRequestWithDate extends NewTaskRequestWithoutDate {
 type NewTaskRequest = NewTaskRequestWithDate | NewTaskRequestWithoutDate;
 export const apiSlice = createApi({
 	reducerPath: "api",
-	baseQuery: fetchBaseQuery({ baseUrl: apiURL }),
+	baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
 	tagTypes: ["Tasks"],
 	endpoints: (builder) => ({
 		getTasks: builder.query<Task[], void>({
@@ -104,6 +104,7 @@ export const apiSlice = createApi({
 					dueDate: string | null;
 				};
 				let newBody: TaskRequest;
+				// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 				switch (task.kind) {
 					case "withDate": {
 						const { kind: _kind, ...transformedBody } = task;

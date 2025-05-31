@@ -1,5 +1,6 @@
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
+// biome-ignore lint/style/useNamingConvention: default import from react
 import ReactDOM from "react-dom/client";
 import { scan } from "react-scan";
 
@@ -7,9 +8,9 @@ import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
 import { Provider } from "react-redux";
-import { ThemeProvider } from "./contexts/ThemeContext.tsx";
 import { store } from "./app/store.ts";
-import reportWebVitals from "./reportWebVitals.ts";
+import { ThemeProvider } from "./contexts/themeContext.tsx";
+import { reportWebVitals } from "./reportWebVitals.ts";
 
 scan({
 	enabled: true,

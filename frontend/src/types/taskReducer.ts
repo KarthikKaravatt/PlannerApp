@@ -5,14 +5,14 @@ export interface TaskComponentState {
 	formatedDate: string;
 }
 
-const TASK_COMPONENT_ACTIONS = {
-	MUTATE_INPUT: "MUTATE_INPUT",
-	MUTATE_LOADING: "MUTATE_LOADING",
-	MUTATE_EDITABLE: "MUTATE_EDITABLE",
-	MUTATE_FORMATED_DATE: "MUTATE_FORMATED_DATE",
+const TaskComponentActions = {
+	mutateInput: "MUTATE_INPUT",
+	mutateLoading: "MUTATE_LOADING",
+	mutateEditable: "MUTATE_EDITABLE",
+	mutateFormatedDate: "MUTATE_FORMATED_DATE",
 } as const;
-export type TASK_COMPONENT_ACTIONS =
-	(typeof TASK_COMPONENT_ACTIONS)[keyof typeof TASK_COMPONENT_ACTIONS];
+export type TaskComponentActions =
+	(typeof TaskComponentActions)[keyof typeof TaskComponentActions];
 
 interface MutateInputAction {
 	type: "MUTATE_INPUT";

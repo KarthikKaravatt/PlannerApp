@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-const AutoResizeTextInput: React.FC<
+export const AutoResizeTextArea: React.FC<
 	React.ComponentPropsWithoutRef<"textarea">
 > = ({
 	value,
@@ -26,7 +26,9 @@ const AutoResizeTextInput: React.FC<
 	}, []);
 	resizeComponent();
 	useEffect(() => {
-		if (!textAreaRef.current) return;
+		if (!textAreaRef.current) {
+			return;
+		}
 		const observer = new ResizeObserver(() => {
 			resizeComponent();
 		});
@@ -50,5 +52,3 @@ const AutoResizeTextInput: React.FC<
 		/>
 	);
 };
-
-export default AutoResizeTextInput;

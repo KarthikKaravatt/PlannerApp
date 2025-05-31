@@ -1,8 +1,8 @@
 import { useAddNewTaskMutation } from "@/redux/api/apiSlice";
 import { type ChangeEvent, useState } from "react";
-import AutoResizeTextInput from "../General/AutoResizeTextArea";
+import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
-const InputTask: React.FC = () => {
+export const TaskListInput: React.FC = () => {
 	const [inputTask, setInputTask] = useState<string>("");
 	const [addNewTask, { isLoading }] = useAddNewTaskMutation();
 	const onInputChanged = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -33,7 +33,7 @@ const InputTask: React.FC = () => {
           p-1
         "
 			>
-				<AutoResizeTextInput
+				<AutoResizeTextArea
 					className="
             text-blue-950 dark:text-white
             dark:placeholder-gray-300
@@ -62,5 +62,3 @@ const InputTask: React.FC = () => {
 		</>
 	);
 };
-
-export default InputTask;

@@ -20,8 +20,11 @@ export const useTaskDueDate = (
 		return "";
 	});
 	const onDateButtonClicked = (event: ChangeEvent<HTMLInputElement>) => {
-		if (state.editable) return;
+		if (state.editable) {
+			return;
+		}
 		const date = DateTime.fromFormat(event.target.value, "yyyy-MM-dd'T'HH:mm");
+		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
 				if (date.isValid) {
@@ -33,7 +36,7 @@ export const useTaskDueDate = (
 						})
 						.catch((err: unknown) => {
 							if (err instanceof Error) {
-								console.log(`Error updating task:${err}`);
+								console.error(`Error updating task:${err}`);
 							}
 						});
 				}

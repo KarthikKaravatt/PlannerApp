@@ -1,6 +1,6 @@
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme } from "@/contexts/themeContext";
 
-const ThemeSwitcher: React.FC = () => {
+export const ThemeSwitcher: React.FC = () => {
 	const { theme, toggleTheme } = useTheme();
 
 	return (
@@ -17,5 +17,3 @@ const ThemeSwitcher: React.FC = () => {
 		</button>
 	);
 };
-
-export default ThemeSwitcher;

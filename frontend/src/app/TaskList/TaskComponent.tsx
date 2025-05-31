@@ -13,12 +13,12 @@ import { DateTime } from "luxon";
 import { useReducer, useRef, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa6";
-import AutoResizeTextInput from "../General/AutoResizeTextArea";
+import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 export interface TaskProp {
 	item: Task;
 }
-const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
+export const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 	const dateFormat = "dd LLL";
 	const formatedDate = (() => {
 		if (task.kind === "withDate") {
@@ -105,7 +105,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 		}
 	};
 
-	const isInteractive = (!state.editable && !isLoading) || state.isLoading;
+	const isInteractive = !(state.editable || isLoading) || state.isLoading;
 
 	return (
 		<>
@@ -148,7 +148,7 @@ interface InputFieldProps {
 }
 const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 	return (
-		<AutoResizeTextInput
+		<AutoResizeTextArea
 			value={state.editable ? state.inputTaskName : task.label}
 			className={`
         w-full outline-none leading-4.5
@@ -220,7 +220,7 @@ interface MoreOptionsProp {
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
-	const popOverID = `popOver: ${task.id}`;
+	const popOverId = `popOver: ${task.id}`;
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const popoverRef = useRef<HTMLDivElement>(null);
 	//Prevent flickering as the popover position is changed
@@ -272,7 +272,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 			>
 				<button
 					ref={buttonRef}
-					popoverTarget={popOverID}
+					popoverTarget={popOverId}
 					type="button"
 					hidden={state.editable}
 				>
@@ -292,7 +292,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 			<div
 				ref={popoverRef}
 				hidden={isHidden}
-				id={popOverID}
+				id={popOverId}
 				popover="auto"
 				className="
           flex flex-col     
@@ -322,5 +322,3 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 		</>
 	);
 };
-
-export default TaskComponent;

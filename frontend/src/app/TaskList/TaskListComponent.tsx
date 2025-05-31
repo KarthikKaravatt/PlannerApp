@@ -1,16 +1,16 @@
 import { useGetTasksQuery } from "@/redux/api/apiSlice";
 import type { Task } from "@/schemas/taskList";
-import type { FILTER_OPTION, SORT_OPTION } from "@/types/taskList";
+import type { FilterOption, SortOption } from "@/types/taskList";
 import { DateTime } from "luxon";
 import { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
-import TaskComponent from "./Task";
-import InputTask from "./TaskListInput";
-import TaskListOptions from "./TaskListOptions";
+import { TaskComponent } from "./TaskComponent.tsx";
+import { TaskListInput } from "./TaskListInput.tsx";
+import { TaskListOptions } from "./TaskListOptions.tsx";
 
-const TaskListComponent: React.FC = () => {
-	const [filterOption, setFilterOption] = useState<FILTER_OPTION>("ALL");
-	const [sortOption, setSortOption] = useState<SORT_OPTION>("CUSTOM");
+export const TaskListComponent: React.FC = () => {
+	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
+	const [sortOption, setSortOption] = useState<SortOption>("CUSTOM");
 	return (
 		<div className="p-2 flex flex-col items-center gap-1 h-full w-full">
 			<TaskListOptions
@@ -18,15 +18,15 @@ const TaskListComponent: React.FC = () => {
 				setFilterState={setFilterOption}
 				setSortState={setSortOption}
 			/>
-			<InputTask />
+			<TaskListInput />
 			<VisibleTasks sortOption={sortOption} filterOption={filterOption} />
 		</div>
 	);
 };
 
 interface ViibleTasksProp {
-	filterOption: FILTER_OPTION;
-	sortOption: SORT_OPTION;
+	filterOption: FilterOption;
+	sortOption: SortOption;
 }
 
 const VisibleTasks: React.FC<ViibleTasksProp> = ({
@@ -60,18 +60,51 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		);
 	}
 	if (isError) {
-		console.log(error);
+		console.error(error);
 		return <p>Error: Failed to fetch tasks</p>;
 	}
 };
 
 function getFinalList(
 	data: Task[],
-	filterState: FILTER_OPTION,
-	sortState: SORT_OPTION,
+	filterState: FilterOption,
+	sortState: SortOption,
 ) {
+	const sortByCustomOrder = (a: Task, b: Task) => {
+		const aIndex = a.orderIndex;
+		const bIndex = b.orderIndex;
+
+		if (aIndex === -1 && bIndex === -1) {
+			return 0;
+		}
+		if (aIndex === -1) {
+			return 1;
+		}
+		if (bIndex === -1) {
+			return -1;
+		}
+
+		return aIndex - bIndex;
+	};
+
+	const sortByDate = (a: Task, b: Task) => {
+		if (a.kind === "withDate" && b.kind === "withDate") {
+			const aDate = DateTime.fromISO(a.dueDate);
+			const bDate = DateTime.fromISO(b.dueDate);
+			return aDate.toMillis() - bDate.toMillis();
+		}
+		if (a.kind === "withoutDate" || b.kind === "withDate") {
+			return 1;
+		}
+		return -1;
+	};
+
+	const sortByName = (a: Task, b: Task) => {
+		return a.label.localeCompare(b.label);
+	};
 	const filteredList = Array.from(data)
 		.filter((task) => {
+			// biome-ignore lint/style/useDefaultSwitchClause: Using an enum
 			switch (filterState) {
 				case "COMPLETE":
 					return task.completed;
@@ -82,34 +115,17 @@ function getFinalList(
 			}
 		})
 		.sort((a, b) => {
+			// biome-ignore lint/style/useDefaultSwitchClause: Using an enum
 			switch (sortState) {
 				case "CUSTOM": {
-					const aIndex = a.orderIndex;
-					const bIndex = b.orderIndex;
-					if (aIndex === -1 && bIndex === -1) {
-						return 0;
-					}
-					if (aIndex === -1) {
-						return 1;
-					}
-					if (bIndex === -1) {
-						return -1;
-					}
-					return aIndex - bIndex;
+					return sortByCustomOrder(a, b);
 				}
 				case "DATE": {
-					if (a.kind === "withDate" && b.kind === "withDate") {
-						const aDate = DateTime.fromISO(a.dueDate);
-						const bDate = DateTime.fromISO(b.dueDate);
-						return aDate.toMillis() - bDate.toMillis();
-					}
-					return 0;
+					return sortByDate(a, b);
 				}
 				case "NAME":
-					return a.label.localeCompare(b.label);
+					return sortByName(a, b);
 			}
 		});
 	return filteredList;
 }
-
-export default TaskListComponent;

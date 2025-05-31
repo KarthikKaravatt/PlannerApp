@@ -5,6 +5,7 @@ import eslintJs from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
 
+// biome-ignore lint/style/noDefaultExport: eslint config needs it
 export default tseslint.config({
 	files: ["**/*.ts", "**/*.tsx"],
 	extends: [

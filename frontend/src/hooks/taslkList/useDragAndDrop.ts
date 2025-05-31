@@ -14,9 +14,9 @@ export const useDragAndDrop = (task: Task) => {
 	};
 	const onDrop = (event: DragEvent<HTMLSpanElement>) => {
 		event.preventDefault();
-		const swapIDString = event.dataTransfer.getData(DRAG_ITEM_ID_KEY);
-		if (swapIDString !== "") {
-			swapTasks({ id1: task.id, id2: swapIDString }).catch((err: unknown) => {
+		const swapIdString = event.dataTransfer.getData(DRAG_ITEM_ID_KEY);
+		if (swapIdString !== "") {
+			swapTasks({ id1: task.id, id2: swapIdString }).catch((err: unknown) => {
 				if (err instanceof Error) {
 					console.error(`Error swapping tasks${err}`);
 				}

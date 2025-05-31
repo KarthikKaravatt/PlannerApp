@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": ["routeTree.gen.ts", "dist/"]
+		"ignore": ["vite.config.ts", "routeTree.gen.ts", "dist/"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -19,10 +19,28 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
+			"correctness": {
+				"all": true
+			},
+			"complexity": {
+				"all": true
+			},
+			"security": {
+				"all": true
+			},
+			"suspicious": {
+				"all": true,
+				"noReactSpecificProps": "off",
+				"noConsole": "off"
+			},
+			"style": {
+				"all": true
+			},
 			"recommended": true
 		}
 	},
 	"javascript": {
+		"globals": ["React"],
 		"formatter": {
 			"quoteStyle": "double"
 		}

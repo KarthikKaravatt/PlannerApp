@@ -1,7 +1,7 @@
 import { apiSlice } from "@/redux/api/apiSlice";
-import tasksReducer from "@/redux/tasks/tasksListSlice";
+import { tasksReducer } from "@/redux/tasks/tasksListSlice";
 import { configureStore } from "@reduxjs/toolkit";
-import { listenerMiddleware } from "./listenerMiddleware";
+import { listenerMiddleware } from "./listenerMiddleware.ts";
 
 export const store = configureStore({
 	reducer: {
