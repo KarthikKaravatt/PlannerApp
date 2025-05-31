@@ -1,4 +1,5 @@
 import { useAddNewTaskMutation } from "@/redux/api/apiSlice";
+import { logError } from "@/util/console.ts";
 import { type ChangeEvent, useState } from "react";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
@@ -18,7 +19,7 @@ export const TaskListInput: React.FC = () => {
 			})
 			.catch((err: unknown) => {
 				if (err instanceof Error) {
-					console.error(`Error adding a new task: ${err}`);
+					logError("Error adding a new task:", err);
 				}
 			});
 	};

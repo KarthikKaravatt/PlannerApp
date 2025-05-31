@@ -7,6 +7,7 @@ import type {
 	TaskComponentAction,
 	TaskComponentState,
 } from "@/types/taskReducer";
+import { logError } from "@/util/console";
 import { DateTime } from "luxon";
 
 export const useMoreOptions = (
@@ -27,7 +28,7 @@ export const useMoreOptions = (
 					dispatch({ type: "MUTATE_INPUT", payload: task.label });
 					dispatch({ type: "MUTATE_LOADING", payload: false });
 					if (err instanceof Error) {
-						console.error(`Error updating task: ${err}`);
+						logError(`Error updating task: ${err}`);
 					}
 				});
 		}
@@ -36,7 +37,7 @@ export const useMoreOptions = (
 	const handleDeleteButtonClick = () => {
 		deleteTask(task.id).catch((err: unknown) => {
 			if (err instanceof Error) {
-				console.error(`Error removing tasks:${err}`);
+				logError(`Error removing tasks:${err}`);
 			}
 		});
 	};
@@ -56,9 +57,9 @@ export const useMoreOptions = (
 						dispatch({ type: "MUTATE_FORMATED_DATE", payload: task.dueDate });
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 						if (err instanceof Error) {
-							console.error(`Error removing date:${err}`);
+							logError(`Error removing date:${err}`);
 						}
-						console.error("Error removing date");
+						logError("Error removing date");
 					});
 				break;
 			}
@@ -90,9 +91,8 @@ export const useMoreOptions = (
 						dispatch({ type: "MUTATE_FORMATED_DATE", payload: "" });
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 						if (err instanceof Error) {
-							console.error(`Error removing date:${err}`);
+							logError("Error removing date:", err);
 						}
-						console.error("Error removing date");
 					});
 				break;
 			}

@@ -4,6 +4,7 @@ import type {
 	TaskComponentAction,
 	TaskComponentState,
 } from "@/types/taskReducer";
+import { logError } from "@/util/console";
 import { DateTime } from "luxon";
 import { type ChangeEvent, useState } from "react";
 
@@ -36,7 +37,7 @@ export const useTaskDueDate = (
 						})
 						.catch((err: unknown) => {
 							if (err instanceof Error) {
-								console.error(`Error updating task:${err}`);
+								logError("Error updating task:", err);
 							}
 						});
 				}

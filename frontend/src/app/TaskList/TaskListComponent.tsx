@@ -1,6 +1,7 @@
 import { useGetTasksQuery } from "@/redux/api/apiSlice";
 import type { Task } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
+import { logError } from "@/util/console.ts";
 import { DateTime } from "luxon";
 import { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
@@ -60,7 +61,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		);
 	}
 	if (isError) {
-		console.error(error);
+		logError("Error fetching tasks", error as Error);
 		return <p>Error: Failed to fetch tasks</p>;
 	}
 };

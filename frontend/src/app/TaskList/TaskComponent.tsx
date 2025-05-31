@@ -9,6 +9,7 @@ import type {
 	TaskComponentAction,
 	TaskComponentState,
 } from "@/types/taskReducer";
+import { logError } from "@/util/console.ts";
 import { DateTime } from "luxon";
 import { useReducer, useRef, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
@@ -94,7 +95,9 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 			})
 			.catch((err: unknown) => {
 				dispatch({ type: "MUTATE_LOADING", payload: false });
-				console.error("Failed to update task completion:", err);
+				if (err instanceof Error) {
+					logError("Failed to update task completion:", err);
+				}
 			});
 	};
 

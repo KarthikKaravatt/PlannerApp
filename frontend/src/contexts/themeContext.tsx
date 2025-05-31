@@ -1,3 +1,4 @@
+import { logWarning } from "@/util/console";
 import {
 	type ReactNode,
 	createContext,
@@ -18,7 +19,7 @@ interface ThemeContextType {
 const defaultThemeContextValue: ThemeContextType = {
 	theme: "light",
 	toggleTheme: () => {
-		console.warn("toggleTheme called outside of ThemeProvider");
+		logWarning("toggleTheme called outside of ThemeProvider");
 	},
 };
 
@@ -72,7 +73,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
 export const useTheme = (): ThemeContextType => {
 	const context = use(ThemeContext);
 	if (context === defaultThemeContextValue && typeof window !== "undefined") {
-		console.warn(
+		logWarning(
 			"useTheme is used outside of a ThemeProvider or the provider is not yet mounted.",
 		);
 	}

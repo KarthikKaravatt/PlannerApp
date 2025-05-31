@@ -30,8 +30,7 @@
 			},
 			"suspicious": {
 				"all": true,
-				"noReactSpecificProps": "off",
-				"noConsole": "off"
+				"noReactSpecificProps": "off"
 			},
 			"style": {
 				"all": true

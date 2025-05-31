@@ -1,5 +1,6 @@
 import { useClearCompletedTasksMutation } from "@/redux/api/apiSlice";
 import type { FilterOption, SortOption } from "@/types/taskList";
+import { logError } from "@/util/console";
 import type { ChangeEvent } from "react";
 
 export interface TaskListOptionsProp {
@@ -26,9 +27,9 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 	const onClearButtonClick = () => {
 		clearTasks().catch((err: unknown) => {
 			if (err instanceof Error) {
-				console.error(`Error clearing completed tasks: ${err.message}`);
+				logError("Error clearing completed tasks:", err);
 			} else {
-				console.error("An unknown error occurred while clearing tasks");
+				logError("An unknown error occurred while clearing tasks");
 			}
 		});
 	};

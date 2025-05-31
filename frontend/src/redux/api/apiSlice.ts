@@ -1,4 +1,5 @@
 import { ApiResponseTaskSchema, type Task } from "@/schemas/taskList";
+import { logError } from "@/util/console";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { v4 as uuidv4 } from "uuid";
@@ -37,7 +38,7 @@ export const apiSlice = createApi({
 				if (result.success) {
 					return result.data;
 				}
-				console.error("Validation error:", result.error);
+				logError("Validation error:", result.error);
 				throw new Error(
 					"Failed to validate API response. Data format is incorrect.",
 				);
@@ -71,7 +72,7 @@ export const apiSlice = createApi({
 					}),
 				);
 				await queryFulfilled.catch(() => {
-					console.error("Error adding task");
+					logError("Error adding task");
 					patchResult.undo();
 				});
 			},
@@ -92,7 +93,7 @@ export const apiSlice = createApi({
 					}),
 				);
 				await queryFulfilled.catch(() => {
-					console.error("Error deleting task");
+					logError("Error deleting task");
 					patchResult.undo();
 				});
 			},
@@ -136,7 +137,7 @@ export const apiSlice = createApi({
 					}),
 				);
 				await queryFulfilled.catch(() => {
-					console.error("Updating task failed rolling back");
+					logError("Updating task failed rolling back");
 					patchResult.undo();
 				});
 			},
@@ -162,7 +163,7 @@ export const apiSlice = createApi({
 					}),
 				);
 				await queryFulfilled.catch(() => {
-					console.error("Removing completed tasks failed rolling back");
+					logError("Removing completed tasks failed rolling back");
 					patchResult.undo();
 				});
 			},
