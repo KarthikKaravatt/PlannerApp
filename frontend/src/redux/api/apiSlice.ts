@@ -2,6 +2,7 @@ import { ApiResponseTaskSchema, type Task } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { produce } from "immer";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod/v4";
 const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
@@ -58,7 +59,6 @@ export const apiSlice = createApi({
 				method: "POST",
 				body: initialTask,
 			}),
-			// TODO : Make this optimistic
 			async onQueryStarted(taskRequest, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
@@ -148,7 +148,29 @@ export const apiSlice = createApi({
 				url: `/${updateTasks.id1}/${updateTasks.id2}`,
 				method: "PUT",
 			}),
-			//TODO: Make this optimistic
+			async onQueryStarted({ id1, id2 }, { dispatch, queryFulfilled }) {
+				const patchResult = dispatch(
+					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
+						const taskA = draft.findIndex((t) => t.id === id1);
+						const taskB = draft.findIndex((t) => t.id === id2);
+						if (taskA !== -1 && taskB !== -1) {
+							const temp = draft[taskA].orderIndex;
+							draft[taskA].orderIndex = draft[taskB].orderIndex;
+							draft[taskB].orderIndex = temp;
+							draft.sort((a, b) => a.orderIndex - b.orderIndex);
+							let count = 0;
+							for (const [i, _item] of draft.entries()) {
+								draft[i].orderIndex = count;
+								count += 1;
+							}
+						}
+					}),
+				);
+				await queryFulfilled.catch(() => {
+					logError("Removing completed tasks failed rolling back");
+					patchResult.undo();
+				});
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 		clearCompletedTasks: builder.mutation<void, void>({
@@ -159,7 +181,17 @@ export const apiSlice = createApi({
 			async onQueryStarted(_, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
-						return draft.filter((item) => !item.completed);
+						let count = 0;
+						return draft
+							.filter((item) => !item.completed)
+							.sort((a, b) => a.orderIndex - b.orderIndex)
+							.map((t) => {
+								const newTask = produce(t, (tdraft) => {
+									tdraft.orderIndex = count;
+									count += 1;
+								});
+								return newTask;
+							});
 					}),
 				);
 				await queryFulfilled.catch(() => {
