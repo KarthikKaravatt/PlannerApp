@@ -13,7 +13,7 @@ import { ThemeProvider } from "./contexts/themeContext.tsx";
 import { reportWebVitals } from "./reportWebVitals.ts";
 
 scan({
-	enabled: true,
+	enabled: import.meta.env.DEV,
 });
 
 const router = createRouter({

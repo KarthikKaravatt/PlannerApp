@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { z } from "zod/v4";
 const BaseTaskSchema = z.object({
-	id: z.uuidv4(),
+	id: z.uuidv7(),
 	label: z.string(),
 	completed: z.boolean(),
 	orderIndex: z.uint32(),

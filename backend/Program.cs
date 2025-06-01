@@ -66,12 +66,25 @@ void Main()
         return Results.Ok();
 
     });
+    // clear completed
     app.MapDelete("/api/tasks/clear", async (PlannerDbContext db) =>
     {
         var tasksToDelete = await db.TaskList.Where(t => t.Completed).ToListAsync();
-        if (tasksToDelete.Any())
+        if (tasksToDelete.Count != 0)
         {
+            
             db.TaskList.RemoveRange(tasksToDelete);
+            var remainingTasks = await db.TaskList
+                .Where(t => !t.Completed) 
+                .OrderBy(t => t.OrderIndex) 
+                .ToListAsync();
+            uint count = 0;
+            foreach (var task in remainingTasks) 
+            {
+                task.OrderIndex = count;
+                count++;
+            }
+
             await db.SaveChangesAsync();
             return Results.Ok();
         }
@@ -88,12 +101,8 @@ void Main()
         {
             return Results.NotFound();
         }
-        
-        var newTask1 = task1 with { OrderIndex = task2.OrderIndex };
-        var newTask2 = task2 with { OrderIndex = task1.OrderIndex };
-
-        db.Entry(task1).CurrentValues.SetValues(newTask1);
-        db.Entry(task2).CurrentValues.SetValues(newTask2);
+        (task1.OrderIndex, task2.OrderIndex) = (task2.OrderIndex, task1.OrderIndex);
+        db.UpdateRange([task1, task2]);
         
         await db.SaveChangesAsync();
 
