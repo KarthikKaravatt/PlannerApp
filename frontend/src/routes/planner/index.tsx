@@ -9,7 +9,7 @@ function Planner() {
 	return (
 		<>
 			<div className="text-sm flex items-center justify-center w-full h-full">
-				<div className="w-full h-full overflow-scroll">
+				<div className="w-full h-full overflow-auto">
 					<TaskListComponent />
 				</div>
 			</div>

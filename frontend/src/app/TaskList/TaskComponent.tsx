@@ -17,9 +17,9 @@ import { FaCheck } from "react-icons/fa6";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 export interface TaskProp {
-	item: Task;
+	task: Task;
 }
-export const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
+export const TaskComponent: React.FC<TaskProp> = ({ task }) => {
 	const initalTaskComponentState: TaskComponentState = {
 		inputTaskName: task.label,
 		editable: false,
@@ -35,14 +35,14 @@ export const TaskComponent: React.FC<TaskProp> = ({ item: task }) => {
 	return (
 		<div
 			className={`
-        dark:bg-dark-background-c bg-sky-100 
-        ${state.isLoading ? "dark:text-gray-300" : "dark:text-white"}
-        ${state.isLoading ? "text-gray-400" : "text-blue-950"}
-        dark:border-white border-gray-300 
-        border-1
-        rounded-lg
-        shadow
-      `}
+          dark:bg-dark-background-c bg-sky-100 
+          ${state.isLoading ? "dark:text-gray-300" : "dark:text-white"}
+          ${state.isLoading ? "text-gray-400" : "text-blue-950"}
+          dark:border-white border-gray-300 
+          border-1
+          rounded-lg
+          shadow
+        `}
 		>
 			<div
 				draggable={!state.editable}

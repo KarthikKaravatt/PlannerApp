@@ -12,16 +12,17 @@
 		"@reduxjs/toolkit": "^2.8.2",
 		"@tanstack/react-router": "^1.120.13",
 		"immer": "^10.1.1",
-		"latest": "^0.2.0",
 		"luxon": "^3.6.1",
 		"react": "^19.1.0",
+		"react-aria-components": "^1.9.0",
 		"react-dom": "^19.1.0",
 		"react-icons": "^5.5.0",
 		"react-redux": "^9.2.0",
 		"uuid": "^11.1.0",
-		"zod": "^3.25.42"
+		"zod": "^3.25.46"
 	},
 	"devDependencies": {
+		"latest": "^0.2.0",
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"@biomejs/biome": "1.9.4",
 		"@eslint-react/eslint-plugin": "^1.50.0",
@@ -36,7 +37,7 @@
 		"@types/node": "^22.15.29",
 		"@types/react": "^19.1.6",
 		"@types/react-dom": "^19.1.5",
-		"@typescript/native-preview": "^7.0.0-dev.20250531.1",
+		"@typescript/native-preview": "^7.0.0-dev.20250601.1",
 		"@vitejs/plugin-react": "^4.5.0",
 		"autoprefixer": "^10.4.21",
 		"babel-plugin-react-compiler": "^19.1.0-rc.2",
