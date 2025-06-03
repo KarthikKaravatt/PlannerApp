@@ -1,15 +1,14 @@
 import { useGetTasksQuery } from "@/redux/api/apiSlice";
+import type { Task } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
+import { DateTime } from "luxon";
 import { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
 import { ListBox, ListBoxItem } from "react-aria-components";
-import { selectTasksFilterAndSort } from "@/redux/api/selectors.ts";
-import { useSelector } from "react-redux";
-import type { RootState } from "../store.ts";
 
 export const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
@@ -44,11 +43,33 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	filterOption,
 	sortOption,
 }) => {
-	const { isLoading, isSuccess, isError, error } = useGetTasksQuery();
-	const filteredList = useSelector((state: RootState) =>
-		selectTasksFilterAndSort(state, sortOption, filterOption),
-	);
-	if (isLoading || !filteredList) {
+	const {
+		data: tasks = [],
+		isLoading,
+		isSuccess,
+		isError,
+		error,
+	} = useGetTasksQuery();
+	const filteredList = getFinalList(tasks, filterOption, sortOption);
+	// const { dragAndDropHooks } = useDragAndDrop({
+	// 	getItems: (keys) => {
+	// 		return [...keys].map((key) => {
+	// 			const task = filteredList.find((t) => t.id === key);
+	// 			return {
+	// 				"text/plain": task ? task.label : "",
+	// 			};
+	// 		});
+	// 	},
+	//    onReorder(e){
+	//      if(sortOption!== "CUSTOM"){
+	//        return
+	//      }
+	//      const draggedTask = filteredList.find((t)=>t.id === [...e.keys][0])
+	//      const targetTask = filteredList.find((t)=> t.id === e.target.key)
+	//
+	//    }
+	// });
+	if (isLoading) {
 		return <FaSpinner className="text-blue950 dark:text-white" />;
 	}
 	if (isSuccess) {
@@ -70,3 +91,68 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		return <p>Error: Failed to fetch tasks</p>;
 	}
 };
+
+function getFinalList(
+	data: Task[],
+	filterState: FilterOption,
+	sortState: SortOption,
+) {
+	const sortByCustomOrder = (a: Task, b: Task) => {
+		const aIndex = a.orderIndex;
+		const bIndex = b.orderIndex;
+
+		if (aIndex === -1 && bIndex === -1) {
+			return 0;
+		}
+		if (aIndex === -1) {
+			return 1;
+		}
+		if (bIndex === -1) {
+			return -1;
+		}
+
+		return aIndex - bIndex;
+	};
+
+	const sortByDate = (a: Task, b: Task) => {
+		if (a.kind === "withDate" && b.kind === "withDate") {
+			const aDate = DateTime.fromISO(a.dueDate);
+			const bDate = DateTime.fromISO(b.dueDate);
+			return aDate.toMillis() - bDate.toMillis();
+		}
+		if (a.kind === "withoutDate" || b.kind === "withDate") {
+			return 1;
+		}
+		return -1;
+	};
+
+	const sortByName = (a: Task, b: Task) => {
+		return a.label.localeCompare(b.label);
+	};
+	const filteredList = Array.from(data)
+		.filter((task) => {
+			// biome-ignore lint/style/useDefaultSwitchClause: Using an enum
+			switch (filterState) {
+				case "COMPLETE":
+					return task.completed;
+				case "INCOMPLETE":
+					return !task.completed;
+				case "ALL":
+					return true;
+			}
+		})
+		.sort((a, b) => {
+			// biome-ignore lint/style/useDefaultSwitchClause: Using an enum
+			switch (sortState) {
+				case "CUSTOM": {
+					return sortByCustomOrder(a, b);
+				}
+				case "DATE": {
+					return sortByDate(a, b);
+				}
+				case "NAME":
+					return sortByName(a, b);
+			}
+		});
+	return filteredList;
+}
