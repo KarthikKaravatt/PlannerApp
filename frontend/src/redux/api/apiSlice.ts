@@ -7,14 +7,20 @@ import { v4 as uuidv4 } from "uuid";
 import { z } from "zod/v4";
 const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
-interface NewTaskRequestWithoutDate {
+interface NewTaskWithoutDatePayload {
 	label: string;
 	completed: boolean;
 }
-interface NewTaskRequestWithDate extends NewTaskRequestWithoutDate {
+interface NewTaskWithDatePayload extends NewTaskWithoutDatePayload {
 	dueDate: string;
 }
-type NewTaskRequest = NewTaskRequestWithDate | NewTaskRequestWithoutDate;
+type NewTaskRequest = NewTaskWithDatePayload | NewTaskWithoutDatePayload;
+
+export interface MoveTaskOrderPayload {
+	id1: string;
+	id2: string;
+	pos: "Before" | "After";
+}
 export const apiSlice = createApi({
 	reducerPath: "api",
 	baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
@@ -119,7 +125,7 @@ export const apiSlice = createApi({
 				}
 				return {
 					url: `/${task.id}`,
-					method: "PUT",
+					method: "PATCH",
 					body: newBody,
 				};
 			},
@@ -145,8 +151,8 @@ export const apiSlice = createApi({
 		}),
 		swapTaskOrder: builder.mutation<void, { id1: string; id2: string }>({
 			query: (updateTasks) => ({
-				url: `/${updateTasks.id1}/${updateTasks.id2}`,
-				method: "PUT",
+				url: `swap/${updateTasks.id1}/${updateTasks.id2}`,
+				method: "PATCH",
 			}),
 			async onQueryStarted({ id1, id2 }, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
@@ -170,6 +176,18 @@ export const apiSlice = createApi({
 					logError("Removing completed tasks failed rolling back");
 					patchResult.undo();
 				});
+			},
+			invalidatesTags: ["Tasks"],
+		}),
+		moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
+			query: (moveTasks) => {
+				return {
+					url: `move/${moveTasks.id1}/${moveTasks.id2}`,
+					method: "PATCH",
+					body: {
+						pos: moveTasks.pos,
+					},
+				};
 			},
 			invalidatesTags: ["Tasks"],
 		}),
@@ -210,5 +228,6 @@ export const {
 	useUpdateTaskMutation,
 	useSwapTaskOrderMutation,
 	useClearCompletedTasksMutation,
+	useMoveTaskOrderMutation,
 	useGetTaskQuery,
 } = apiSlice;

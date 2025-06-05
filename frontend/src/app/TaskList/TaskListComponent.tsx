@@ -1,14 +1,18 @@
-import { useGetTasksQuery } from "@/redux/api/apiSlice";
+import {
+	useGetTasksQuery,
+	useMoveTaskOrderMutation,
+} from "@/redux/api/apiSlice";
 import type { Task } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { DateTime } from "luxon";
 import { useState } from "react";
+import { ListBox, ListBoxItem, useDragAndDrop } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
+import { useListData } from "react-stately";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
-import { ListBox, ListBoxItem } from "react-aria-components";
 
 export const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
@@ -50,39 +54,67 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		isError,
 		error,
 	} = useGetTasksQuery();
+	//TODO: Visualize the tasks is moving somehow
+	const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
 	const filteredList = getFinalList(tasks, filterOption, sortOption);
-	// const { dragAndDropHooks } = useDragAndDrop({
-	// 	getItems: (keys) => {
-	// 		return [...keys].map((key) => {
-	// 			const task = filteredList.find((t) => t.id === key);
-	// 			return {
-	// 				"text/plain": task ? task.label : "",
-	// 			};
-	// 		});
-	// 	},
-	//    onReorder(e){
-	//      if(sortOption!== "CUSTOM"){
-	//        return
-	//      }
-	//      const draggedTask = filteredList.find((t)=>t.id === [...e.keys][0])
-	//      const targetTask = filteredList.find((t)=> t.id === e.target.key)
-	//
-	//    }
-	// });
+	const list = useListData<Task>({
+		initialItems: [],
+		getKey: (item) => item.id,
+	});
+	const { dragAndDropHooks } = useDragAndDrop({
+		getItems: (keys) =>
+			[...keys].map((_key) => {
+				//TODO: Implment this properly
+				return { "text/plain": "LOL" };
+			}),
+		onReorder: (e) => {
+			//TODO: Implment task moving using the api
+			if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
+				return;
+			}
+			if (e.target.dropPosition === "before") {
+				moveTask({
+					id1: Array.from(e.keys)[0].toString(),
+					id2: e.target.key.toString(),
+					pos: "Before",
+				}).catch((err: unknown) => {
+					if (err instanceof Error) {
+						logError("Error moving task", err);
+					}
+				});
+				list.moveBefore(e.target.key, e.keys);
+			} else if (e.target.dropPosition === "after") {
+				moveTask({
+					id1: Array.from(e.keys)[0].toString(),
+					id2: e.target.key.toString(),
+					pos: "After",
+				}).catch((err: unknown) => {
+					if (err instanceof Error) {
+						logError("Error moving task", err);
+					}
+				});
+				list.moveAfter(e.target.key, e.keys);
+			}
+		},
+	});
 	if (isLoading) {
 		return <FaSpinner className="text-blue950 dark:text-white" />;
 	}
 	if (isSuccess) {
+		list.items = filteredList;
 		return (
-			<ListBox className="w-full" aria-label="Tasks">
-				{filteredList.map((task) => (
-					<ListBoxItem
-						key={task.id}
-						textValue={`Completed:${String(task.completed)} Task:${task.label} ${task.kind === "withDate" ? `DueDate:${task.dueDate}` : ""}`}
-					>
+			<ListBox
+				items={list.items}
+				className="w-full"
+				aria-label="Tasks"
+				dragAndDropHooks={dragAndDropHooks}
+				selectionMode="single"
+			>
+				{(task) => (
+					<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
 						<TaskComponent key={task.id} task={task} />
 					</ListBoxItem>
-				))}
+				)}
 			</ListBox>
 		);
 	}

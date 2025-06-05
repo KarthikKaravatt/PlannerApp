@@ -1,4 +1,3 @@
-import { useDragAndDrop } from "@/hooks/taslkList/useDragAndDrop";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
@@ -29,9 +28,6 @@ export const TaskComponent: React.FC<TaskProp> = ({ task }) => {
 		taskComponentReducer,
 		initalTaskComponentState,
 	);
-	//TODO: Swapping tasks is not ideal for custom ordering. You should be able
-	//      drag tasks to new positions in the list makes more sense that way
-	const { onDragStart, onDragOver, onDrop } = useDragAndDrop(task);
 	return (
 		<div
 			className={`
@@ -47,15 +43,6 @@ export const TaskComponent: React.FC<TaskProp> = ({ task }) => {
 			<div
 				draggable={!state.editable}
 				className="flex flex-row gap-2 items-center pr-2 pl-2"
-				onDragStart={(event) => {
-					onDragStart(task, event);
-				}}
-				onDragOver={(event) => {
-					onDragOver(event);
-				}}
-				onDrop={(event) => {
-					onDrop(event);
-				}}
 			>
 				<CheckBox task={task} state={state} dispatch={dispatch} />
 				<InputField task={task} state={state} dispatch={dispatch} />

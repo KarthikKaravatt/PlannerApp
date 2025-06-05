@@ -32,3 +32,6 @@ public class Task()
 
 public record TaskRequest(string Label, bool Completed, DateTimeOffset? DueDate);
 
+
+public record MoveTaskRequest( string Pos);
+

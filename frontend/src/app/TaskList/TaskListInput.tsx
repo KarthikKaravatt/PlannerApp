@@ -13,15 +13,12 @@ export const TaskListInput: React.FC = () => {
 		addNewTask({
 			label: inputTask,
 			completed: false,
-		})
-			.then(() => {
-				setInputTask("");
-			})
-			.catch((err: unknown) => {
-				if (err instanceof Error) {
-					logError("Error adding a new task:", err);
-				}
-			});
+		}).catch((err: unknown) => {
+			if (err instanceof Error) {
+				logError("Error adding a new task:", err);
+			}
+		});
+		setInputTask("");
 	};
 	return (
 		<>

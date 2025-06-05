@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using backend;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Task = backend.Task;
 
@@ -38,12 +40,16 @@ void Main()
             : Results.NotFound()
     );
     // Update a task
-    app.MapPut("/api/tasks/{id:guid}", async (PlannerDbContext db, Task taskUpload) =>
+    app.MapPatch("/api/tasks/{id:guid}", async (PlannerDbContext db, Task taskUpload) =>
     {
         var oldTask = await db.TaskList.FindAsync(taskUpload.Id);
         if (oldTask == null) return Results.NotFound();
-        var task = new Task(taskUpload.Label, taskUpload.Completed, taskUpload.DueDate, taskUpload.OrderIndex, taskUpload.Id);
-        db.Entry(oldTask).CurrentValues.SetValues(task);
+        //TODO: validate this properly
+        oldTask.OrderIndex = taskUpload.OrderIndex;
+        oldTask.Completed = taskUpload.Completed;
+        oldTask.DueDate = taskUpload.DueDate;
+        oldTask.Label = taskUpload.Label;
+        db.TaskList.Update(oldTask);
         await db.SaveChangesAsync();
         return Results.Ok();
     });
@@ -92,7 +98,7 @@ void Main()
         return Results.NotFound();
     });
     // swap task orders
-    app.MapPut("/api/tasks/{id1:guid}/{id2:guid}", async (Guid id1, Guid id2, PlannerDbContext db) =>
+    app.MapPatch("/api/tasks/swap/{id1:guid}/{id2:guid}", async (Guid id1, Guid id2, PlannerDbContext db) =>
     {
         var task1 = await db.TaskList.FindAsync(id1);
         var task2 = await db.TaskList.FindAsync(id2);
@@ -107,6 +113,50 @@ void Main()
         await db.SaveChangesAsync();
 
         return Results.Ok();
+    });
+    // Move a tasks position
+    app.MapPatch("/api/tasks/move/{id1:guid}/{id2:guid}", async (Guid id1, Guid id2,MoveTaskRequest request, PlannerDbContext db) =>
+    {
+        if (id1 == id2)
+        {
+            return Results.Ok();
+        }
+        var task1 = await db.TaskList.FindAsync(id1);
+        var task2 = await db.TaskList.FindAsync(id2);
+        if (task1 == null || task2 == null)
+        {
+            return Results.NotFound();
+        }
+        var taskList = await db.TaskList.ToListAsync();
+        taskList.Sort((a, b) => (int)a.OrderIndex - (int)b.OrderIndex);
+        var taskLinkedList = new LinkedList<Task>(taskList);
+        //re index orderIndex
+        taskLinkedList.Remove(task1);
+        var posTaskNode = taskLinkedList.Find(task2);
+        if (posTaskNode == null)
+        {
+            return Results.NotFound();
+        }
+        switch (request.Pos)
+        {
+            case "After":
+                taskLinkedList.AddAfter(posTaskNode, task1);
+                break;
+            case "Before":
+                taskLinkedList.AddBefore(posTaskNode, task1);
+                break;
+        }
+        uint count = 0;
+        foreach (var t in taskLinkedList)
+        {
+            t.OrderIndex = count;
+            count++;
+        }
+
+        await db.SaveChangesAsync();
+        //case 4 task is only one in the list (probably wont be able to be moved)
+        return Results.Ok();
+
     });
     app.Run();
 }
