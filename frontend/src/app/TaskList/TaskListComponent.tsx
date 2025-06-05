@@ -68,7 +68,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 				return { "text/plain": "LOL" };
 			}),
 		onReorder: (e) => {
-			//TODO: Implment task moving using the api
 			if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
 				return;
 			}
