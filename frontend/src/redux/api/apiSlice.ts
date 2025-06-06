@@ -3,7 +3,7 @@ import { logError } from "@/util/console";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { produce } from "immer";
-import { v4 as uuidv4 } from "uuid";
+import { v7 as uuidv7 } from "uuid";
 import { z } from "zod/v4";
 const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
@@ -69,7 +69,7 @@ export const apiSlice = createApi({
 				const patchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
 						const task: Task = {
-							id: uuidv4(),
+							id: uuidv7(),
 							kind: "withoutDate",
 							orderIndex: draftTasks.length,
 							...taskRequest,
