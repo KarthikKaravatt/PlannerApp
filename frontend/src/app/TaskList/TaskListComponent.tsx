@@ -7,15 +7,8 @@ import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { useState } from "react";
-import {
-	ListBox,
-	ListBoxItem,
-	ListLayout,
-	Virtualizer,
-	useDragAndDrop,
-} from "react-aria-components";
+import { ListBox, ListBoxItem, useDragAndDrop } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
-import { useListData } from "react-stately";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
@@ -63,10 +56,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	//TODO: Visualize the tasks is moving somehow
 	const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
 	const filteredList = getFinalList(tasks, filterOption, sortOption);
-	const list = useListData<Task>({
-		initialItems: [],
-		getKey: (item) => item.id,
-	});
 	const { dragAndDropHooks } = useDragAndDrop({
 		getItems: (keys) =>
 			[...keys].map((_key) => {
@@ -87,7 +76,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 						logError("Error moving task", err);
 					}
 				});
-				list.moveBefore(e.target.key, e.keys);
 			} else if (e.target.dropPosition === "after") {
 				moveTask({
 					id1: Array.from(e.keys)[0].toString(),
@@ -98,7 +86,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 						logError("Error moving task", err);
 					}
 				});
-				list.moveAfter(e.target.key, e.keys);
 			}
 		},
 	});
@@ -106,10 +93,9 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		return <FaSpinner className="text-blue950 dark:text-white" />;
 	}
 	if (isSuccess) {
-		list.items = filteredList;
 		return (
 			<ListBox
-				items={list.items}
+				items={filteredList}
 				className={"w-full"}
 				aria-label="Tasks"
 				//BUG: disable this when the task is being edited otherwise can't
