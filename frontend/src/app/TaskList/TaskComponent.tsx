@@ -9,22 +9,22 @@ import type {
 	TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
+import { parseAbsoluteToLocal } from "@internationalized/date";
 import { useReducer } from "react";
-import { BsThreeDots } from "react-icons/bs";
-import { FaCheck } from "react-icons/fa6";
-import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import {
 	Button,
 	Calendar,
-	Heading,
-	CalendarGrid,
 	CalendarCell,
-	DialogTrigger,
-	Popover,
+	CalendarGrid,
 	Dialog,
+	DialogTrigger,
+	Heading,
+	Popover,
 } from "react-aria-components";
-import { parseAbsoluteToLocal } from "@internationalized/date";
+import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
+import { FaCheck } from "react-icons/fa6";
+import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 export interface TaskProp {
 	task: Task;

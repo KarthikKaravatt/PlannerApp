@@ -5,20 +5,20 @@ import {
 import type { Task } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
+import { parseAbsoluteToLocal } from "@internationalized/date";
 import { useState } from "react";
 import {
 	ListBox,
 	ListBoxItem,
 	ListLayout,
-	useDragAndDrop,
 	Virtualizer,
+	useDragAndDrop,
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { useListData } from "react-stately";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
-import { parseAbsoluteToLocal } from "@internationalized/date";
 
 export const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");

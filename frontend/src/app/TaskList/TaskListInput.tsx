@@ -1,8 +1,8 @@
 import { useAddNewTaskMutation } from "@/redux/api/apiSlice";
 import { logError } from "@/util/console.ts";
 import { type ChangeEvent, useState } from "react";
-import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import { Button } from "react-aria-components";
+import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 export const TaskListInput: React.FC = () => {
 	const [inputTask, setInputTask] = useState<string>("");
