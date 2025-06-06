@@ -9,11 +9,22 @@ import type {
 	TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
-import { DateTime } from "luxon";
-import { useReducer, useRef, useState } from "react";
+import { useReducer } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { FaCheck } from "react-icons/fa6";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
+import {
+	Button,
+	Calendar,
+	Heading,
+	CalendarGrid,
+	CalendarCell,
+	DialogTrigger,
+	Popover,
+	Dialog,
+} from "react-aria-components";
+import { parseAbsoluteToLocal } from "@internationalized/date";
+import { CiEdit } from "react-icons/ci";
 
 export interface TaskProp {
 	task: Task;
@@ -59,6 +70,8 @@ interface CheckBoxProp {
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
+	//TODO:: Use React aria checkbok and make this its own general use custom
+	//component
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
 	const handleClick = () => {
 		if (state.editable || isLoading || state.isLoading) {
@@ -150,24 +163,20 @@ interface DueDateProp {
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
-	const dateInputRef = useRef<HTMLInputElement>(null);
 	const { isLoading, onDateButtonClicked } = useTaskDueDate(
 		task,
 		state,
 		dispatch,
 	);
-	const handleButtonClick = () => {
-		//BUG: Positioning is not aligned with the button on Firefox
-		if (dateInputRef.current) {
-			dateInputRef.current.showPicker();
-		}
-	};
 	//TODO: task due in the current week should only display the day of the week
 	//TODO: change colour based on how soon it's due
 	if (task.kind === "withoutDate") {
 		return <></>;
 	}
-
+	const date = parseAbsoluteToLocal(task.dueDate);
+	const monthAbbr = new Intl.DateTimeFormat("en-US", {
+		month: "short",
+	}).format(date.toDate());
 	return (
 		<>
 			<div
@@ -179,21 +188,43 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
           w-15
         `}
 			>
-				<button type="button" onClick={handleButtonClick}>
-					{DateTime.fromISO(task.dueDate).toFormat("dd LLL")}
-
-					<input
-						type="datetime-local"
-						value={DateTime.fromISO(task.dueDate).toFormat(
-							"yyyy-MM-dd'T'HH:mm",
-						)}
-						ref={dateInputRef}
-						onChange={(event) => {
-							onDateButtonClicked(event.target.value);
-						}}
-						hidden={true}
-					/>
-				</button>
+				<DialogTrigger>
+					<Button type="button">{`${date.day.toString()} ${monthAbbr}`}</Button>
+					<Popover>
+						<Calendar
+							value={date}
+							defaultValue={date}
+							onChange={(event) => {
+								onDateButtonClicked(event);
+							}}
+							aria-label="Appointment date"
+							className="bg-sky-100 outline-1 outline-gray-300 text-xs"
+						>
+							<header className="flex items-center mx-1 mb-2">
+								<Button slot="previous" className="p-0">
+									◀
+								</Button>
+								<Heading className="flex-1 m-0 text-center" />
+								<Button slot="next" className="p-0">
+									▶
+								</Button>
+							</header>
+							<CalendarGrid className="gird grid-cols-7">
+								{(date) => (
+									<CalendarCell
+										date={date}
+										className="
+                    text-center p-0.5
+                    data-[outside-month]:hidden data-[pressed]:bg-gray-100
+                    data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-blue-500
+                    data-[selected]:bg-blue-500 data-[selected]:text-white
+                    "
+									/>
+								)}
+							</CalendarGrid>
+						</Calendar>
+					</Popover>
+				</DialogTrigger>
 			</div>
 		</>
 	);
@@ -204,11 +235,6 @@ interface MoreOptionsProp {
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
-	const popOverId = `popOver: ${task.id}`;
-	const buttonRef = useRef<HTMLButtonElement>(null);
-	const popoverRef = useRef<HTMLDivElement>(null);
-	//Prevent flickering as the popover position is changed
-	const [isHidden, setIsHidden] = useState(true);
 	const {
 		isLoading,
 		handleConfirmButtonClick,
@@ -217,36 +243,6 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 		handleRemoveButtonDateClicked,
 	} = useMoreOptions(task, state, dispatch);
 
-	const handlePopoverToggle = (event: React.SyntheticEvent<HTMLDivElement>) => {
-		const popoverElement = popoverRef.current;
-		const buttonElement = buttonRef.current;
-
-		const nativeToggleEvent = event.nativeEvent as ToggleEvent;
-
-		if (
-			popoverElement &&
-			buttonElement &&
-			nativeToggleEvent.newState === "open"
-		) {
-			const buttonRect = buttonElement.getBoundingClientRect();
-
-			popoverElement.style.top = `${(
-				buttonRect.bottom + window.scrollY
-			).toString()}px`;
-			popoverElement.style.left = `${(
-				buttonRect.left +
-					buttonRect.width / 2 -
-					popoverElement.offsetWidth / 2 +
-					window.scrollX -
-					//Offset
-					70
-			).toString()}px`;
-			setIsHidden(false);
-		} else {
-			setIsHidden(true);
-		}
-	};
-
 	return (
 		<>
 			<div
@@ -254,72 +250,74 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
           flex flex-row items-center
         "
 			>
-				<button
-					ref={buttonRef}
-					popoverTarget={popOverId}
-					type="button"
-					hidden={state.editable}
-				>
-					<BsThreeDots className="text-blue-950 dark:text-white" />
-				</button>
-				<button
+				<div>
+					<DialogTrigger>
+						<Button
+							type="button"
+							className={state.editable ? "opacity-0" : "opacity-100"}
+						>
+							<BsThreeDots className="text-blue-950 dark:text-white" />
+						</Button>
+						<Popover>
+							<Dialog>
+								<div
+									className="
+                  text-xs
+                  flex flex-col     
+                  justify-center
+                  text-blue-950 dark:text-white
+                  dark:bg-dark-background-c bg-blue-100
+                  border-2 border-gray-300 dark:border-gray-200
+                  rounded
+                  p-0.5
+                "
+								>
+									<Button
+										type="button"
+										onClick={() => {
+											handleAddDateButtonClicked();
+										}}
+									>
+										Add Date
+									</Button>
+									<hr />
+									<Button
+										type="button"
+										onClick={() => {
+											handleRemoveButtonDateClicked();
+										}}
+									>
+										Remove Date
+									</Button>
+									<hr />
+									<Button
+										onClick={() => {
+											handleDeleteButtonClick();
+										}}
+										type="button"
+									>
+										Delete
+									</Button>
+								</div>
+							</Dialog>
+						</Popover>
+					</DialogTrigger>
+				</div>
+				<Button
 					type="button"
 					className={`"
-            ${isLoading || state.isLoading ? "text-gray-400" : "text-green-700 dark:text-green-400 "}
-          "`}
-					hidden={!state.editable}
-					onClick={handleConfirmButtonClick}
+          ${isLoading || state.isLoading ? "text-gray-400" : state.editable ? "text-green-700 dark:text-green-400" : ""}
+        "`}
+					onClick={
+						state.editable
+							? handleConfirmButtonClick
+							: () => {
+									dispatch({ type: "MUTATE_EDITABLE", payload: true });
+								}
+					}
 				>
-					<FaCheck />
-				</button>
-			</div>
-			<div
-				ref={popoverRef}
-				hidden={isHidden}
-				id={popOverId}
-				popover="auto"
-				className="
-          flex flex-col     
-          justify-center
-          text-blue-950 dark:text-white
-          dark:bg-dark-background-c bg-blue-100
-          border-2 border-gray-300 dark:border-gray-200
-          rounded
-          p-0.5
-        "
-				style={{ inset: "unset" }}
-				onToggle={handlePopoverToggle}
-			>
-				<button
-					type="button"
-					onClick={() => {
-						setIsHidden(true);
-						handleAddDateButtonClicked();
-					}}
-				>
-					Add Date
-				</button>
-				<hr />
-				<button
-					type="button"
-					onClick={() => {
-						setIsHidden(true);
-						handleRemoveButtonDateClicked();
-					}}
-				>
-					Remove Date
-				</button>
-				<hr />
-				<button
-					onClick={() => {
-						setIsHidden(true);
-						handleDeleteButtonClick();
-					}}
-					type="button"
-				>
-					Delete
-				</button>
-				<hr />
+					{state.editable ? <FaCheck /> : <CiEdit />}
+				</Button>
 			</div>
 		</>
 	);

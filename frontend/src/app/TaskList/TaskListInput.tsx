@@ -2,6 +2,7 @@ import { useAddNewTaskMutation } from "@/redux/api/apiSlice";
 import { logError } from "@/util/console.ts";
 import { type ChangeEvent, useState } from "react";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
+import { Button } from "react-aria-components";
 
 export const TaskListInput: React.FC = () => {
 	const [inputTask, setInputTask] = useState<string>("");
@@ -42,8 +43,8 @@ export const TaskListInput: React.FC = () => {
 					onChange={onInputChanged}
 					value={inputTask}
 				/>
-				<button
-					disabled={isLoading}
+				<Button
+					isDisabled={isLoading}
 					className="
             w-1/3
             bg-blue-200
@@ -55,7 +56,7 @@ export const TaskListInput: React.FC = () => {
 					onClick={onAddButtonClick}
 				>
 					Add task
-				</button>
+				</Button>
 			</div>
 		</>
 	);

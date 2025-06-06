@@ -8,7 +8,7 @@ import type {
 	TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console";
-import { DateTime } from "luxon";
+import { getLocalTimeZone, now } from "@internationalized/date";
 
 export const useMoreOptions = (
 	task: Task,
@@ -78,7 +78,7 @@ export const useMoreOptions = (
 				const { kind: _kind, ...transformedTask } = task;
 				const updatedTask = {
 					kind: "withDate",
-					dueDate: DateTime.now().toISO(),
+					dueDate: now(getLocalTimeZone()).toAbsoluteString(),
 					...transformedTask,
 				} as Task;
 				updateTask(updatedTask)

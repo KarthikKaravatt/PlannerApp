@@ -5,14 +5,20 @@ import {
 import type { Task } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
-import { DateTime } from "luxon";
 import { useState } from "react";
-import { ListBox, ListBoxItem, useDragAndDrop } from "react-aria-components";
+import {
+	ListBox,
+	ListBoxItem,
+	ListLayout,
+	useDragAndDrop,
+	Virtualizer,
+} from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { useListData } from "react-stately";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
+import { parseAbsoluteToLocal } from "@internationalized/date";
 
 export const TaskListComponent: React.FC = () => {
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
@@ -102,19 +108,23 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	if (isSuccess) {
 		list.items = filteredList;
 		return (
-			<ListBox
-				items={list.items}
-				className="w-full"
-				aria-label="Tasks"
-				dragAndDropHooks={dragAndDropHooks}
-				selectionMode="single"
-			>
-				{(task) => (
-					<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
-						<TaskComponent key={task.id} task={task} />
-					</ListBoxItem>
-				)}
-			</ListBox>
+			<Virtualizer layout={ListLayout}>
+				<ListBox
+					items={list.items}
+					className="w-full overflow-scroll"
+					aria-label="Tasks"
+					//BUG: disable this when the task is being edited otherwise can't
+					//copy tasks with mouse
+					dragAndDropHooks={dragAndDropHooks}
+					selectionMode="single"
+				>
+					{(task) => (
+						<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
+							<TaskComponent key={task.id} task={task} />
+						</ListBoxItem>
+					)}
+				</ListBox>
+			</Virtualizer>
 		);
 	}
 	if (isError) {
@@ -147,9 +157,9 @@ function getFinalList(
 
 	const sortByDate = (a: Task, b: Task) => {
 		if (a.kind === "withDate" && b.kind === "withDate") {
-			const aDate = DateTime.fromISO(a.dueDate);
-			const bDate = DateTime.fromISO(b.dueDate);
-			return aDate.toMillis() - bDate.toMillis();
+			const aDate = parseAbsoluteToLocal(a.dueDate);
+			const bDate = parseAbsoluteToLocal(b.dueDate);
+			return aDate.compare(bDate);
 		}
 		if (a.kind === "withoutDate" || b.kind === "withDate") {
 			return 1;

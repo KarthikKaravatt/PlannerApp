@@ -5,7 +5,7 @@ import type {
 	TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console";
-import { DateTime } from "luxon";
+import type { ZonedDateTime } from "@internationalized/date";
 
 export const useTaskDueDate = (
 	task: Task,
@@ -13,23 +13,21 @@ export const useTaskDueDate = (
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>,
 ) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
-	const onDateButtonClicked = (inputValue: string) => {
+	const onDateButtonClicked = (inputDate: ZonedDateTime) => {
 		dispatch({ type: "MUTATE_LOADING", payload: true });
 		if (state.editable) {
 			return;
 		}
-		const date = DateTime.fromFormat(inputValue, "yyyy-MM-dd'T'HH:mm");
 		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
-				if (date.isValid) {
-					const isoDate = date.toISO();
-					updateTask({ ...task, dueDate: isoDate }).catch((err: unknown) => {
+				updateTask({ ...task, dueDate: inputDate.toAbsoluteString() }).catch(
+					(err: unknown) => {
 						if (err instanceof Error) {
 							logError("Error updating task:", err);
 						}
-					});
-				}
+					},
+				);
 				dispatch({ type: "MUTATE_LOADING", payload: false });
 				break;
 			}

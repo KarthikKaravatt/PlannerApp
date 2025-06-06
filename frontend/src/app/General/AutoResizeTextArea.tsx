@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { TextArea } from "react-aria-components";
 
 export const AutoResizeTextArea: React.FC<
 	React.ComponentPropsWithoutRef<"textarea">
@@ -38,7 +39,7 @@ export const AutoResizeTextArea: React.FC<
 		};
 	}, [resizeComponent]);
 	return (
-		<textarea
+		<TextArea
 			{...rest}
 			onDoubleClick={onDoubleClick}
 			placeholder={placeholder}

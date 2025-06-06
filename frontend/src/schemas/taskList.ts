@@ -1,4 +1,4 @@
-import { DateTime } from "luxon";
+import { parseAbsoluteToLocal } from "@internationalized/date";
 import { z } from "zod/v4";
 const BaseTaskSchema = z.object({
 	id: z.uuidv7(),
@@ -7,11 +7,19 @@ const BaseTaskSchema = z.object({
 	orderIndex: z.uint32(),
 });
 export const TaskResponseDateSchema = BaseTaskSchema.extend({
-	dueDate: z
-		.string()
-		.refine((dateString) => DateTime.fromISO(dateString).isValid, {
+	dueDate: z.string().refine(
+		(dateString) => {
+			try {
+				parseAbsoluteToLocal(dateString);
+				return true;
+			} catch {
+				return false;
+			}
+		},
+		{
 			message: "Date string is not a valid ISO date",
-		}),
+		},
+	),
 });
 
 export const TaskResponseNoDateSchema = BaseTaskSchema.extend({});
