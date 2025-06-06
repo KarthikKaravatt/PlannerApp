@@ -92,10 +92,9 @@ void Main()
             }
 
             await db.SaveChangesAsync();
-            return Results.Ok();
         }
+        return Results.Ok();
 
-        return Results.NotFound();
     });
     // swap task orders
     app.MapPatch("/api/tasks/swap/{id1:guid}/{id2:guid}", async (Guid id1, Guid id2, PlannerDbContext db) =>
