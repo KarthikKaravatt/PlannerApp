@@ -104,6 +104,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 				selectionMode="single"
 			>
 				{(task) => (
+					//TODO: get a proper text value
 					<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
 						<TaskComponent key={task.id} task={task} />
 					</ListBoxItem>

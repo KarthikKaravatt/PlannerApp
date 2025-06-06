@@ -1,6 +1,15 @@
 import { useClearCompletedTasksMutation } from "@/redux/api/apiSlice";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console";
+import {
+	Button,
+	ListBox,
+	ListBoxItem,
+	Popover,
+	Select,
+	SelectValue,
+} from "react-aria-components";
+import { RiArrowDropDownLine } from "react-icons/ri";
 
 export interface TaskListOptionsProp {
 	filterState: FilterOption;
@@ -48,7 +57,7 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
         text-blue-950 dark:text-white
       "
 		>
-			<button
+			<Button
 				type="button"
 				className="
           flex flex-1 flex-col
@@ -60,9 +69,9 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 				onClick={onFilterButtonClick}
 			>
 				{filterState[0] + filterState.slice(1).toLocaleLowerCase()}
-			</button>
+			</Button>
 
-			<button
+			<Button
 				type="button"
 				className="
           flex flex-1 flex-col 
@@ -73,35 +82,51 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 				onClick={onClearButtonClick}
 			>
 				Clear
-			</button>
-
+			</Button>
 			<div
 				className="
-          flex flex-1 flex-col 
-          items-center justify-center 
-          rounded-md border border-gray-300 
-          shadow-sm
-        "
+			       flex flex-1 flex-col 
+			       items-center justify-center 
+			       rounded-md border border-gray-300 
+			       shadow-sm
+			     "
 			>
-				<select
-					id="sort-select"
-					value={sortOrder}
-					name="sort"
-					onChange={(event) => {
-						onSortOrderChanged(event.target.value);
+				<Select
+					defaultSelectedKey={sortOrder}
+					aria-label="Select sort option"
+					onSelectionChange={(event) => {
+						if (event) {
+							onSortOrderChanged(event.toString());
+						}
 					}}
-					className="
-              block rounded-md 
-              border-gray-300 
-              dark:bg-dark-background-c
-              text-center
-              w-full         
-            "
 				>
-					<option value={"CUSTOM"}>Custom</option>
-					<option value={"DATE"}>Date</option>
-					<option value={"NAME"}>Name</option>
-				</select>
+					<Button>
+						<div className="flex items-center">
+							<SelectValue />
+							<RiArrowDropDownLine />
+						</div>
+					</Button>
+					<Popover
+						className="
+            rounded-md p-1 
+            bg-sky-100 dark:bg-dark-background-c 
+            text-blue-950 dark:text-white
+            outline-2 outline-gray-300
+            "
+					>
+						<ListBox>
+							<ListBoxItem textValue="Custom sort order option" id={"CUSTOM"}>
+								Custom
+							</ListBoxItem>
+							<ListBoxItem textValue="Date sort order option" id={"DATE"}>
+								Date
+							</ListBoxItem>
+							<ListBoxItem textValue="Name sort order option" id={"NAME"}>
+								Name
+							</ListBoxItem>
+						</ListBox>
+					</Popover>
+				</Select>
 			</div>
 		</div>
 	);
