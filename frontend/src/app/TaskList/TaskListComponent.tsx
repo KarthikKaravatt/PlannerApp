@@ -108,23 +108,21 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	if (isSuccess) {
 		list.items = filteredList;
 		return (
-			<Virtualizer layout={ListLayout}>
-				<ListBox
-					items={list.items}
-					className="w-full overflow-scroll"
-					aria-label="Tasks"
-					//BUG: disable this when the task is being edited otherwise can't
-					//copy tasks with mouse
-					dragAndDropHooks={dragAndDropHooks}
-					selectionMode="single"
-				>
-					{(task) => (
-						<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
-							<TaskComponent key={task.id} task={task} />
-						</ListBoxItem>
-					)}
-				</ListBox>
-			</Virtualizer>
+			<ListBox
+				items={list.items}
+				className={"w-full"}
+				aria-label="Tasks"
+				//BUG: disable this when the task is being edited otherwise can't
+				//copy tasks with mouse
+				dragAndDropHooks={dragAndDropHooks}
+				selectionMode="single"
+			>
+				{(task) => (
+					<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
+						<TaskComponent key={task.id} task={task} />
+					</ListBoxItem>
+				)}
+			</ListBox>
 		);
 	}
 	if (isError) {

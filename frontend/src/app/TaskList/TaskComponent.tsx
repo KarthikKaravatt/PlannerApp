@@ -250,7 +250,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
           flex flex-row items-center
         "
 			>
-				<div>
+				<div className="flex">
 					<DialogTrigger>
 						<Button
 							type="button"
