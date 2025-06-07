@@ -28,8 +28,12 @@ import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 export interface TaskProp {
 	task: Task;
+	onEditableStateChange: (isEditing: boolean) => void;
 }
-export const TaskComponent: React.FC<TaskProp> = ({ task }) => {
+export const TaskComponent: React.FC<TaskProp> = ({
+	task,
+	onEditableStateChange,
+}) => {
 	const initalTaskComponentState: TaskComponentState = {
 		inputTaskName: task.label,
 		editable: false,
@@ -50,15 +54,23 @@ export const TaskComponent: React.FC<TaskProp> = ({ task }) => {
           rounded-lg
           shadow
         `}
+			draggable={!state.editable}
 		>
-			<div
-				draggable={!state.editable}
-				className="flex flex-row gap-2 items-center pr-2 pl-2"
-			>
+			<div className="flex flex-row gap-2 items-center pr-2 pl-2">
 				<CheckBox task={task} state={state} dispatch={dispatch} />
-				<InputField task={task} state={state} dispatch={dispatch} />
+				<InputField
+					task={task}
+					state={state}
+					dispatch={dispatch}
+					onEditableStateChange={onEditableStateChange}
+				/>
 				<DueDateDisplay task={task} state={state} dispatch={dispatch} />
-				<MoreOptions task={task} state={state} dispatch={dispatch} />
+				<MoreOptions
+					task={task}
+					state={state}
+					dispatch={dispatch}
+					onEditableStateChange={onEditableStateChange}
+				/>
 			</div>
 		</div>
 	);
@@ -137,8 +149,14 @@ interface InputFieldProps {
 	task: Task;
 	state: TaskComponentState;
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
+	onEditableStateChange: (isEditing: boolean) => void;
 }
-const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
+const InputField: React.FC<InputFieldProps> = ({
+	task,
+	state,
+	dispatch,
+	onEditableStateChange,
+}) => {
 	return (
 		<AutoResizeTextArea
 			value={state.editable ? state.inputTaskName : task.label}
@@ -150,6 +168,7 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 			onDoubleClick={() => {
 				dispatch({ type: "MUTATE_INPUT", payload: task.label });
 				dispatch({ type: "MUTATE_EDITABLE", payload: true });
+				onEditableStateChange(true);
 			}}
 			onChange={(event) => {
 				dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
@@ -233,15 +252,21 @@ interface MoreOptionsProp {
 	task: Task;
 	state: TaskComponentState;
 	dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
+	onEditableStateChange: (isEditing: boolean) => void;
 }
-const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
+const MoreOptions: React.FC<MoreOptionsProp> = ({
+	task,
+	state,
+	dispatch,
+	onEditableStateChange,
+}) => {
 	const {
 		isLoading,
 		handleConfirmButtonClick,
 		handleDeleteButtonClick,
 		handleAddDateButtonClicked,
 		handleRemoveButtonDateClicked,
-	} = useMoreOptions(task, state, dispatch);
+	} = useMoreOptions(task, state, dispatch, onEditableStateChange);
 
 	return (
 		<>
@@ -313,6 +338,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
 							? handleConfirmButtonClick
 							: () => {
 									dispatch({ type: "MUTATE_EDITABLE", payload: true });
+									onEditableStateChange(true);
 								}
 					}
 				>

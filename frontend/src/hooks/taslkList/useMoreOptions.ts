@@ -14,6 +14,7 @@ export const useMoreOptions = (
 	task: Task,
 	state: TaskComponentState,
 	dispatch: (action: TaskComponentAction) => void,
+	onEditableStateChange: (isEditing: boolean) => void,
 ) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
 	const [deleteTask] = useDeleteTaskMutation();
@@ -33,6 +34,7 @@ export const useMoreOptions = (
 				});
 		}
 		dispatch({ type: "MUTATE_EDITABLE", payload: false });
+		onEditableStateChange(false);
 	};
 	const handleDeleteButtonClick = () => {
 		deleteTask(task.id).catch((err: unknown) => {

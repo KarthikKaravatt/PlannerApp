@@ -114,7 +114,7 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
             outline-2 outline-gray-300
             "
 					>
-						<ListBox>
+						<ListBox className={"text-xs"}>
 							<ListBoxItem textValue="Custom sort order option" id={"CUSTOM"}>
 								Custom
 							</ListBoxItem>

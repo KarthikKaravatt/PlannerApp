@@ -19,12 +19,15 @@ export const AutoResizeTextArea: React.FC<
 		if (!textAreaRef.current) {
 			return;
 		}
+		if (value === undefined) {
+			return;
+		}
 		const textArea = textAreaRef.current;
 		//Recalculate scroll height
 		textArea.style.height = "auto";
 		//apply proper height
 		textArea.style.height = `${textArea.scrollHeight.toString()}px`;
-	}, []);
+	}, [value]);
 	resizeComponent();
 	useEffect(() => {
 		if (!textAreaRef.current) {

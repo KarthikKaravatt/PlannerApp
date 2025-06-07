@@ -6,7 +6,7 @@ import type { Task } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ListBox, ListBoxItem, useDragAndDrop } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { TaskComponent } from "./TaskComponent.tsx";
@@ -14,6 +14,7 @@ import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
 
 export const TaskListComponent: React.FC = () => {
+	const [isEditingTask, setEditingTaskId] = useState<boolean>(false);
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
 	const [sortOption, setSortOption] = useState<SortOption>(() => {
 		const selection = localStorage.getItem("SORT_OPTION") as SortOption | null;
@@ -23,6 +24,9 @@ export const TaskListComponent: React.FC = () => {
 		}
 		return selection;
 	});
+	const handleTaskEditableStateChange = useCallback((isEditing: boolean) => {
+		setEditingTaskId(isEditing);
+	}, []);
 	return (
 		<div className="p-2 flex flex-col items-center gap-1 h-full w-full">
 			<TaskListOptions
@@ -32,7 +36,12 @@ export const TaskListComponent: React.FC = () => {
 				setSortState={setSortOption}
 			/>
 			<TaskListInput />
-			<VisibleTasks sortOption={sortOption} filterOption={filterOption} />
+			<VisibleTasks
+				isEditingTask={isEditingTask}
+				onTaskEditableStateChange={handleTaskEditableStateChange}
+				sortOption={sortOption}
+				filterOption={filterOption}
+			/>
 		</div>
 	);
 };
@@ -40,11 +49,15 @@ export const TaskListComponent: React.FC = () => {
 interface ViibleTasksProp {
 	filterOption: FilterOption;
 	sortOption: SortOption;
+	isEditingTask: boolean;
+	onTaskEditableStateChange: (isEditing: boolean) => void;
 }
 
 const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	filterOption,
 	sortOption,
+	isEditingTask,
+	onTaskEditableStateChange,
 }) => {
 	const {
 		data: tasks = [],
@@ -57,6 +70,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
 	const filteredList = getFinalList(tasks, filterOption, sortOption);
 	const { dragAndDropHooks } = useDragAndDrop({
+		isDisabled: isEditingTask,
 		getItems: (keys) =>
 			[...keys].map((_key) => {
 				//TODO: Implment this properly
@@ -98,15 +112,17 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 				items={filteredList}
 				className={"w-full"}
 				aria-label="Tasks"
-				//BUG: disable this when the task is being edited otherwise can't
-				//copy tasks with mouse
 				dragAndDropHooks={dragAndDropHooks}
 				selectionMode="single"
 			>
 				{(task) => (
 					//TODO: get a proper text value
 					<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
-						<TaskComponent key={task.id} task={task} />
+						<TaskComponent
+							key={task.id}
+							task={task}
+							onEditableStateChange={onTaskEditableStateChange}
+						/>
 					</ListBoxItem>
 				)}
 			</ListBox>
