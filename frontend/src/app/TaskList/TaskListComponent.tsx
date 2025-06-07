@@ -72,9 +72,8 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	const { dragAndDropHooks } = useDragAndDrop({
 		isDisabled: isEditingTask,
 		getItems: (keys) =>
-			[...keys].map((_key) => {
-				//TODO: Implment this properly
-				return { "text/plain": "LOL" };
+			[...keys].map((key) => {
+				return { "text/plain": key.toString() };
 			}),
 		onReorder: (e) => {
 			if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
@@ -117,7 +116,14 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 			>
 				{(task) => (
 					//TODO: get a proper text value
-					<ListBoxItem textValue="LOL" className="data-[dragging]:opacity-60">
+					<ListBoxItem
+						textValue={`
+              Task Label: ${task.label}
+              Completed: ${String(task.completed)}
+              ${task.kind === "withDate" ? task.dueDate : ""}
+            `}
+						className="data-[dragging]:opacity-60"
+					>
 						<TaskComponent
 							key={task.id}
 							task={task}
