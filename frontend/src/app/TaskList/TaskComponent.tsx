@@ -53,6 +53,7 @@ export const TaskComponent: React.FC<TaskProp> = ({
           border-1
           rounded-lg
           shadow
+          w-full
         `}
 			draggable={!state.editable}
 		>

@@ -7,8 +7,14 @@ import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { useCallback, useState } from "react";
-import { ListBox, ListBoxItem, useDragAndDrop } from "react-aria-components";
+import {
+	Button,
+	GridList,
+	GridListItem,
+	useDragAndDrop,
+} from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
+import { MdDragIndicator } from "react-icons/md";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
@@ -51,6 +57,18 @@ interface ViibleTasksProp {
 	sortOption: SortOption;
 	isEditingTask: boolean;
 	onTaskEditableStateChange: (isEditing: boolean) => void;
+}
+//HACK: Bug in react aria
+//https://github.com/adobe/react-spectrum/issues/4674
+function stopSpaceOnInput(e: React.KeyboardEvent) {
+	const target = e.target as HTMLElement;
+	if (
+		target.tagName === "INPUT" ||
+		target.tagName === "TEXTAREA" ||
+		target.isContentEditable
+	) {
+		e.stopPropagation();
+	}
 }
 
 const VisibleTasks: React.FC<ViibleTasksProp> = ({
@@ -107,31 +125,38 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	}
 	if (isSuccess) {
 		return (
-			<ListBox
-				items={filteredList}
-				className={"w-full"}
-				aria-label="Tasks"
-				dragAndDropHooks={dragAndDropHooks}
-				selectionMode="single"
-			>
-				{(task) => (
-					//TODO: get a proper text value
-					<ListBoxItem
-						textValue={`
+			<div className="w-full" onKeyDownCapture={stopSpaceOnInput}>
+				<GridList
+					keyboardNavigationBehavior="tab"
+					items={filteredList}
+					className={"w-full"}
+					aria-label="Tasks"
+					dragAndDropHooks={dragAndDropHooks}
+					selectionMode="single"
+				>
+					{(task) => (
+						<GridListItem
+							textValue={`
               Task Label: ${task.label}
               Completed: ${String(task.completed)}
               ${task.kind === "withDate" ? task.dueDate : ""}
             `}
-						className="data-[dragging]:opacity-60"
-					>
-						<TaskComponent
-							key={task.id}
-							task={task}
-							onEditableStateChange={onTaskEditableStateChange}
-						/>
-					</ListBoxItem>
-				)}
-			</ListBox>
+							className="data-[dragging]:opacity-60"
+						>
+							<div className="flex flex-row">
+								<TaskComponent
+									key={task.id}
+									task={task}
+									onEditableStateChange={onTaskEditableStateChange}
+								/>
+								<Button slot="drag" aria-label="Drag item">
+									<MdDragIndicator />
+								</Button>
+							</div>
+						</GridListItem>
+					)}
+				</GridList>
+			</div>
 		);
 	}
 	if (isError) {

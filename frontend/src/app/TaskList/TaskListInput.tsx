@@ -38,6 +38,7 @@ export const TaskListInput: React.FC = () => {
             dark:placeholder-gray-300
             outline-none
             w-2/3
+            pl-1
           "
 					placeholder="Enter new task"
 					onChange={onInputChanged}
