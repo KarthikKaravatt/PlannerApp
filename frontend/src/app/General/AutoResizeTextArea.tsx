@@ -44,7 +44,16 @@ export const AutoResizeTextArea: React.FC<
 	return (
 		<TextArea
 			{...rest}
-			onDoubleClick={onDoubleClick}
+			onDoubleClick={(event) => {
+				if (onDoubleClick) {
+					onDoubleClick(event);
+					const textArea = textAreaRef.current;
+					if (textArea) {
+						const textEnd = textArea.textLength;
+						textArea.setSelectionRange(textEnd, textEnd);
+					}
+				}
+			}}
 			placeholder={placeholder}
 			readOnly={readOnly}
 			// Default is like 3 for some reason
