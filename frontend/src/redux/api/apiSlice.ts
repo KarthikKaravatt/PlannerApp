@@ -189,8 +189,36 @@ export const apiSlice = createApi({
 					},
 				};
 			},
-			//TODO:Make optimistic task updates work I think it has to do something
-			//with produce
+			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
+				const patchResult = dispatch(
+					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
+						draft.sort((a, b) => a.orderIndex - b.orderIndex);
+						const movedTaskIndex = draft.findIndex((t) => t.id === payload.id1);
+						const [movedTask] = draft.splice(movedTaskIndex, 1);
+						const anchorTaskIndex = draft.findIndex(
+							(t) => t.id === payload.id2,
+						);
+						// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
+						switch (payload.pos) {
+							case "Before": {
+								draft.splice(anchorTaskIndex, 0, movedTask);
+								break;
+							}
+							case "After": {
+								draft.splice(anchorTaskIndex + 1, 0, movedTask);
+								break;
+							}
+						}
+						for (let i = 0; i < draft.length; i++) {
+							draft[i].orderIndex = i;
+						}
+					}),
+				);
+				await queryFulfilled.catch(() => {
+					logError("Error moving tasks");
+					patchResult.undo();
+				});
+			},
 			invalidatesTags: ["Tasks"],
 		}),
 		clearCompletedTasks: builder.mutation<void, void>({
