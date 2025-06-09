@@ -149,36 +149,6 @@ export const apiSlice = createApi({
 			},
 			invalidatesTags: ["Tasks"],
 		}),
-		swapTaskOrder: builder.mutation<void, { id1: string; id2: string }>({
-			query: (updateTasks) => ({
-				url: `swap/${updateTasks.id1}/${updateTasks.id2}`,
-				method: "PATCH",
-			}),
-			async onQueryStarted({ id1, id2 }, { dispatch, queryFulfilled }) {
-				const patchResult = dispatch(
-					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
-						const taskA = draft.findIndex((t) => t.id === id1);
-						const taskB = draft.findIndex((t) => t.id === id2);
-						if (taskA !== -1 && taskB !== -1) {
-							const temp = draft[taskA].orderIndex;
-							draft[taskA].orderIndex = draft[taskB].orderIndex;
-							draft[taskB].orderIndex = temp;
-							draft.sort((a, b) => a.orderIndex - b.orderIndex);
-							let count = 0;
-							for (const [i, _item] of draft.entries()) {
-								draft[i].orderIndex = count;
-								count += 1;
-							}
-						}
-					}),
-				);
-				await queryFulfilled.catch(() => {
-					logError("Removing completed tasks failed rolling back");
-					patchResult.undo();
-				});
-			},
-			invalidatesTags: ["Tasks"],
-		}),
 		moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
 			query: (moveTasks) => {
 				return {
@@ -209,6 +179,7 @@ export const apiSlice = createApi({
 								break;
 							}
 						}
+						// re-index
 						for (let i = 0; i < draft.length; i++) {
 							draft[i].orderIndex = i;
 						}
@@ -256,7 +227,6 @@ export const {
 	useAddNewTaskMutation,
 	useDeleteTaskMutation,
 	useUpdateTaskMutation,
-	useSwapTaskOrderMutation,
 	useClearCompletedTasksMutation,
 	useMoveTaskOrderMutation,
 	useGetTaskQuery,
