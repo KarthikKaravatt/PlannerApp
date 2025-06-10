@@ -103,7 +103,7 @@ export const apiSlice = createApi({
 					taskOrderPatchResult.undo();
 				});
 			},
-			invalidatesTags: ["Tasks", "TaskOrder"],
+			invalidatesTags: ["Tasks"],
 		}),
 		deleteTask: builder.mutation<void, string>({
 			query: (id) => ({
@@ -134,7 +134,7 @@ export const apiSlice = createApi({
 					taskOrderPatchResult.undo();
 				});
 			},
-			invalidatesTags: ["Tasks"],
+			invalidatesTags: ["Tasks", "TaskOrder"],
 		}),
 		updateTask: builder.mutation<void, Task>({
 			query: (task) => {
@@ -171,7 +171,7 @@ export const apiSlice = createApi({
 					patchResult.undo();
 				});
 			},
-			invalidatesTags: ["Tasks"],
+			// invalidatesTags: ["Tasks"],
 		}),
 		moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
 			query: (moveTasks) => {
@@ -248,7 +248,7 @@ export const apiSlice = createApi({
 					taskOrderPatchResult.undo();
 				});
 			},
-			invalidatesTags: ["Tasks"],
+			invalidatesTags: ["Tasks", "TaskOrder"],
 		}),
 	}),
 });
