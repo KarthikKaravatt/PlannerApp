@@ -1,8 +1,11 @@
-import { ApiResponseTaskSchema, type Task } from "@/schemas/taskList";
+import {
+	ApiResponseTaskSchema,
+	type Task,
+	type TaskOrder,
+} from "@/schemas/taskList";
 import { logError } from "@/util/console";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { produce } from "immer";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod/v4";
 const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
@@ -24,9 +27,9 @@ export interface MoveTaskOrderPayload {
 export const apiSlice = createApi({
 	reducerPath: "api",
 	baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
-	tagTypes: ["Tasks"],
+	tagTypes: ["Tasks", "TaskOrder"],
 	endpoints: (builder) => ({
-		getTasks: builder.query<Task[], void>({
+		getTasks: builder.query<Map<string, Task>, void>({
 			query: () => "",
 			transformResponse: (response) => {
 				const transformedTaskSchema = z
@@ -43,21 +46,25 @@ export const apiSlice = createApi({
 				const result = transformedTaskSchema.safeParse(response);
 
 				if (result.success) {
-					return result.data;
+					return new Map(result.data.map((t) => [t.id, t]));
 				}
 				logError("Validation error:", result.error);
 				throw new Error(
 					"Failed to validate API response. Data format is incorrect.",
 				);
 			},
-			//TODO: Need to look into making this better. changing anything about
-			//tasks causes a re-fetch of all tasks
 			providesTags: ["Tasks"],
 		}),
 		getTask: builder.query<Task, string>({
 			query: (id) => ({
 				url: `/${id}`,
 			}),
+		}),
+		getTaskOrder: builder.query<TaskOrder[], void>({
+			query: () => ({
+				url: "/order",
+			}),
+			providesTags: ["TaskOrder"],
 		}),
 		addNewTask: builder.mutation<Task, NewTaskRequest>({
 			query: (initialTask) => ({
@@ -66,23 +73,37 @@ export const apiSlice = createApi({
 				body: initialTask,
 			}),
 			async onQueryStarted(taskRequest, { dispatch, queryFulfilled }) {
-				const patchResult = dispatch(
+				const taskId = uuidv7();
+				const taskPatchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
 						const task: Task = {
-							id: uuidv7(),
+							id: taskId,
 							kind: "withoutDate",
-							orderIndex: draftTasks.length,
 							...taskRequest,
 						};
-						draftTasks.push(task);
+						draftTasks.set(task.id, task);
 					}),
 				);
+				const taskOrderPatchResult = dispatch(
+					apiSlice.util.updateQueryData(
+						"getTaskOrder",
+						undefined,
+						(draftTasksOrder) => {
+							draftTasksOrder.push({
+								id: taskId,
+								orderIndex: draftTasksOrder.length,
+							});
+						},
+					),
+				);
+
 				await queryFulfilled.catch(() => {
 					logError("Error adding task");
-					patchResult.undo();
+					taskPatchResult.undo();
+					taskOrderPatchResult.undo();
 				});
 			},
-			invalidatesTags: ["Tasks"],
+			invalidatesTags: ["Tasks", "TaskOrder"],
 		}),
 		deleteTask: builder.mutation<void, string>({
 			query: (id) => ({
@@ -90,17 +111,27 @@ export const apiSlice = createApi({
 				method: "DELETE",
 			}),
 			async onQueryStarted(id, { dispatch, queryFulfilled }) {
-				const patchResult = dispatch(
+				const taskPatchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
-						const taskIndex = draftTasks.findIndex((task) => task.id === id);
-						if (taskIndex !== -1) {
-							draftTasks.splice(taskIndex, 1);
+						if (!draftTasks.delete(id)) {
+							logError("Error deleting task");
 						}
 					}),
 				);
+				const taskOrderPatchResult = dispatch(
+					apiSlice.util.updateQueryData(
+						"getTaskOrder",
+						undefined,
+						(draftTaskOrder) => {
+							const taskOrderIndex = draftTaskOrder.findIndex((t) => t.id);
+							draftTaskOrder.splice(taskOrderIndex, 1);
+						},
+					),
+				);
 				await queryFulfilled.catch(() => {
 					logError("Error deleting task");
-					patchResult.undo();
+					taskPatchResult.undo();
+					taskOrderPatchResult.undo();
 				});
 			},
 			invalidatesTags: ["Tasks"],
@@ -132,14 +163,7 @@ export const apiSlice = createApi({
 			async onQueryStarted(task, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
-						const taskIndex = draftTasks.findIndex(
-							(curTask) => curTask.id === task.id,
-						);
-						if (taskIndex !== -1) {
-							draftTasks[taskIndex] = {
-								...task,
-							};
-						}
+						draftTasks.set(task.id, task);
 					}),
 				);
 				await queryFulfilled.catch(() => {
@@ -161,7 +185,7 @@ export const apiSlice = createApi({
 			},
 			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
-					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
+					apiSlice.util.updateQueryData("getTaskOrder", undefined, (draft) => {
 						draft.sort((a, b) => a.orderIndex - b.orderIndex);
 						const movedTaskIndex = draft.findIndex((t) => t.id === payload.id1);
 						const [movedTask] = draft.splice(movedTaskIndex, 1);
@@ -190,7 +214,7 @@ export const apiSlice = createApi({
 					patchResult.undo();
 				});
 			},
-			invalidatesTags: ["Tasks"],
+			invalidatesTags: ["TaskOrder"],
 		}),
 		clearCompletedTasks: builder.mutation<void, void>({
 			query: () => ({
@@ -198,24 +222,30 @@ export const apiSlice = createApi({
 				method: "DELETE",
 			}),
 			async onQueryStarted(_, { dispatch, queryFulfilled }) {
-				const patchResult = dispatch(
+				const deletedTasks = new Map<string, string>();
+				const taskPatchResult = dispatch(
 					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
-						let count = 0;
-						return draft
-							.filter((item) => !item.completed)
-							.sort((a, b) => a.orderIndex - b.orderIndex)
-							.map((t) => {
-								const newTask = produce(t, (tdraft) => {
-									tdraft.orderIndex = count;
-									count += 1;
-								});
-								return newTask;
-							});
+						for (const t of draft.values()) {
+							if (t.completed) {
+								deletedTasks.set(t.id, "");
+								draft.delete(t.id);
+							}
+						}
 					}),
+				);
+				const taskOrderPatchResult = dispatch(
+					apiSlice.util.updateQueryData(
+						"getTaskOrder",
+						undefined,
+						(darftTaskOrder) => {
+							return darftTaskOrder.filter((t) => !deletedTasks.has(t.id));
+						},
+					),
 				);
 				await queryFulfilled.catch(() => {
 					logError("Removing completed tasks failed rolling back");
-					patchResult.undo();
+					taskPatchResult.undo();
+					taskOrderPatchResult.undo();
 				});
 			},
 			invalidatesTags: ["Tasks"],
@@ -230,4 +260,5 @@ export const {
 	useClearCompletedTasksMutation,
 	useMoveTaskOrderMutation,
 	useGetTaskQuery,
+	useGetTaskOrderQuery,
 } = apiSlice;

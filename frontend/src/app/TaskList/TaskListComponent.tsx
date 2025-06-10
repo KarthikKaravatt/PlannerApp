@@ -1,8 +1,9 @@
 import {
+	useGetTaskOrderQuery,
 	useGetTasksQuery,
 	useMoveTaskOrderMutation,
 } from "@/redux/api/apiSlice";
-import type { Task } from "@/schemas/taskList";
+import type { Task, TaskOrder } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { parseAbsoluteToLocal } from "@internationalized/date";
@@ -78,15 +79,21 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	onTaskEditableStateChange,
 }) => {
 	const {
-		data: tasks = [],
+		data: tasks,
 		isLoading,
 		isSuccess,
 		isError,
 		error,
 	} = useGetTasksQuery();
+	const {
+		data: order,
+		isLoading: isOrderLoading,
+		isSuccess: isOrderSuccess,
+		isError: isOrderError,
+		error: orderError,
+	} = useGetTaskOrderQuery();
 	//TODO: Visualize the tasks is moving somehow
 	const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
-	const filteredList = getFinalList(tasks, filterOption, sortOption);
 	const { dragAndDropHooks } = useDragAndDrop({
 		isDisabled: isEditingTask,
 		getItems: (keys) =>
@@ -120,15 +127,21 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 			}
 		},
 	});
-	if (isLoading) {
+	if (isLoading || isOrderLoading) {
 		return <FaSpinner className="text-blue950 dark:text-white" />;
 	}
-	if (isSuccess) {
+	if (isError || isOrderError) {
+		logError("Error fetching tasks", error as Error);
+		logError("Error fetching tasks order", orderError as Error);
+		return <p>Error: Failed to fetch tasks or task order</p>;
+	}
+	if (isSuccess && isOrderSuccess) {
+		const finalList = getFinalList(tasks, order, filterOption, sortOption);
 		return (
 			<div className="w-full" onKeyDownCapture={stopSpaceOnInput}>
 				<GridList
 					keyboardNavigationBehavior="tab"
-					items={filteredList}
+					items={finalList}
 					className={"w-full"}
 					aria-label="Tasks"
 					dragAndDropHooks={dragAndDropHooks}
@@ -159,34 +172,15 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 			</div>
 		);
 	}
-	if (isError) {
-		logError("Error fetching tasks", error as Error);
-		return <p>Error: Failed to fetch tasks</p>;
-	}
 };
 
 function getFinalList(
-	data: Task[],
+	data: Map<string, Task>,
+	order: TaskOrder[],
 	filterState: FilterOption,
 	sortState: SortOption,
 ) {
-	const sortByCustomOrder = (a: Task, b: Task) => {
-		const aIndex = a.orderIndex;
-		const bIndex = b.orderIndex;
-
-		if (aIndex === -1 && bIndex === -1) {
-			return 0;
-		}
-		if (aIndex === -1) {
-			return 1;
-		}
-		if (bIndex === -1) {
-			return -1;
-		}
-
-		return aIndex - bIndex;
-	};
-
+	const tasksArray = Array.from(data.values());
 	const sortByDate = (a: Task, b: Task) => {
 		if (a.kind === "withDate" && b.kind === "withDate") {
 			const aDate = parseAbsoluteToLocal(a.dueDate);
@@ -202,30 +196,41 @@ function getFinalList(
 	const sortByName = (a: Task, b: Task) => {
 		return a.label.localeCompare(b.label);
 	};
-	const filteredList = Array.from(data)
-		.filter((task) => {
-			// biome-ignore lint/style/useDefaultSwitchClause: Using an enum
-			switch (filterState) {
-				case "COMPLETE":
-					return task.completed;
-				case "INCOMPLETE":
-					return !task.completed;
-				case "ALL":
-					return true;
+	const sortedList = (() => {
+		// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
+		switch (sortState) {
+			case "CUSTOM": {
+				//order is immutable
+				const sortedOrder = Array.from(order).sort(
+					(a, b) => a.orderIndex - b.orderIndex,
+				);
+				const finalList = sortedOrder.map((t) => {
+					const result = data.get(t.id);
+					if (result) {
+						return result;
+					}
+					throw new Error("Order and tasks out of sync");
+				});
+				return finalList;
 			}
-		})
-		.sort((a, b) => {
-			// biome-ignore lint/style/useDefaultSwitchClause: Using an enum
-			switch (sortState) {
-				case "CUSTOM": {
-					return sortByCustomOrder(a, b);
-				}
-				case "DATE": {
-					return sortByDate(a, b);
-				}
-				case "NAME":
-					return sortByName(a, b);
+			case "DATE": {
+				return tasksArray.sort((a, b) => sortByDate(a, b));
 			}
-		});
-	return filteredList;
+			case "NAME": {
+				return tasksArray.sort((a, b) => sortByName(a, b));
+			}
+		}
+	})();
+	// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
+	switch (filterState) {
+		case "ALL": {
+			return sortedList;
+		}
+		case "INCOMPLETE": {
+			return sortedList.filter((t) => !t.completed);
+		}
+		case "COMPLETE": {
+			return sortedList.filter((t) => t.completed);
+		}
+	}
 }

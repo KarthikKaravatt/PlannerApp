@@ -7,13 +7,15 @@ import { scan } from "react-scan";
 import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
+import { enableMapSet } from "immer";
 import { Provider } from "react-redux";
 import { store } from "./app/store.ts";
 import { ThemeProvider } from "./contexts/themeContext.tsx";
 import { reportWebVitals } from "./reportWebVitals.ts";
-
+enableMapSet();
 scan({
-	enabled: import.meta.env.DEV,
+	// enabled: import.meta.env.DEV,
+	enabled: true,
 });
 
 const router = createRouter({

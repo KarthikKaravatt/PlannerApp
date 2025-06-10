@@ -4,7 +4,6 @@ const BaseTaskSchema = z.object({
 	id: z.uuidv7(),
 	label: z.string(),
 	completed: z.boolean(),
-	orderIndex: z.uint32(),
 });
 export const TaskResponseDateSchema = BaseTaskSchema.extend({
 	dueDate: z.string().refine(
@@ -38,3 +37,10 @@ type TaskWithoutDate = z.infer<typeof TaskResponseNoDateSchema> & {
 };
 
 export type Task = TaskWithDate | TaskWithoutDate;
+
+export const TaskOrderSchema = z.object({
+	id: z.uuidv7(),
+	orderIndex: z.uint32(),
+});
+
+export type TaskOrder = z.infer<typeof TaskOrderSchema>;
