@@ -8,7 +8,9 @@ export const TaskListInput: React.FC = () => {
 	const [inputTask, setInputTask] = useState<string>("");
 	const [addNewTask, { isLoading }] = useAddNewTaskMutation();
 	const onInputChanged = (event: ChangeEvent<HTMLTextAreaElement>) => {
-		setInputTask(event.target.value.replace(/\s+/g, " "));
+		if (event.target.value.length < 256) {
+			setInputTask(event.target.value.replace(/\s+/g, " "));
+		}
 	};
 	const onAddButtonClick = () => {
 		addNewTask({

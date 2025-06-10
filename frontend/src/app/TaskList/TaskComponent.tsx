@@ -205,7 +205,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
           ${isLoading ? "text-gray-400" : "text-blue-950"}
           ${state.editable ? "opacity-0" : "opacity-100"}
           text-xs
-          w-15
+          w-10
         `}
 			>
 				<DialogTrigger>

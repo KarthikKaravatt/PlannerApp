@@ -9,12 +9,15 @@ export const taskComponentReducer = (
 ): TaskComponentState => {
 	// biome-ignore lint/style/useDefaultSwitchClause: This is using and "enum" so adding a default case means we may not deal with all cases
 	switch (action.type) {
-		case "MUTATE_INPUT":
+		case "MUTATE_INPUT": {
+			const filteredInput = action.payload.replace(/\s+/g, " ");
 			return {
 				...state,
 				//Remove new lines and normalise spaces
-				inputTaskName: action.payload.replace(/\s+/g, " "),
+				inputTaskName:
+					filteredInput.length < 512 ? filteredInput : state.inputTaskName,
 			};
+		}
 		case "MUTATE_LOADING":
 			return { ...state, isLoading: action.payload };
 		case "MUTATE_EDITABLE":
