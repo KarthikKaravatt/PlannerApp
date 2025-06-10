@@ -197,7 +197,7 @@ function getFinalList(
 		return a.label.localeCompare(b.label);
 	};
 	const sortedList = (() => {
-		// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
+		// biome-ignore lint/style/useDefaultSwitchClause: enum for all cases
 		switch (sortState) {
 			case "CUSTOM": {
 				//order is immutable
@@ -221,7 +221,7 @@ function getFinalList(
 			}
 		}
 	})();
-	// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
+	// biome-ignore lint/style/useDefaultSwitchClause: enum for all cases
 	switch (filterState) {
 		case "ALL": {
 			return sortedList;
