@@ -167,9 +167,11 @@ const InputField: React.FC<InputFieldProps> = ({
       `}
 			readOnly={!state.editable}
 			onDoubleClick={() => {
-				dispatch({ type: "MUTATE_INPUT", payload: task.label });
-				dispatch({ type: "MUTATE_EDITABLE", payload: true });
-				onEditableStateChange(true);
+				if (!state.editable) {
+					dispatch({ type: "MUTATE_INPUT", payload: task.label });
+					dispatch({ type: "MUTATE_EDITABLE", payload: true });
+					onEditableStateChange(true);
+				}
 			}}
 			onChange={(event) => {
 				dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
