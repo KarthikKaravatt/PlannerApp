@@ -4,7 +4,11 @@ import { type ChangeEvent, useState } from "react";
 import { Button } from "react-aria-components";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
-export const TaskListInput: React.FC = () => {
+interface TaskListInputProps {
+	taskListId: string;
+}
+
+export const TaskListInput: React.FC<TaskListInputProps> = ({ taskListId }) => {
 	const [inputTask, setInputTask] = useState<string>("");
 	const [addNewTask, { isLoading }] = useAddNewTaskMutation();
 	const onInputChanged = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -14,8 +18,11 @@ export const TaskListInput: React.FC = () => {
 	};
 	const onAddButtonClick = () => {
 		addNewTask({
-			label: inputTask,
-			completed: false,
+			listId: taskListId,
+			request: {
+				label: inputTask,
+				completed: false,
+			},
 		}).catch((err: unknown) => {
 			if (err instanceof Error) {
 				logError("Error adding a new task:", err);

@@ -9,18 +9,7 @@ export const store = configureStore({
 		[apiSlice.reducerPath]: apiSlice.reducer,
 	},
 	middleware: (getDefaultMiddleweare) =>
-		getDefaultMiddleweare({
-			serializableCheck: {
-				ignoredPaths: ["api.queries.getTasks(undefined).data"],
-				//because I want to use a Map
-				ignoredActionPaths: [
-					"payload",
-					"meta.arg",
-					"meta.baseQueryMeta.response",
-					"meta.baseQueryMeta.request",
-				],
-			},
-		})
+		getDefaultMiddleweare()
 			.prepend(listenerMiddleware.middleware)
 			.concat(apiSlice.middleware),
 });

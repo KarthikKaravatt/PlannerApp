@@ -28,14 +28,17 @@ import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 export interface TaskProp {
 	task: Task;
+	taskListId: string;
 	onEditableStateChange: (isEditing: boolean) => void;
 }
 export const TaskComponent: React.FC<TaskProp> = ({
 	task,
+	taskListId,
 	onEditableStateChange,
 }) => {
 	const initalTaskComponentState: TaskComponentState = {
 		inputTaskName: task.label,
+		taskListId,
 		editable: false,
 		isLoading: false,
 	};
@@ -91,7 +94,10 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
 			return;
 		}
 		dispatch({ type: "MUTATE_LOADING", payload: true });
-		updateTask({ ...task, completed: !task.completed })
+		updateTask({
+			task: { ...task, completed: !task.completed },
+			listId: state.taskListId,
+		})
 			.then(() => {
 				dispatch({ type: "MUTATE_LOADING", payload: false });
 			})
@@ -265,6 +271,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 }) => {
 	const {
 		isLoading,
+		isDeleteLoading,
 		handleConfirmButtonClick,
 		handleDeleteButtonClick,
 		handleAddDateButtonClicked,
@@ -334,7 +341,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
 				<Button
 					type="button"
 					className={`"
-          ${isLoading || state.isLoading ? "text-gray-400" : state.editable ? "text-green-700 dark:text-green-400" : ""}
+          ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : state.editable ? "text-green-700 dark:text-green-400" : ""}
         "`}
 					onClick={
 						state.editable

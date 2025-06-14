@@ -1,5 +1,13 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { z } from "zod/v4";
+import { uuidv7, z } from "zod/v4";
+
+export const TaskListSchema = z.object({
+	id: uuidv7(),
+	name: z.string(),
+	orderIndex: z.uint32(),
+});
+
+export type TaskList = z.infer<typeof TaskListSchema>;
 const BaseTaskSchema = z.object({
 	id: z.uuidv7(),
 	label: z.string(),
@@ -27,6 +35,8 @@ export const ApiResponseTaskSchema = z.union([
 	TaskResponseDateSchema,
 	TaskResponseNoDateSchema,
 ]);
+
+export type TaskResponse = z.infer<typeof ApiResponseTaskSchema>;
 
 type TaskWithDate = z.infer<typeof TaskResponseDateSchema> & {
 	kind: "withDate";

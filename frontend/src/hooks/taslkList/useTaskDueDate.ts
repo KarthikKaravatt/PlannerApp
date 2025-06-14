@@ -21,13 +21,14 @@ export const useTaskDueDate = (
 		// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 		switch (task.kind) {
 			case "withDate": {
-				updateTask({ ...task, dueDate: inputDate.toAbsoluteString() }).catch(
-					(err: unknown) => {
-						if (err instanceof Error) {
-							logError("Error updating task:", err);
-						}
-					},
-				);
+				updateTask({
+					task: { ...task, dueDate: inputDate.toAbsoluteString() },
+					listId: state.taskListId,
+				}).catch((err: unknown) => {
+					if (err instanceof Error) {
+						logError("Error updating task:", err);
+					}
+				});
 				dispatch({ type: "MUTATE_LOADING", payload: false });
 				break;
 			}

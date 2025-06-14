@@ -17,11 +17,14 @@ export const useMoreOptions = (
 	onEditableStateChange: (isEditing: boolean) => void,
 ) => {
 	const [updateTask, { isLoading }] = useUpdateTaskMutation();
-	const [deleteTask] = useDeleteTaskMutation();
+	const [deleteTask, { isLoading: isDeleteLoading }] = useDeleteTaskMutation();
 	const handleConfirmButtonClick = () => {
 		if (task.label !== state.inputTaskName) {
 			dispatch({ type: "MUTATE_LOADING", payload: true });
-			updateTask({ ...task, label: state.inputTaskName })
+			updateTask({
+				task: { ...task, label: state.inputTaskName },
+				listId: state.taskListId,
+			})
 				.then(() => {
 					dispatch({ type: "MUTATE_LOADING", payload: false });
 				})
@@ -37,11 +40,13 @@ export const useMoreOptions = (
 		onEditableStateChange(false);
 	};
 	const handleDeleteButtonClick = () => {
-		deleteTask(task.id).catch((err: unknown) => {
-			if (err instanceof Error) {
-				logError(`Error removing tasks:${err}`);
-			}
-		});
+		deleteTask({ taskId: task.id, listId: state.taskListId }).catch(
+			(err: unknown) => {
+				if (err instanceof Error) {
+					logError(`Error removing tasks:${err}`);
+				}
+			},
+		);
 	};
 	const handleRemoveButtonDateClicked = () => {
 		dispatch({ type: "MUTATE_LOADING", payload: false });
@@ -50,7 +55,7 @@ export const useMoreOptions = (
 			case "withDate": {
 				const { kind: _kind, dueDate: _dueDate, ...transformedTask } = task;
 				const updatedTask = { kind: "withoutDate", ...transformedTask } as Task;
-				updateTask(updatedTask)
+				updateTask({ task: updatedTask, listId: state.taskListId })
 					.then(() => {
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 					})
@@ -83,7 +88,7 @@ export const useMoreOptions = (
 					dueDate: now(getLocalTimeZone()).toAbsoluteString(),
 					...transformedTask,
 				} as Task;
-				updateTask(updatedTask)
+				updateTask({ task: updatedTask, listId: state.taskListId })
 					.then(() => {
 						dispatch({ type: "MUTATE_LOADING", payload: false });
 					})
@@ -99,6 +104,7 @@ export const useMoreOptions = (
 	};
 	return {
 		isLoading,
+		isDeleteLoading,
 		handleConfirmButtonClick,
 		handleDeleteButtonClick,
 		handleRemoveButtonDateClicked,

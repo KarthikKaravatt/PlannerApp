@@ -1,3 +1,4 @@
+using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend;
@@ -5,5 +6,6 @@ namespace backend;
 public class PlannerDbContext:DbContext
 {
     public PlannerDbContext(DbContextOptions<PlannerDbContext> options): base(options) {}
-    public DbSet<Task> TaskList { get; set; }
+    public DbSet<TaskList> TaskLists { get; set; }
+    public DbSet<Task> Tasks { get; set; }
 }

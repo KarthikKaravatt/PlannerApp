@@ -1,12 +1,14 @@
 import {
 	ApiResponseTaskSchema,
 	type Task,
+	type TaskList,
 	type TaskOrder,
+	type TaskResponse,
 } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { v7 as uuidv7 } from "uuid";
+// import { v7 as uuidv7 } from "uuid";
 import { z } from "zod/v4";
 const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
@@ -19,19 +21,48 @@ interface NewTaskWithDatePayload extends NewTaskWithoutDatePayload {
 }
 type NewTaskRequest = NewTaskWithDatePayload | NewTaskWithoutDatePayload;
 
+//TODO: Move items between lists
 export interface MoveTaskOrderPayload {
 	id1: string;
 	id2: string;
+	listId: string;
 	pos: "Before" | "After";
+}
+
+export interface TaskListRequest {
+	name: string;
 }
 export const apiSlice = createApi({
 	reducerPath: "api",
 	baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
-	tagTypes: ["Tasks", "TaskOrder"],
+	//TODO: Make TaskList invalidation more precise
+	tagTypes: ["Tasks", "TaskOrder", "TaskList"],
 	endpoints: (builder) => ({
-		getTasks: builder.query<Map<string, Task>, void>({
-			query: () => "",
-			transformResponse: (response) => {
+		getTaskList: builder.query<TaskList[], void>({
+			query: () => ({
+				url: "",
+				method: "GET",
+			}),
+			providesTags: ["TaskList"],
+		}),
+		addNewTaskList: builder.mutation<TaskList, TaskListRequest>({
+			query: (request) => ({
+				url: "",
+				method: "PUT",
+				body: request,
+			}),
+			invalidatesTags: ["TaskList"],
+		}),
+		removeTaskList: builder.mutation<void, string>({
+			query: (id) => ({
+				url: `/${id}`,
+				method: "DELETE",
+			}),
+			invalidatesTags: ["TaskList"],
+		}),
+		getTasks: builder.query<Record<string, Task | undefined>, string>({
+			query: (id) => `/${id}/tasks`,
+			transformResponse: (response: unknown) => {
 				const transformedTaskSchema = z
 					.array(ApiResponseTaskSchema)
 					.transform((data) => {
@@ -46,7 +77,10 @@ export const apiSlice = createApi({
 				const result = transformedTaskSchema.safeParse(response);
 
 				if (result.success) {
-					return new Map(result.data.map((t) => [t.id, t]));
+					return result.data.reduce<Record<string, Task>>((acc, task) => {
+						acc[task.id] = task;
+						return acc;
+					}, {});
 				}
 				logError("Validation error:", result.error);
 				throw new Error(
@@ -55,75 +89,119 @@ export const apiSlice = createApi({
 			},
 			providesTags: ["Tasks"],
 		}),
-		getTask: builder.query<Task, string>({
-			query: (id) => ({
-				url: `/${id}`,
-			}),
-		}),
-		getTaskOrder: builder.query<TaskOrder[], void>({
-			query: () => ({
-				url: "/order",
+		getTaskOrder: builder.query<TaskOrder[], string>({
+			query: (listId) => ({
+				url: `${listId}/tasks/order`,
 			}),
 			providesTags: ["TaskOrder"],
 		}),
-		addNewTask: builder.mutation<Task, NewTaskRequest>({
-			query: (initialTask) => ({
-				url: "",
+		addNewTask: builder.mutation<
+			TaskResponse, // server response type
+			{ request: NewTaskRequest; listId: string } // arg type
+		>({
+			query: ({ request, listId }) => ({
+				url: `/${listId}/tasks`,
 				method: "POST",
-				body: initialTask,
+				body: request,
 			}),
-			async onQueryStarted(taskRequest, { dispatch, queryFulfilled }) {
-				const taskId = uuidv7();
+
+			// TODO: Make this work again
+			// async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+			// 	const tempId = uuidv7();
+			// 	const undoTasks = dispatch(
+			// 		apiSlice.util.updateQueryData("getTasks", arg.listId, (draft) => {
+			// 			draft[tempId] = {
+			// 				id: tempId,
+			// 				kind: "withoutDate",
+			// 				...arg.request,
+			// 			} satisfies Task;
+			// 		}),
+			// 	);
+			// 	const undoOrder = dispatch(
+			// 		apiSlice.util.updateQueryData("getTaskOrder", arg.listId, (draft) => {
+			// 			draft.push({ id: tempId, orderIndex: draft.length });
+			// 		}),
+			// 	);
+			// 	try {
+			// 		const { data: serverTask } = await queryFulfilled;
+			// 		const task: Task = (() => {
+			// 			if ("dueDate" in serverTask) {
+			// 				return {
+			// 					id: serverTask.id,
+			// 					label: serverTask.label,
+			// 					completed: serverTask.completed,
+			// 					kind: "withDate",
+			// 					dueDate: serverTask.dueDate,
+			// 				};
+			// 			}
+			// 			return {
+			// 				id: serverTask.id,
+			// 				label: serverTask.label,
+			// 				kind: "withoutDate",
+			// 				completed: serverTask.completed,
+			// 			};
+			// 		})();
+			// 		dispatch(
+			// 			apiSlice.util.updateQueryData("getTasks", arg.listId, (draft) => {
+			// 				// We are using immer
+			// 				// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+			// 				delete draft[tempId];
+			// 				draft[serverTask.id] = task;
+			// 			}),
+			// 		);
+			//
+			// 		dispatch(
+			// 			apiSlice.util.updateQueryData(
+			// 				"getTaskOrder",
+			// 				arg.listId,
+			// 				(draft) => {
+			// 					const idx = draft.findIndex((o) => o.id === tempId);
+			// 					if (idx !== -1) {
+			// 						draft[idx].id = serverTask.id;
+			// 					}
+			// 				},
+			// 			),
+			// 		);
+			// 	} catch (err) {
+			// 		undoTasks.undo();
+			// 		undoOrder.undo();
+			// 		logError("Error adding task:", err as Error);
+			// 	}
+			// },
+			invalidatesTags: ["Tasks", "TaskOrder"],
+		}),
+		deleteTask: builder.mutation<void, { listId: string; taskId: string }>({
+			query: (ids) => ({
+				url: `/${ids.listId}/tasks/${ids.taskId}`,
+				method: "DELETE",
+			}),
+			async onQueryStarted(ids, { dispatch, queryFulfilled }) {
 				const taskPatchResult = dispatch(
-					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
-						const task: Task = {
-							id: taskId,
-							kind: "withoutDate",
-							...taskRequest,
-						};
-						draftTasks.set(task.id, task);
-					}),
-				);
-				const taskOrderPatchResult = dispatch(
 					apiSlice.util.updateQueryData(
-						"getTaskOrder",
-						undefined,
-						(draftTasksOrder) => {
-							draftTasksOrder.push({
-								id: taskId,
-								orderIndex: draftTasksOrder.length,
-							});
+						"getTasks",
+						ids.listId,
+						(draftTasks) => {
+							if (
+								Object.prototype.hasOwnProperty.call(draftTasks, ids.taskId)
+							) {
+								// we are using immer so this is okay
+								// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+								const deleted = delete draftTasks[ids.taskId];
+								if (!deleted) {
+									logError("Error delting task");
+								}
+							}
 						},
 					),
 				);
-
-				await queryFulfilled.catch(() => {
-					logError("Error adding task");
-					taskPatchResult.undo();
-					taskOrderPatchResult.undo();
-				});
-			},
-			invalidatesTags: ["Tasks"],
-		}),
-		deleteTask: builder.mutation<void, string>({
-			query: (id) => ({
-				url: `/${id}`,
-				method: "DELETE",
-			}),
-			async onQueryStarted(id, { dispatch, queryFulfilled }) {
-				const taskPatchResult = dispatch(
-					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
-						if (!draftTasks.delete(id)) {
-							logError("Error deleting task");
-						}
-					}),
-				);
 				const taskOrderPatchResult = dispatch(
 					apiSlice.util.updateQueryData(
 						"getTaskOrder",
-						undefined,
+						ids.listId,
 						(draftTaskOrder) => {
-							const taskOrderIndex = draftTaskOrder.findIndex((t) => t.id);
+							const taskOrderIndex = draftTaskOrder.findIndex(
+								(t) => t.id === ids.taskId,
+							);
 							draftTaskOrder.splice(taskOrderIndex, 1);
 						},
 					),
@@ -136,12 +214,13 @@ export const apiSlice = createApi({
 			},
 			invalidatesTags: ["Tasks", "TaskOrder"],
 		}),
-		updateTask: builder.mutation<void, Task>({
-			query: (task) => {
+		updateTask: builder.mutation<void, { task: Task; listId: string }>({
+			query: (taskData) => {
 				type TaskRequest = Omit<Task, "kind"> & {
 					dueDate: string | null;
 				};
 				let newBody: TaskRequest;
+				const task = taskData.task;
 				// biome-ignore lint/style/useDefaultSwitchClause: Discriminated union
 				switch (task.kind) {
 					case "withDate": {
@@ -155,15 +234,16 @@ export const apiSlice = createApi({
 					}
 				}
 				return {
-					url: `/${task.id}`,
+					url: `/${taskData.listId}/tasks/${task.id}`,
 					method: "PATCH",
 					body: newBody,
 				};
 			},
-			async onQueryStarted(task, { dispatch, queryFulfilled }) {
+			async onQueryStarted(taskData, { dispatch, queryFulfilled }) {
+				const { task, listId } = taskData;
 				const patchResult = dispatch(
-					apiSlice.util.updateQueryData("getTasks", undefined, (draftTasks) => {
-						draftTasks.set(task.id, task);
+					apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
+						draftTasks[task.id] = task;
 					}),
 				);
 				await queryFulfilled.catch(() => {
@@ -176,7 +256,7 @@ export const apiSlice = createApi({
 		moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
 			query: (moveTasks) => {
 				return {
-					url: `move/${moveTasks.id1}/${moveTasks.id2}`,
+					url: `${moveTasks.listId}/tasks/move/${moveTasks.id1}/${moveTasks.id2}`,
 					method: "PATCH",
 					body: {
 						pos: moveTasks.pos,
@@ -185,29 +265,35 @@ export const apiSlice = createApi({
 			},
 			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
 				const patchResult = dispatch(
-					apiSlice.util.updateQueryData("getTaskOrder", undefined, (draft) => {
-						draft.sort((a, b) => a.orderIndex - b.orderIndex);
-						const movedTaskIndex = draft.findIndex((t) => t.id === payload.id1);
-						const [movedTask] = draft.splice(movedTaskIndex, 1);
-						const anchorTaskIndex = draft.findIndex(
-							(t) => t.id === payload.id2,
-						);
-						// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
-						switch (payload.pos) {
-							case "Before": {
-								draft.splice(anchorTaskIndex, 0, movedTask);
-								break;
+					apiSlice.util.updateQueryData(
+						"getTaskOrder",
+						payload.listId,
+						(draft) => {
+							draft.sort((a, b) => a.orderIndex - b.orderIndex);
+							const movedTaskIndex = draft.findIndex(
+								(t) => t.id === payload.id1,
+							);
+							const [movedTask] = draft.splice(movedTaskIndex, 1);
+							const anchorTaskIndex = draft.findIndex(
+								(t) => t.id === payload.id2,
+							);
+							// biome-ignore lint/style/useDefaultSwitchClause: <explanation>
+							switch (payload.pos) {
+								case "Before": {
+									draft.splice(anchorTaskIndex, 0, movedTask);
+									break;
+								}
+								case "After": {
+									draft.splice(anchorTaskIndex + 1, 0, movedTask);
+									break;
+								}
 							}
-							case "After": {
-								draft.splice(anchorTaskIndex + 1, 0, movedTask);
-								break;
+							// re-index
+							for (let i = 0; i < draft.length; i++) {
+								draft[i].orderIndex = i;
 							}
-						}
-						// re-index
-						for (let i = 0; i < draft.length; i++) {
-							draft[i].orderIndex = i;
-						}
-					}),
+						},
+					),
 				);
 				await queryFulfilled.catch(() => {
 					logError("Error moving tasks");
@@ -216,19 +302,24 @@ export const apiSlice = createApi({
 			},
 			invalidatesTags: ["TaskOrder"],
 		}),
-		clearCompletedTasks: builder.mutation<void, void>({
-			query: () => ({
-				url: "/clear",
+		clearCompletedTasks: builder.mutation<void, string>({
+			query: (listId) => ({
+				url: `${listId}/tasks/clear`,
 				method: "DELETE",
 			}),
-			async onQueryStarted(_, { dispatch, queryFulfilled }) {
+			async onQueryStarted(listId, { dispatch, queryFulfilled }) {
 				const deletedTasks = new Map<string, string>();
 				const taskPatchResult = dispatch(
-					apiSlice.util.updateQueryData("getTasks", undefined, (draft) => {
-						for (const t of draft.values()) {
-							if (t.completed) {
-								deletedTasks.set(t.id, "");
-								draft.delete(t.id);
+					apiSlice.util.updateQueryData("getTasks", listId, (draft) => {
+						for (const key in draft) {
+							if (Object.prototype.hasOwnProperty.call(draft, key)) {
+								const task = draft[key];
+								if (task?.completed) {
+									deletedTasks.set(key, "");
+									// we are using immer so this is fine
+									// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+									delete draft[key];
+								}
 							}
 						}
 					}),
@@ -236,7 +327,7 @@ export const apiSlice = createApi({
 				const taskOrderPatchResult = dispatch(
 					apiSlice.util.updateQueryData(
 						"getTaskOrder",
-						undefined,
+						listId,
 						(darftTaskOrder) => {
 							return darftTaskOrder.filter((t) => !deletedTasks.has(t.id));
 						},
@@ -259,6 +350,8 @@ export const {
 	useUpdateTaskMutation,
 	useClearCompletedTasksMutation,
 	useMoveTaskOrderMutation,
-	useGetTaskQuery,
 	useGetTaskOrderQuery,
+	useGetTaskListQuery,
+	useAddNewTaskListMutation,
+	useRemoveTaskListMutation,
 } = apiSlice;

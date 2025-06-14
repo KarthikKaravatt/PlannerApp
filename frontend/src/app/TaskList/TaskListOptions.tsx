@@ -12,12 +12,14 @@ import {
 import { RiArrowDropDownLine } from "react-icons/ri";
 
 export interface TaskListOptionsProp {
+	taskListId: string;
 	filterState: FilterOption;
 	setFilterState: React.Dispatch<React.SetStateAction<FilterOption>>;
 	sortOrder: SortOption;
 	setSortState: React.Dispatch<React.SetStateAction<SortOption>>;
 }
 export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
+	taskListId,
 	filterState,
 	setFilterState,
 	sortOrder,
@@ -35,7 +37,7 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 	};
 
 	const onClearButtonClick = () => {
-		clearTasks().catch((err: unknown) => {
+		clearTasks(taskListId).catch((err: unknown) => {
 			if (err instanceof Error) {
 				logError("Error clearing completed tasks:", err);
 			} else {

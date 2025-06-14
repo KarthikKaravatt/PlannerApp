@@ -20,7 +20,15 @@ import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
 
-export const TaskListComponent: React.FC = () => {
+interface TaskListComponentProps {
+	listName: string;
+	listId: string;
+}
+
+export const TaskListComponent: React.FC<TaskListComponentProps> = ({
+	listName,
+	listId,
+}) => {
 	const [isEditingTask, setEditingTaskId] = useState<boolean>(false);
 	const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
 	const [sortOption, setSortOption] = useState<SortOption>(() => {
@@ -36,14 +44,17 @@ export const TaskListComponent: React.FC = () => {
 	}, []);
 	return (
 		<div className="p-2 flex flex-col items-center gap-1 h-full w-full">
+			<p>{listName}</p>
 			<TaskListOptions
+				taskListId={listId}
 				filterState={filterOption}
 				setFilterState={setFilterOption}
 				sortOrder={sortOption}
 				setSortState={setSortOption}
 			/>
-			<TaskListInput />
+			<TaskListInput taskListId={listId} />
 			<VisibleTasks
+				listId={listId}
 				isEditingTask={isEditingTask}
 				onTaskEditableStateChange={handleTaskEditableStateChange}
 				sortOption={sortOption}
@@ -54,6 +65,7 @@ export const TaskListComponent: React.FC = () => {
 };
 
 interface ViibleTasksProp {
+	listId: string;
 	filterOption: FilterOption;
 	sortOption: SortOption;
 	isEditingTask: boolean;
@@ -73,6 +85,7 @@ function stopSpaceOnInput(e: React.KeyboardEvent) {
 }
 
 const VisibleTasks: React.FC<ViibleTasksProp> = ({
+	listId,
 	filterOption,
 	sortOption,
 	isEditingTask,
@@ -84,14 +97,14 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		isSuccess,
 		isError,
 		error,
-	} = useGetTasksQuery();
+	} = useGetTasksQuery(listId);
 	const {
 		data: order,
 		isLoading: isOrderLoading,
 		isSuccess: isOrderSuccess,
 		isError: isOrderError,
 		error: orderError,
-	} = useGetTaskOrderQuery();
+	} = useGetTaskOrderQuery(listId);
 	//TODO: Visualize the tasks is moving somehow
 	const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
 	const { dragAndDropHooks } = useDragAndDrop({
@@ -109,6 +122,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 					id1: Array.from(e.keys)[0].toString(),
 					id2: e.target.key.toString(),
 					pos: "Before",
+					listId: listId,
 				}).catch((err: unknown) => {
 					if (err instanceof Error) {
 						logError("Error moving task", err);
@@ -119,6 +133,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 					id1: Array.from(e.keys)[0].toString(),
 					id2: e.target.key.toString(),
 					pos: "After",
+					listId: listId,
 				}).catch((err: unknown) => {
 					if (err instanceof Error) {
 						logError("Error moving task", err);
@@ -150,14 +165,15 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 					{(task) => (
 						<GridListItem
 							textValue={`
-              Task Label: ${task.label}
-              Completed: ${String(task.completed)}
-              ${task.kind === "withDate" ? task.dueDate : ""}
-            `}
+                  Task Label: ${task.label}
+                  Completed: ${String(task.completed)}
+                  ${task.kind === "withDate" ? task.dueDate : ""}
+                `}
 							className="data-[dragging]:opacity-60"
 						>
 							<div className="flex flex-row">
 								<TaskComponent
+									taskListId={listId}
 									key={task.id}
 									task={task}
 									onEditableStateChange={onTaskEditableStateChange}
@@ -175,12 +191,12 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 };
 
 function getFinalList(
-	data: Map<string, Task>,
+	data: Record<string, Task | undefined>,
 	order: TaskOrder[],
 	filterState: FilterOption,
 	sortState: SortOption,
 ) {
-	const tasksArray = Array.from(data.values());
+	const tasksArray = Object.values(data).filter((t) => t !== undefined);
 	const sortByDate = (a: Task, b: Task) => {
 		if (a.kind === "withDate" && b.kind === "withDate") {
 			const aDate = parseAbsoluteToLocal(a.dueDate);
@@ -205,11 +221,11 @@ function getFinalList(
 					(a, b) => a.orderIndex - b.orderIndex,
 				);
 				const finalList = sortedOrder.map((t) => {
-					const result = data.get(t.id);
-					if (result) {
-						return result;
+					const result = tasksArray.find((task) => task.id === t.id);
+					if (result === undefined) {
+						throw new Error("A task is undefined");
 					}
-					throw new Error("Order and tasks out of sync");
+					return result;
 				});
 				return finalList;
 			}

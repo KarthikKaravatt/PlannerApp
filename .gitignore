@@ -4,3 +4,5 @@ frontend2text.sh
 backend/planner.db-shm
 backend/planner.db-wal
 backend.txt
+frontend/.env.development
+frontend/.env.development

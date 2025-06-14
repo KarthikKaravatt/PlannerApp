@@ -2,6 +2,7 @@ export interface TaskComponentState {
 	inputTaskName: string;
 	editable: boolean;
 	isLoading: boolean;
+	taskListId: string;
 }
 
 const TaskComponentActions = {
