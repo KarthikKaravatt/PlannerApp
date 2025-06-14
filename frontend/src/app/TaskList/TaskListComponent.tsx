@@ -195,7 +195,7 @@ function getFinalList(
 	order: TaskOrder[],
 	filterState: FilterOption,
 	sortState: SortOption,
-) {
+): Task[] {
 	const tasksArray = Object.values(data).filter((t) => t !== undefined);
 	const sortByDate = (a: Task, b: Task) => {
 		if (a.kind === "withDate" && b.kind === "withDate") {
@@ -222,8 +222,15 @@ function getFinalList(
 				);
 				const finalList = sortedOrder.map((t) => {
 					const result = tasksArray.find((task) => task.id === t.id);
+					//BUG: Race condition between tasks and taskOrder
+					//HACK: This fixes the race condition but its not ideal
 					if (result === undefined) {
-						throw new Error("A task is undefined");
+						return {
+							id: t.id,
+							label: "",
+							completed: false,
+							kind: "withoutDate",
+						} satisfies Task;
 					}
 					return result;
 				});

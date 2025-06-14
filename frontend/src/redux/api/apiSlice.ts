@@ -8,7 +8,7 @@ import {
 import { logError } from "@/util/console";
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-// import { v7 as uuidv7 } from "uuid";
+import { v7 as uuidv7 } from "uuid";
 import { z } from "zod/v4";
 const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
 
@@ -96,7 +96,7 @@ export const apiSlice = createApi({
 			providesTags: ["TaskOrder"],
 		}),
 		addNewTask: builder.mutation<
-			TaskResponse, // server response type
+			TaskResponse,
 			{ request: NewTaskRequest; listId: string } // arg type
 		>({
 			query: ({ request, listId }) => ({
@@ -105,69 +105,64 @@ export const apiSlice = createApi({
 				body: request,
 			}),
 
-			// TODO: Make this work again
-			// async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-			// 	const tempId = uuidv7();
-			// 	const undoTasks = dispatch(
-			// 		apiSlice.util.updateQueryData("getTasks", arg.listId, (draft) => {
-			// 			draft[tempId] = {
-			// 				id: tempId,
-			// 				kind: "withoutDate",
-			// 				...arg.request,
-			// 			} satisfies Task;
-			// 		}),
-			// 	);
-			// 	const undoOrder = dispatch(
-			// 		apiSlice.util.updateQueryData("getTaskOrder", arg.listId, (draft) => {
-			// 			draft.push({ id: tempId, orderIndex: draft.length });
-			// 		}),
-			// 	);
-			// 	try {
-			// 		const { data: serverTask } = await queryFulfilled;
-			// 		const task: Task = (() => {
-			// 			if ("dueDate" in serverTask) {
-			// 				return {
-			// 					id: serverTask.id,
-			// 					label: serverTask.label,
-			// 					completed: serverTask.completed,
-			// 					kind: "withDate",
-			// 					dueDate: serverTask.dueDate,
-			// 				};
-			// 			}
-			// 			return {
-			// 				id: serverTask.id,
-			// 				label: serverTask.label,
-			// 				kind: "withoutDate",
-			// 				completed: serverTask.completed,
-			// 			};
-			// 		})();
-			// 		dispatch(
-			// 			apiSlice.util.updateQueryData("getTasks", arg.listId, (draft) => {
-			// 				// We are using immer
-			// 				// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-			// 				delete draft[tempId];
-			// 				draft[serverTask.id] = task;
-			// 			}),
-			// 		);
-			//
-			// 		dispatch(
-			// 			apiSlice.util.updateQueryData(
-			// 				"getTaskOrder",
-			// 				arg.listId,
-			// 				(draft) => {
-			// 					const idx = draft.findIndex((o) => o.id === tempId);
-			// 					if (idx !== -1) {
-			// 						draft[idx].id = serverTask.id;
-			// 					}
-			// 				},
-			// 			),
-			// 		);
-			// 	} catch (err) {
-			// 		undoTasks.undo();
-			// 		undoOrder.undo();
-			// 		logError("Error adding task:", err as Error);
-			// 	}
-			// },
+			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
+				const tempId = uuidv7();
+				const { listId, request } = payload;
+				const newTask: Task = { ...request, id: tempId, kind: "withoutDate" };
+				const updateTasks = dispatch(
+					apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
+						draftTasks[tempId] = newTask;
+					}),
+				);
+				const updateOrder = dispatch(
+					apiSlice.util.updateQueryData(
+						"getTaskOrder",
+						listId,
+						(draftOrder) => {
+							const orderIndex = draftOrder.length;
+							draftOrder.push({ id: tempId, orderIndex });
+						},
+					),
+				);
+				await queryFulfilled
+					.then((results) => {
+						const taskPayload = results.data;
+						const serverTask = (() => {
+							if ("dueDate" in taskPayload) {
+								return { ...taskPayload, kind: "withDate" } satisfies Task;
+							}
+							return { ...taskPayload, kind: "withoutDate" } satisfies Task;
+						})();
+						dispatch(
+							apiSlice.util.updateQueryData(
+								"getTasks",
+								listId,
+								(draftTasks) => {
+									draftTasks[serverTask.id] = serverTask;
+								},
+							),
+						);
+						dispatch(
+							apiSlice.util.updateQueryData(
+								"getTaskOrder",
+								listId,
+								(draftOrder) => {
+									draftOrder.pop();
+									const orderIndex = draftOrder.length;
+									draftOrder.push({
+										id: serverTask.id,
+										orderIndex: orderIndex,
+									});
+								},
+							),
+						);
+					})
+					.catch(() => {
+						logError("Error adding task");
+						updateOrder.undo();
+						updateTasks.undo();
+					});
+			},
 			invalidatesTags: ["Tasks", "TaskOrder"],
 		}),
 		deleteTask: builder.mutation<void, { listId: string; taskId: string }>({
