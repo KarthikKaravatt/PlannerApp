@@ -105,7 +105,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 		isError: isOrderError,
 		error: orderError,
 	} = useGetTaskOrderQuery(listId);
-	//TODO: Visualize the tasks is moving somehow
 	const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
 	const { dragAndDropHooks } = useDragAndDrop({
 		isDisabled: isEditingTask,

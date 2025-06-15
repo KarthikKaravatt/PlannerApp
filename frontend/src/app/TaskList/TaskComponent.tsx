@@ -196,8 +196,6 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
 		state,
 		dispatch,
 	);
-	//TODO: task due in the current week should only display the day of the week
-	//TODO: change colour based on how soon it's due
 	if (task.kind === "withoutDate") {
 		return <></>;
 	}

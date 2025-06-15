@@ -21,7 +21,6 @@ interface NewTaskWithDatePayload extends NewTaskWithoutDatePayload {
 }
 type NewTaskRequest = NewTaskWithDatePayload | NewTaskWithoutDatePayload;
 
-//TODO: Move items between lists
 export interface MoveTaskOrderPayload {
 	id1: string;
 	id2: string;
@@ -35,7 +34,6 @@ export interface TaskListRequest {
 export const apiSlice = createApi({
 	reducerPath: "api",
 	baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
-	//TODO: Make TaskList invalidation more precise
 	tagTypes: ["Tasks", "TaskOrder", "TaskList"],
 	endpoints: (builder) => ({
 		getTaskList: builder.query<TaskList[], void>({
@@ -105,6 +103,7 @@ export const apiSlice = createApi({
 				body: request,
 			}),
 
+			//BUG: Race condition here
 			async onQueryStarted(payload, { dispatch, queryFulfilled }) {
 				const tempId = uuidv7();
 				const { listId, request } = payload;
@@ -138,6 +137,13 @@ export const apiSlice = createApi({
 								"getTasks",
 								listId,
 								(draftTasks) => {
+									if (
+										Object.prototype.hasOwnProperty.call(draftTasks, tempId)
+									) {
+										// we are using immer so this is okay
+										// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+										delete draftTasks[tempId];
+									}
 									draftTasks[serverTask.id] = serverTask;
 								},
 							),
@@ -147,12 +153,13 @@ export const apiSlice = createApi({
 								"getTaskOrder",
 								listId,
 								(draftOrder) => {
-									draftOrder.pop();
-									const orderIndex = draftOrder.length;
-									draftOrder.push({
-										id: serverTask.id,
-										orderIndex: orderIndex,
-									});
+									const removeIndex = draftOrder.findIndex(
+										(item) => item.id === tempId,
+									);
+									if (removeIndex === -1) {
+										throw new Error("Task to remove not found");
+									}
+									draftOrder[removeIndex].id = serverTask.id;
 								},
 							),
 						);

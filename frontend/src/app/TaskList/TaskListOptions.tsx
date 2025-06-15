@@ -25,7 +25,6 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 	sortOrder,
 	setSortState,
 }) => {
-	//TODO: some kind of loading state
 	const [clearTasks] = useClearCompletedTasksMutation();
 	const onFilterButtonClick = () => {
 		const filterOptions: FilterOption[] = ["ALL", "INCOMPLETE", "COMPLETE"];

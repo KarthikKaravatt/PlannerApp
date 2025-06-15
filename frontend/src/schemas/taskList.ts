@@ -2,7 +2,7 @@ import { parseAbsoluteToLocal } from "@internationalized/date";
 import { uuidv7, z } from "zod/v4";
 
 export const TaskListSchema = z.object({
-	id: uuidv7(),
+	id: z.readonly(uuidv7()),
 	name: z.string(),
 	orderIndex: z.uint32(),
 });
@@ -49,7 +49,7 @@ type TaskWithoutDate = z.infer<typeof TaskResponseNoDateSchema> & {
 export type Task = TaskWithDate | TaskWithoutDate;
 
 export const TaskOrderSchema = z.object({
-	id: z.uuidv7(),
+	id: z.readonly(z.uuidv7()),
 	orderIndex: z.uint32(),
 });
 
