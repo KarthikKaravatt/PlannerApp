@@ -43,8 +43,16 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 		setEditingTaskId(isEditing);
 	}, []);
 	return (
-		<div className="p-2 flex flex-col items-center gap-1 h-full w-full">
-			<p>{listName}</p>
+		<div className={"p-2 flex flex-col items-center gap-1 h-full w-full"}>
+			<p
+				className="
+        text-blue-950 dark:text-white
+        font-bold text-left w-full
+        pl-1
+      "
+			>
+				{listName}
+			</p>
 			<TaskListOptions
 				taskListId={listId}
 				filterState={filterOption}
@@ -152,11 +160,10 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	if (isSuccess && isOrderSuccess) {
 		const finalList = getFinalList(tasks, order, filterOption, sortOption);
 		return (
-			<div className="w-full" onKeyDownCapture={stopSpaceOnInput}>
+			<div className="w-full overflow-auto" onKeyDownCapture={stopSpaceOnInput}>
 				<GridList
 					keyboardNavigationBehavior="tab"
 					items={finalList}
-					className={"w-full"}
 					aria-label="Tasks"
 					dragAndDropHooks={dragAndDropHooks}
 					selectionMode="single"
@@ -171,15 +178,15 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 							className="data-[dragging]:opacity-60"
 						>
 							<div className="flex flex-row">
+								<Button slot="drag" aria-label="Drag item">
+									<MdDragIndicator />
+								</Button>
 								<TaskComponent
 									taskListId={listId}
 									key={task.id}
 									task={task}
 									onEditableStateChange={onTaskEditableStateChange}
 								/>
-								<Button slot="drag" aria-label="Drag item">
-									<MdDragIndicator />
-								</Button>
 							</div>
 						</GridListItem>
 					)}

@@ -65,14 +65,14 @@ public static class TaskEndpoints
             return Results.Ok();
         });
         // clear completed
-        tasksApi.MapDelete("/clear", async (PlannerDbContext db) =>
+        tasksApi.MapDelete("/clear", async (PlannerDbContext db, Guid listId) =>
         {
-            var tasksToDelete = await db.Tasks.Where(t => t.Completed).ToListAsync();
+            var tasksToDelete = await db.Tasks.Where(t => t.Completed && t.TaskListId == listId).ToListAsync();
             if (tasksToDelete.Count == 0) return Results.Ok();
             {
                 db.Tasks.RemoveRange(tasksToDelete);
                 var remainingTasks = await db.Tasks
-                    .Where(t => !t.Completed)
+                    .Where(t => !t.Completed && t.TaskListId == listId)
                     .OrderBy(t => t.OrderIndex)
                     .ToListAsync();
                 uint count = 0;
@@ -89,7 +89,7 @@ public static class TaskEndpoints
 
         // Move a tasks position
         tasksApi.MapPatch("/move/{id1:guid}/{id2:guid}",
-            async (Guid id1, Guid id2, MoveTaskRequest request, PlannerDbContext db) =>
+            async (Guid id1, Guid id2, MoveTaskRequest request, PlannerDbContext db,Guid listId) =>
             {
                 if (id1 == id2)
                 {
@@ -103,7 +103,8 @@ public static class TaskEndpoints
                     return Results.NotFound();
                 }
 
-                var taskList = await db.Tasks.ToListAsync();
+                var taskList = await db.Tasks
+                    .Where(task => task.TaskListId == listId).ToListAsync();
                 taskList.Sort((a, b) => (int)a.OrderIndex - (int)b.OrderIndex);
                 var taskLinkedList = new LinkedList<Task>(taskList);
                 //re index orderIndex
