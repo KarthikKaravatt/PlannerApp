@@ -43,7 +43,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 		setEditingTaskId(isEditing);
 	}, []);
 	return (
-		<div className={"p-2 flex flex-col items-center gap-1 h-full w-full"}>
+		<div className={"p-2 flex-none items-center gap-1 h-full w-1/3 md:w-1/2"}>
 			<p
 				className="
         text-blue-950 dark:text-white
