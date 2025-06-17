@@ -17,10 +17,10 @@ export const Route = createFileRoute("/planner/")({
 function Planner() {
 	return (
 		<>
-			<div className="w-full h-screen overflow-y-hidden text-blue-950 dark:text-white">
+			<div className="w-full h-screen text-blue-950 dark:text-white">
 				<div className="w-full h-full flex flex-row overflow-x-auto">
 					<ListSideBar />
-					<TaskLists className="flex flex-row min-w-250 h-full grow" />
+					<TaskLists className="flex flex-row min-w-250" />
 				</div>
 			</div>
 		</>

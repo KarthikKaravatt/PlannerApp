@@ -49,7 +49,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 		setEditingTaskId(isEditing);
 	}, []);
 	return (
-		<div className={"p-2 flex-none items-center gap-1 h-full w-1/3 md:w-1/2"}>
+		<div className={"p-2 flex flex-col gap-1 h-full w-1/3 md:w-1/2"}>
 			<div className="flex">
 				<p
 					className="
@@ -231,7 +231,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 	if (isSuccess && isOrderSuccess) {
 		const finalList = getFinalList(tasks, order, filterOption, sortOption);
 		return (
-			<div className="w-full overflow-auto" onKeyDownCapture={stopSpaceOnInput}>
+			<div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
 				<GridList
 					keyboardNavigationBehavior="tab"
 					items={finalList}
