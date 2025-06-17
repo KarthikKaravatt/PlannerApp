@@ -2,6 +2,7 @@ import {
 	useGetTaskOrderQuery,
 	useGetTasksQuery,
 	useMoveTaskOrderMutation,
+	useRemoveTaskListMutation,
 } from "@/redux/api/apiSlice";
 import type { Task, TaskOrder } from "@/schemas/taskList";
 import type { FilterOption, SortOption } from "@/types/taskList";
@@ -10,11 +11,16 @@ import { parseAbsoluteToLocal } from "@internationalized/date";
 import { useCallback, useState } from "react";
 import {
 	Button,
+	Dialog,
+	DialogTrigger,
 	GridList,
 	GridListItem,
+	Heading,
+	Modal,
 	useDragAndDrop,
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
+import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
@@ -44,15 +50,18 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 	}, []);
 	return (
 		<div className={"p-2 flex-none items-center gap-1 h-full w-1/3 md:w-1/2"}>
-			<p
-				className="
-        text-blue-950 dark:text-white
-        font-bold text-left w-full
-        pl-1
-      "
-			>
-				{listName}
-			</p>
+			<div className="flex">
+				<p
+					className="
+          text-blue-950 dark:text-white
+          font-bold text-left w-full
+          pl-1
+          "
+				>
+					{listName}
+				</p>
+				<TaskListDeleteListDiaLog listId={listId} />
+			</div>
 			<TaskListOptions
 				taskListId={listId}
 				filterState={filterOption}
@@ -69,6 +78,68 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 				filterOption={filterOption}
 			/>
 		</div>
+	);
+};
+const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
+	const [removeTaskList] = useRemoveTaskListMutation();
+	return (
+		<>
+			<DialogTrigger>
+				<Button className={"justify-end"}>
+					<FaRegTrashCan />
+				</Button>
+				<Modal
+					className="
+            fixed inset-0 
+            flex items-center justify-center
+            text-blue-950 dark:text-white
+          "
+				>
+					<Dialog
+						className="
+                border-gray-300 border-2
+                bg-blue-100
+                p-2 rounded-xl
+              "
+						role="alertdialog"
+					>
+						{({ close }) => (
+							<>
+								<Heading
+									className="font-bold text-lg text-red-500"
+									slot="title"
+								>
+									Delete task list
+								</Heading>
+								<p>
+									This will delete this task list and all tasks associsated with
+									it
+								</p>
+								<div className="flex gap-2">
+									<Button
+										className={"bg-blue-200 p-1 rounded-md"}
+										onPress={close}
+									>
+										Cancel
+									</Button>
+									<Button
+										className={"bg-red-200 p-1 rounded-md"}
+										onPress={() => {
+											removeTaskList(listId).catch(() => {
+												logError("Error deleting task list");
+											});
+											close();
+										}}
+									>
+										Delete
+									</Button>
+								</div>
+							</>
+						)}
+					</Dialog>
+				</Modal>
+			</DialogTrigger>
+		</>
 	);
 };
 
