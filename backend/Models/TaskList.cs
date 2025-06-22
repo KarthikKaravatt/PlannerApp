@@ -23,4 +23,3 @@ public class TaskList
     
 }
 
-public record TaskListRequest(string Name);

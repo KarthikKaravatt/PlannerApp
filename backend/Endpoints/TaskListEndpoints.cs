@@ -25,8 +25,7 @@ public static class TaskListEndpoints
         // get all task lists
         taskListApi.MapGet("/", async (PlannerDbContext db) =>
         {
-            Console.WriteLine("GET /api/taskLists/ endpoint hit!"); // Add this
-            return (await db.TaskLists.OrderBy((list)=>list.OrderIndex).ToListAsync());
+            return (await db.TaskLists.OrderBy((list)=>list.OrderIndex).Select((list)=> new TaskListPayload(list.Id, list.Name)).ToListAsync());
         });
         // remove a task list
         taskListApi.MapDelete("/{id:guid}", async (PlannerDbContext db, Guid id) =>
@@ -36,6 +35,21 @@ public static class TaskListEndpoints
             db.TaskLists.Remove(listToRemove);
             await db.SaveChangesAsync();
             return Results.Ok();
+        });
+        // update a taskList
+        taskListApi.MapPatch("/{id:guid}", async (PlannerDbContext db, Guid id, TaskListUpdateRequest update) =>
+        {
+            var list = await db.TaskLists.FindAsync(id);
+            if (list == null) return Results.NotFound();
+            list.Name = update.Name;
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        });
+        // get the order of all the task lists
+        taskListApi.Map("/order", async (PlannerDbContext db, Guid id) =>
+        {
+            var orderList = await db.TaskLists.Where(list => list.Id == id).Select(item => new { item.Id, item.OrderIndex }).ToListAsync();
+            return Results.Ok(orderList);
         });
     }
 }

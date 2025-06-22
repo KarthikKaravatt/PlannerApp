@@ -1,97 +1,68 @@
-import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
-import { SideBar } from "@/app/General/SideBar";
-import { TaskListComponent } from "@/app/TaskList/TaskListComponent";
-import {
-	useAddNewTaskListMutation,
-	useGetTaskListQuery,
-} from "@/redux/api/apiSlice";
-import { logError } from "@/util/console";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { Button } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa6";
+import { TaskListComponent } from "@/app/TaskList/TaskListComponent";
+import { TaskListSideBar } from "@/app/TaskList/TaskListSideBar";
+import { useGetTaskListQuery } from "@/redux/api/apiSlice";
+import { logError } from "@/util/console";
 export const Route = createFileRoute("/planner/")({
-	component: Planner,
+  component: Planner,
 });
 
 function Planner() {
-	return (
-		<>
-			<div className="w-full h-screen text-blue-950 dark:text-white">
-				<div className="w-full h-full flex flex-row overflow-x-auto">
-					<ListSideBar />
-					<TaskLists className="flex flex-row min-w-250" />
-				</div>
-			</div>
-		</>
-	);
+  return (
+    <>
+      <div className="w-full h-screen text-blue-950 dark:text-white">
+        <div className="w-full h-full flex flex-row overflow-x-auto">
+          <TaskListSideBar />
+          <TaskLists className="flex flex-row shrink-0 w-320 md:w-450" />
+        </div>
+      </div>
+    </>
+  );
 }
 
 interface TaskListsProps {
-	className?: string;
+  className?: string;
 }
 const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
-	const { data, isLoading, isSuccess } = useGetTaskListQuery();
-	if (isLoading) {
-		return <FaSpinner />;
-	}
-	if (isSuccess) {
-		return (
-			<div className={className}>
-				{data.map((list) => {
-					return (
-						<TaskListComponent
-							key={list.id}
-							listId={list.id}
-							listName={list.name}
-						/>
-					);
-				})}
-			</div>
-		);
-	}
-};
-
-const ListSideBar: React.FC = () => {
-	//TODO: add a loading state
-	const [addTaskList] = useAddNewTaskListMutation();
-	const [newListName, setNewListName] = useState("");
-	return (
-		<>
-			<SideBar>
-				<div className="flex w-50">
-					<AutoResizeTextArea
-						value={newListName}
-						onChange={(event) => {
-							const newValue = event.target.value.replace(/\s+/g, " ");
-							setNewListName(
-								newValue.length > 25 ? newValue.slice(0, 25) : newValue,
-							);
-						}}
-						placeholder="Add new task list"
-						className="border-1 border-gray-300 rounded-r-none rounded-md m-1 p-1 mr-0"
-					/>
-					<Button
-						type="button"
-						className={
-							"text-sm bg-blue-200 rounded-l-none rounded-md m-1 p-1 ml-0"
-						}
-						onClick={() => {
-							addTaskList({ name: newListName })
-								.then(() => {
-									setNewListName("");
-								})
-								.catch((err: unknown) => {
-									if (err instanceof Error) {
-										logError("Error adding task list", err);
-									}
-								});
-						}}
-					>
-						Add
-					</Button>
-				</div>
-			</SideBar>
-		</>
-	);
+  const { data, isLoading, isSuccess, refetch } = useGetTaskListQuery();
+  if (isLoading) {
+    return <FaSpinner />;
+  }
+  if (!isSuccess) {
+    return (
+      <>
+        <div className="flex flex-col justify-center items-center">
+          <p>Error loading task list data, press button to retry</p>
+          <Button
+            className="
+            bg-blue-200 font-bold
+            p-1 rounded-md
+          "
+            onClick={() => {
+              refetch().catch(() => {
+                logError("Error fetching task list data");
+              });
+            }}
+          >
+            Retry
+          </Button>
+        </div>
+      </>
+    );
+  }
+  return (
+    <div className={className}>
+      {data.map((list) => {
+        return (
+          <TaskListComponent
+            key={list.id}
+            listId={list.id}
+            listName={list.name}
+          />
+        );
+      })}
+    </div>
+  );
 };

@@ -1,26 +1,26 @@
-import { logWarning } from "@/util/console";
 import {
-	type ReactNode,
-	createContext,
-	use,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
+  createContext,
+  type ReactNode,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
+import { logWarning } from "@/util/console";
 
 type Theme = "light" | "dark";
 
 interface ThemeContextType {
-	theme: Theme;
-	toggleTheme: () => void;
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
 const defaultThemeContextValue: ThemeContextType = {
-	theme: "light",
-	toggleTheme: () => {
-		logWarning("toggleTheme called outside of ThemeProvider");
-	},
+  theme: "light",
+  toggleTheme: () => {
+    logWarning("toggleTheme called outside of ThemeProvider");
+  },
 };
 
 const ThemeContext = createContext<ThemeContextType>(defaultThemeContextValue);
@@ -28,54 +28,54 @@ const ThemeContext = createContext<ThemeContextType>(defaultThemeContextValue);
 const THEME_STORAGE_KEY = "app-theme";
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
-	children,
+  children,
 }) => {
-	const [theme, setTheme] = useState<Theme>(() => {
-		if (typeof window === "undefined") {
-			return "light";
-		}
-		const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-		if (storedTheme === "light" || storedTheme === "dark") {
-			return storedTheme;
-		}
-		return window.matchMedia("(prefers-color-scheme: dark)").matches
-			? "dark"
-			: "light";
-	});
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    if (storedTheme === "light" || storedTheme === "dark") {
+      return storedTheme;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
 
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const root = window.document.documentElement;
-			if (theme === "dark") {
-				root.classList.add("dark");
-			} else {
-				root.classList.remove("dark");
-			}
-			localStorage.setItem(THEME_STORAGE_KEY, theme);
-		}
-	}, [theme]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const root = window.document.documentElement;
+      if (theme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }
+  }, [theme]);
 
-	const toggleTheme = useCallback(() => {
-		setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-	}, []);
+  const toggleTheme = useCallback(() => {
+    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+  }, []);
 
-	const contextValue = useMemo(
-		() => ({
-			theme,
-			toggleTheme,
-		}),
-		[theme, toggleTheme],
-	);
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      toggleTheme,
+    }),
+    [theme, toggleTheme],
+  );
 
-	return <ThemeContext value={contextValue}>{children}</ThemeContext>;
+  return <ThemeContext value={contextValue}>{children}</ThemeContext>;
 };
 
 export const useTheme = (): ThemeContextType => {
-	const context = use(ThemeContext);
-	if (context === defaultThemeContextValue && typeof window !== "undefined") {
-		logWarning(
-			"useTheme is used outside of a ThemeProvider or the provider is not yet mounted.",
-		);
-	}
-	return context;
+  const context = use(ThemeContext);
+  if (context === defaultThemeContextValue && typeof window !== "undefined") {
+    logWarning(
+      "useTheme is used outside of a ThemeProvider or the provider is not yet mounted.",
+    );
+  }
+  return context;
 };

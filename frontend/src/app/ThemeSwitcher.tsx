@@ -1,19 +1,19 @@
 import { useTheme } from "@/contexts/themeContext";
 
 export const ThemeSwitcher: React.FC = () => {
-	const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
-	return (
-		<button
-			type="button"
-			onClick={toggleTheme}
-			className="
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="
         p-2 rounded
         transition-colors duration-150
       "
-			aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-		>
-			{theme === "light" ? "🌙 " : "☀️"}
-		</button>
-	);
+      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+    >
+      {theme === "light" ? "🌙 " : "☀️"}
+    </button>
+  );
 };
