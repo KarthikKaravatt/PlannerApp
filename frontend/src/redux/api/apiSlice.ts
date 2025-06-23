@@ -54,7 +54,7 @@ export const apiSlice = createApi({
         body: request,
       }),
       responseSchema: taskListSchema,
-      invalidatesTags: ["TaskList"],
+      invalidatesTags: ["TaskList", "TaskListOrder"],
     }),
     //TODO:Make this optimistic
     removeTaskList: builder.mutation<void, string>({

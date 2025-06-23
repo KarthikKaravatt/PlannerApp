@@ -1,5 +1,10 @@
-import { useReducer, useState } from "react";
-import { Button, GridList, GridListItem } from "react-aria-components";
+import { Fragment, useReducer, useState } from "react";
+import {
+  Button,
+  GridList,
+  GridListItem,
+  useDragAndDrop,
+} from "react-aria-components";
 import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck, FaSpinner } from "react-icons/fa6";
@@ -8,6 +13,7 @@ import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
 import { SideBar } from "@/app/General/SideBar";
 import {
   useAddNewTaskListMutation,
+  useGetTaskListOrderQuery,
   useGetTaskListQuery,
   useUpdateTaskListMutation,
 } from "@/redux/api/apiSlice";
@@ -65,16 +71,26 @@ export const TaskListSideBar: React.FC = () => {
 };
 
 const TaskListsOrder: React.FC = () => {
-  const { data, isLoading, isSuccess, refetch } = useGetTaskListQuery();
+  const {
+    data: taskListData,
+    isLoading: isTaskListLoading,
+    isSuccess: isTaskListQuerySuccess,
+    refetch,
+  } = useGetTaskListQuery();
   const [currEditing, setCurEditing] = useState<string>("");
-  // const { dragAndDropHooks } = useDragAndDrop({
-  //   isDisabled: isEditing,
-  //   getItems: (keys) =>
-  //     [...keys].map((key) => {
-  //       return { "text/plain": key.toString() };
-  //     }),
-  // });
-  if (isLoading) {
+  const {
+    data: taskListOrderData,
+    isLoading: isTaskListOrderLoading,
+    isSuccess: isTaskListOrderQuerySuccess,
+  } = useGetTaskListOrderQuery();
+  const { dragAndDropHooks } = useDragAndDrop({
+    isDisabled: currEditing !== "",
+    getItems: (keys) =>
+      [...keys].map((key) => {
+        return { "text/plain": key.toString() };
+      }),
+  });
+  if (isTaskListLoading || isTaskListOrderLoading) {
     return (
       <>
         <FaSpinner />
@@ -82,7 +98,7 @@ const TaskListsOrder: React.FC = () => {
     );
   }
   //TODO: Make improve error handling
-  if (!isSuccess) {
+  if (!isTaskListQuerySuccess || !isTaskListOrderQuerySuccess) {
     return (
       <>
         <div className="flex flex-col justify-center items-center p-2">
@@ -108,22 +124,31 @@ const TaskListsOrder: React.FC = () => {
     <>
       {/* HACK: Bug in react aria see stopSpaceOnInput for more details */}
       <div onKeyDownCapture={stopSpaceOnInput}>
-        <GridList aria-label="Side bar task lists">
-          {data.map((list) => {
-            return (
-              <GridListItem textValue={list.name} key={list.id}>
-                <div className="flex flex-row">
-                  <Button slot="drag" aria-label="Drag item">
-                    <MdDragIndicator />
-                  </Button>
-                  <TaskListItem
-                    taskList={list}
-                    curEditing={currEditing}
-                    setCurEditing={setCurEditing}
-                  />
-                </div>
-              </GridListItem>
-            );
+        <GridList
+          aria-label="Side bar task lists"
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {taskListOrderData.map((listOrder) => {
+            const list = taskListData.find((l) => l.id === listOrder.id);
+            if (list) {
+              return (
+                <GridListItem textValue={list.name} key={list.id}>
+                  <div className="flex flex-row">
+                    <Button slot="drag" aria-label="Drag item">
+                      <MdDragIndicator />
+                    </Button>
+                    <TaskListItem
+                      taskList={list}
+                      curEditing={currEditing}
+                      setCurEditing={setCurEditing}
+                    />
+                  </div>
+                </GridListItem>
+              );
+            } else {
+              logError("List and order are out of sync");
+              return <Fragment key={listOrder.id} />;
+            }
           })}
         </GridList>
       </div>

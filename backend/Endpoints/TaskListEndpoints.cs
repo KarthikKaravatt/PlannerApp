@@ -9,6 +9,7 @@ public static class TaskListEndpoints
     public static void MapTaskListEndpoints(this WebApplication app)
     {
         var taskListApi = app.MapGroup("/api/taskLists");
+        //add a task list
         taskListApi.MapPut("/", async (PlannerDbContext db, TaskListRequest request) =>
         {
             var orderIndex = await db.TaskLists.CountAsync();
@@ -35,6 +36,13 @@ public static class TaskListEndpoints
             if (listToRemove == null) return Results.NotFound();
             db.TaskLists.Remove(listToRemove);
             db.Tasks.RemoveRange(tasksToRemove);
+            //reindex everything
+            uint count = 0;
+            foreach (var list in db.TaskLists.OrderBy(list => list.OrderIndex))
+            {
+                list.OrderIndex = count;
+                count++;
+            }
             await db.SaveChangesAsync();
             return Results.Ok();
         });
@@ -48,9 +56,10 @@ public static class TaskListEndpoints
             return Results.Ok();
         });
         // get the order of all the task lists
-        taskListApi.Map("/order", async (PlannerDbContext db, Guid id) =>
+        taskListApi.Map("/order", async (PlannerDbContext db) =>
         {
-            var orderList = await db.TaskLists.Where(list => list.Id == id).Select(item => new { item.Id, item.OrderIndex }).ToListAsync();
+            var orderList = await db.TaskLists.Select(item => new { item.Id, item.OrderIndex }).ToListAsync();
+            orderList.Sort(((x, y) => (int)x.OrderIndex-(int)y.OrderIndex));
             return Results.Ok(orderList);
         });
     }
