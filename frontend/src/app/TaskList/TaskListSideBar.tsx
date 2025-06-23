@@ -143,7 +143,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
 }) => {
   const [state, dispatch] = useReducer(taskListReducer, {
     input: taskList.name,
-    editable: false,
     loading: false,
   });
   const [updateTaskList] = useUpdateTaskListMutation();
@@ -167,10 +166,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         onDoubleClick={() => {
           if (isEditable) {
             setCurEditing(taskList.id);
-            dispatch({
-              type: "MUTATE_EDITABLE_ACTION",
-              payload: true,
-            });
             dispatch({
               type: "MUTATE_INPUT_ACTION",
               payload: taskList.name,
@@ -204,7 +199,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
               .then(() => {
                 setCurEditing("");
                 dispatch({ type: "MUTATE_LOADING_ACTION", payload: false });
-                dispatch({ type: "MUTATE_EDITABLE_ACTION", payload: false });
                 dispatch({
                   type: "MUTATE_INPUT_ACTION",
                   payload: taskList.name,
@@ -213,7 +207,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
               .catch((err: unknown) => {
                 setCurEditing("");
                 dispatch({ type: "MUTATE_LOADING_ACTION", payload: false });
-                dispatch({ type: "MUTATE_EDITABLE_ACTION", payload: false });
                 dispatch({
                   type: "MUTATE_INPUT_ACTION",
                   payload: taskList.name,
@@ -224,7 +217,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
               });
           } else if (isEditable) {
             setCurEditing(taskList.id);
-            dispatch({ type: "MUTATE_EDITABLE_ACTION", payload: true });
             dispatch({
               type: "MUTATE_INPUT_ACTION",
               payload: taskList.name,

@@ -31,8 +31,10 @@ public static class TaskListEndpoints
         taskListApi.MapDelete("/{id:guid}", async (PlannerDbContext db, Guid id) =>
         {
             var listToRemove = await db.TaskLists.FindAsync(id);
+            var tasksToRemove = db.Tasks.Where(task => task.TaskListId == id);
             if (listToRemove == null) return Results.NotFound();
             db.TaskLists.Remove(listToRemove);
+            db.Tasks.RemoveRange(tasksToRemove);
             await db.SaveChangesAsync();
             return Results.Ok();
         });

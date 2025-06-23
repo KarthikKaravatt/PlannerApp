@@ -18,11 +18,6 @@ export const taskListReducer = (
             : filteredInput;
       });
     }
-    case "MUTATE_EDITABLE_ACTION": {
-      return produce(state, (draftState) => {
-        draftState.editable = action.payload;
-      });
-    }
     case "MUTATE_LOADING_ACTION": {
       return produce(state, (draftState) => {
         draftState.loading = action.payload;
