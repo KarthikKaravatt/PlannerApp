@@ -50,7 +50,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
     setEditingTaskId(isEditing);
   }, []);
   return (
-    <div className={"p-2 flex flex-col gap-1 h-full w-1/3"}>
+    <div className={"p-2 flex flex-col gap-1 h-full w-1/4 shrink-0"}>
       <div className="flex">
         <p
           className="
@@ -98,6 +98,7 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
         >
           <Dialog
             className="
+                w-3/4
                 border-gray-300 border-2
                 bg-blue-100
                 p-2 rounded-xl

@@ -38,7 +38,7 @@ export const TaskListSideBar: React.FC = () => {
               );
             }}
             placeholder="Add new task list"
-            className="p-1"
+            className="p-1 outline-none"
           />
           <Button
             type="button"
@@ -66,7 +66,7 @@ export const TaskListSideBar: React.FC = () => {
 
 const TaskListsOrder: React.FC = () => {
   const { data, isLoading, isSuccess, refetch } = useGetTaskListQuery();
-  // const [isEditing, setIsEditing] = useState(false);
+  const [currEditing, setCurEditing] = useState<string>("");
   // const { dragAndDropHooks } = useDragAndDrop({
   //   isDisabled: isEditing,
   //   getItems: (keys) =>
@@ -116,7 +116,11 @@ const TaskListsOrder: React.FC = () => {
                   <Button slot="drag" aria-label="Drag item">
                     <MdDragIndicator />
                   </Button>
-                  <TaskListItem taskList={list} />
+                  <TaskListItem
+                    taskList={list}
+                    curEditing={currEditing}
+                    setCurEditing={setCurEditing}
+                  />
                 </div>
               </GridListItem>
             );
@@ -129,14 +133,22 @@ const TaskListsOrder: React.FC = () => {
 
 interface TaskListItemProps {
   taskList: TaskList;
+  curEditing: string;
+  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
-const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
+const TaskListItem: React.FC<TaskListItemProps> = ({
+  taskList,
+  curEditing,
+  setCurEditing,
+}) => {
   const [state, dispatch] = useReducer(taskListReducer, {
     input: taskList.name,
     editable: false,
     loading: false,
   });
   const [updateTaskList] = useUpdateTaskListMutation();
+  const isEditing = curEditing === taskList.id;
+  const isEditable = curEditing === "";
   return (
     <div
       className="
@@ -148,12 +160,13 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
     >
       <AutoResizeTextArea
         className={`
-          ${state.editable ? "caret-gray-400" : "caret-transparent"}
+          ${curEditing === taskList.id ? "caret-gray-400" : "caret-transparent"}
           outline-none
         `}
-        readOnly={!state.editable}
+        readOnly={!isEditing}
         onDoubleClick={() => {
-          if (!state.editable) {
+          if (isEditable) {
+            setCurEditing(taskList.id);
             dispatch({
               type: "MUTATE_EDITABLE_ACTION",
               payload: true,
@@ -164,7 +177,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
             });
           }
         }}
-        value={state.editable ? state.input : taskList.name}
+        value={!isEditing || isEditable ? taskList.name : state.input}
         onChange={(event) => {
           dispatch({
             type: "MUTATE_INPUT_ACTION",
@@ -173,21 +186,23 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
         }}
       />
       <Button
-        className={state.editable ? "opacity-0" : ""}
-        isDisabled={state.loading || state.editable}
+        //TODO: Implement popover
+        className={isEditing ? "opacity-0" : ""}
+        isDisabled={state.loading || curEditing !== taskList.id}
       >
         <BsThreeDots />
       </Button>
       <Button
         isDisabled={state.loading}
         onClick={() => {
-          if (state.editable) {
+          if (isEditing) {
             dispatch({ type: "MUTATE_LOADING_ACTION", payload: true });
             updateTaskList({
               listID: taskList.id,
               request: { name: state.input },
             })
               .then(() => {
+                setCurEditing("");
                 dispatch({ type: "MUTATE_LOADING_ACTION", payload: false });
                 dispatch({ type: "MUTATE_EDITABLE_ACTION", payload: false });
                 dispatch({
@@ -196,6 +211,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
                 });
               })
               .catch((err: unknown) => {
+                setCurEditing("");
                 dispatch({ type: "MUTATE_LOADING_ACTION", payload: false });
                 dispatch({ type: "MUTATE_EDITABLE_ACTION", payload: false });
                 dispatch({
@@ -206,7 +222,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
                   logError("Error updating task list", err);
                 }
               });
-          } else {
+          } else if (isEditable) {
+            setCurEditing(taskList.id);
             dispatch({ type: "MUTATE_EDITABLE_ACTION", payload: true });
             dispatch({
               type: "MUTATE_INPUT_ACTION",
@@ -215,7 +232,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
           }
         }}
       >
-        {state.editable ? <FaCheck className="text-green-700" /> : <CiEdit />}
+        {isEditing ? <FaCheck className="text-green-700" /> : <CiEdit />}
       </Button>
     </div>
   );
