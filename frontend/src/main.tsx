@@ -14,8 +14,7 @@ import { reportWebVitals } from "./reportWebVitals.ts";
 
 enableMapSet();
 scan({
-  // enabled: import.meta.env.DEV,
-  enabled: true,
+  enabled: import.meta.env.DEV,
 });
 
 const router = createRouter({
