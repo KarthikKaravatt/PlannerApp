@@ -86,6 +86,23 @@ const TaskListsOrder: React.FC = () => {
   } = useGetTaskListOrderQuery();
   //TODO: Add loading state
   const [moveTaskList] = useMoveTaskListMutation();
+  //Got to do this otherwise grid list state will not update
+  const itemsWithEditingState = (() => {
+    if (!taskListOrderData || !taskListData) {
+      return [];
+    }
+    return taskListOrderData
+      .map((orderItem) => {
+        const list = taskListData.find((l) => l.id === orderItem.id);
+        if (!list) return null;
+        return {
+          ...list,
+          isEditing: currEditing === list.id,
+          isEditable: currEditing === "",
+        };
+      })
+      .filter((item) => item !== null);
+  })();
   const { dragAndDropHooks } = useDragAndDrop({
     isDisabled: currEditing !== "",
     getItems: (keys) =>
@@ -153,12 +170,12 @@ const TaskListsOrder: React.FC = () => {
         <GridList
           keyboardNavigationBehavior="tab"
           aria-label="Side bar task lists"
-          items={taskListOrderData}
+          items={itemsWithEditingState}
           dragAndDropHooks={dragAndDropHooks}
           selectionMode="single"
         >
-          {(listOrder) => {
-            const list = taskListData.find((l) => l.id === listOrder.id);
+          {(listMetaData) => {
+            const list = taskListData.find((l) => l.id === listMetaData.id);
             if (list) {
               return (
                 <GridListItem textValue={list.name} key={list.id}>
@@ -168,7 +185,8 @@ const TaskListsOrder: React.FC = () => {
                     </Button>
                     <TaskListItem
                       taskList={list}
-                      curEditing={currEditing}
+                      isEditing={listMetaData.isEditing}
+                      isEditable={listMetaData.isEditable}
                       setCurEditing={setCurEditing}
                     />
                   </div>
@@ -176,7 +194,7 @@ const TaskListsOrder: React.FC = () => {
               );
             } else {
               logError("List and order are out of sync");
-              return <Fragment key={listOrder.id} />;
+              return <Fragment key={listMetaData.id} />;
             }
           }}
         </GridList>
@@ -187,12 +205,14 @@ const TaskListsOrder: React.FC = () => {
 
 interface TaskListItemProps {
   taskList: TaskList;
-  curEditing: string;
+  isEditing: boolean;
+  isEditable: boolean;
   setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
 const TaskListItem: React.FC<TaskListItemProps> = ({
   taskList,
-  curEditing,
+  isEditing,
+  isEditable,
   setCurEditing,
 }) => {
   const [state, dispatch] = useReducer(taskListReducer, {
@@ -200,8 +220,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     loading: false,
   });
   const [updateTaskList] = useUpdateTaskListMutation();
-  const isEditing = curEditing === taskList.id;
-  const isEditable = curEditing === "";
   return (
     <div
       className="
@@ -213,7 +231,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
     >
       <AutoResizeTextArea
         className={`
-          ${curEditing === taskList.id ? "caret-gray-400" : "caret-transparent"}
+          ${isEditing ? "caret-gray-400" : "caret-transparent"}
           outline-none
         `}
         readOnly={!isEditing}
@@ -237,7 +255,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
       <Button
         //TODO: Implement popover
         className={isEditing ? "opacity-0" : ""}
-        isDisabled={state.loading || curEditing !== taskList.id}
+        isDisabled={state.loading || !isEditing}
       >
         <BsThreeDots />
       </Button>
