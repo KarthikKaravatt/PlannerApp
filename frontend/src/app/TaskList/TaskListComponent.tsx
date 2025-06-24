@@ -167,7 +167,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
   const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
   const [curEditing, setCurEditing] = useState("");
   const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: curEditing !== "",
+    isDisabled: curEditing !== "" || sortOption !== "CUSTOM",
     getItems: (keys) =>
       [...keys].map((key) => {
         return { "text/plain": key.toString() };
@@ -211,18 +211,28 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
   }
   if (isSuccess && isOrderSuccess) {
     const finalList = getFinalList(tasks, order, filterOption, sortOption);
-    const finalListWithEditingState = (() =>
-      order
-        .map((o) => {
-          const task = finalList.find((t) => t.id === o.id);
-          if (!task) return null;
-          return {
-            ...task,
-            isEditing: curEditing === task.id,
-            isEditable: curEditing === "",
-          };
-        })
-        .filter((item) => item !== null))();
+    const finalListWithEditingState = (() => {
+      if (sortOption === "CUSTOM") {
+        return order
+          .map((o) => {
+            const task = finalList.find((t) => t.id === o.id);
+            if (!task) return null;
+            return {
+              ...task,
+              isEditing: curEditing === task.id,
+              isEditable: curEditing === "",
+            };
+          })
+          .filter((item) => item !== null);
+      }
+      return finalList.map((t) => {
+        return {
+          ...t,
+          isEditing: curEditing === t.id,
+          isEditable: curEditing === "",
+        };
+      });
+    })();
     return (
       //HACK: Bug in react aria see stopSpaceOnInput for more details
       <div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
@@ -233,30 +243,32 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
           dragAndDropHooks={dragAndDropHooks}
           selectionMode="single"
         >
-          {(task) => (
-            <GridListItem
-              textValue={`
-                  Task Label: ${task.label}
-                  Completed: ${String(task.completed)}
-                  ${task.kind === "withDate" ? task.dueDate : ""}
+          {(taskWithMetaData) => {
+            return (
+              <GridListItem
+                textValue={`
+                  Task Label: ${taskWithMetaData.label}
+                  Completed: ${String(taskWithMetaData.completed)}
+                  ${taskWithMetaData.kind === "withDate" ? taskWithMetaData.dueDate : ""}
                 `}
-              className="data-[dragging]:opacity-60"
-            >
-              <div className="flex flex-row">
-                <Button slot="drag" aria-label="Drag item">
-                  <MdDragIndicator />
-                </Button>
-                <TaskComponent
-                  setCurEditing={setCurEditing}
-                  isEditable={task.isEditable}
-                  isEditing={task.isEditing}
-                  taskListId={listId}
-                  key={task.id}
-                  task={task}
-                />
-              </div>
-            </GridListItem>
-          )}
+                className="data-[dragging]:opacity-60"
+              >
+                <div className="flex flex-row">
+                  <Button slot="drag" aria-label="Drag item">
+                    <MdDragIndicator />
+                  </Button>
+                  <TaskComponent
+                    setCurEditing={setCurEditing}
+                    isEditable={taskWithMetaData.isEditable}
+                    isEditing={taskWithMetaData.isEditing}
+                    taskListId={listId}
+                    key={taskWithMetaData.id}
+                    task={taskWithMetaData}
+                  />
+                </div>
+              </GridListItem>
+            );
+          }}
         </GridList>
       </div>
     );

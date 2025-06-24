@@ -31,6 +31,7 @@ public static class TaskEndpoints
             var taskListOrder = await db.Tasks
                 .Where(task => task.TaskListId == listId)
                 .Select(task => new { task.Id, task.OrderIndex })
+                .OrderBy(t=> t.OrderIndex)
                 .ToListAsync();
             return Results.Ok(taskListOrder);
         });
