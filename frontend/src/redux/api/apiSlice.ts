@@ -134,7 +134,6 @@ export const apiSlice = createApi({
         body: request,
       }),
       responseSchema: taskResponseSchema,
-      //BUG: Race condition here
       async onQueryStarted(payload, { dispatch, queryFulfilled }) {
         const tempId = uuidv7();
         const { listId, request } = payload;
