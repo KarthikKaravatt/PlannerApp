@@ -14,7 +14,7 @@ export const useMoreOptions = (
   task: Task,
   state: TaskComponentState,
   dispatch: (action: TaskComponentAction) => void,
-  onEditableStateChange: (isEditing: boolean) => void,
+  setCurEditing: React.Dispatch<React.SetStateAction<string>>,
 ) => {
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const [deleteTask, { isLoading: isDeleteLoading }] = useDeleteTaskMutation();
@@ -36,8 +36,7 @@ export const useMoreOptions = (
           }
         });
     }
-    dispatch({ type: "MUTATE_EDITABLE", payload: false });
-    onEditableStateChange(false);
+    setCurEditing("");
   };
   const handleDeleteButtonClick = () => {
     deleteTask({ taskId: task.id, listId: state.taskListId }).catch(

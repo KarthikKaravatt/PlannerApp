@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Dialog,
@@ -36,7 +36,6 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
   listName,
   listId,
 }) => {
-  const [isEditingTask, setEditingTaskId] = useState<boolean>(false);
   const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
   const [sortOption, setSortOption] = useState<SortOption>(() => {
     const selection = localStorage.getItem("SORT_OPTION") as SortOption | null;
@@ -46,9 +45,6 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
     }
     return selection;
   });
-  const handleTaskEditableStateChange = useCallback((isEditing: boolean) => {
-    setEditingTaskId(isEditing);
-  }, []);
   return (
     <div className={"p-2 flex flex-col gap-1 h-full w-1/4 shrink-0"}>
       <div className="flex">
@@ -73,8 +69,6 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
       <TaskListInput taskListId={listId} />
       <VisibleTasks
         listId={listId}
-        isEditingTask={isEditingTask}
-        onTaskEditableStateChange={handleTaskEditableStateChange}
         sortOption={sortOption}
         filterOption={filterOption}
       />
@@ -149,16 +143,12 @@ interface ViibleTasksProp {
   listId: string;
   filterOption: FilterOption;
   sortOption: SortOption;
-  isEditingTask: boolean;
-  onTaskEditableStateChange: (isEditing: boolean) => void;
 }
 
 const VisibleTasks: React.FC<ViibleTasksProp> = ({
   listId,
   filterOption,
   sortOption,
-  isEditingTask,
-  onTaskEditableStateChange,
 }) => {
   const {
     data: tasks,
@@ -175,8 +165,9 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     error: orderError,
   } = useGetTaskOrderQuery(listId);
   const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
+  const [curEditing, setCurEditing] = useState("");
   const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: isEditingTask,
+    isDisabled: curEditing !== "",
     getItems: (keys) =>
       [...keys].map((key) => {
         return { "text/plain": key.toString() };
@@ -220,12 +211,24 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
   }
   if (isSuccess && isOrderSuccess) {
     const finalList = getFinalList(tasks, order, filterOption, sortOption);
+    const finalListWithEditingState = (() =>
+      order
+        .map((o) => {
+          const task = finalList.find((t) => t.id === o.id);
+          if (!task) return null;
+          return {
+            ...task,
+            isEditing: curEditing === task.id,
+            isEditable: curEditing === "",
+          };
+        })
+        .filter((item) => item !== null))();
     return (
       //HACK: Bug in react aria see stopSpaceOnInput for more details
       <div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
         <GridList
           keyboardNavigationBehavior="tab"
-          items={finalList}
+          items={finalListWithEditingState}
           aria-label="Tasks"
           dragAndDropHooks={dragAndDropHooks}
           selectionMode="single"
@@ -244,10 +247,12 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
                   <MdDragIndicator />
                 </Button>
                 <TaskComponent
+                  setCurEditing={setCurEditing}
+                  isEditable={task.isEditable}
+                  isEditing={task.isEditing}
                   taskListId={listId}
                   key={task.id}
                   task={task}
-                  onEditableStateChange={onTaskEditableStateChange}
                 />
               </div>
             </GridListItem>

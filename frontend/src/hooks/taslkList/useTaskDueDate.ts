@@ -11,11 +11,12 @@ export const useTaskDueDate = (
   task: Task,
   state: TaskComponentState,
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>,
+  isEditing: boolean,
 ) => {
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const onDateButtonClicked = (inputDate: ZonedDateTime) => {
     dispatch({ type: "MUTATE_LOADING", payload: true });
-    if (state.editable) {
+    if (isEditing) {
       return;
     }
     switch (task.kind) {

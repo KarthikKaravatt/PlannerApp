@@ -18,7 +18,5 @@ export const taskComponentReducer = (
     }
     case "MUTATE_LOADING":
       return { ...state, isLoading: action.payload };
-    case "MUTATE_EDITABLE":
-      return { ...state, editable: action.payload };
   }
 };

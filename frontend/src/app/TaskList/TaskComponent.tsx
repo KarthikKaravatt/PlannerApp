@@ -28,17 +28,20 @@ import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 export interface TaskProp {
   task: Task;
   taskListId: string;
-  onEditableStateChange: (isEditing: boolean) => void;
+  isEditable: boolean;
+  isEditing: boolean;
+  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
 export const TaskComponent: React.FC<TaskProp> = ({
   task,
   taskListId,
-  onEditableStateChange,
+  isEditing,
+  isEditable,
+  setCurEditing,
 }) => {
   const initalTaskComponentState: TaskComponentState = {
     inputTaskName: task.label,
     taskListId,
-    editable: false,
     isLoading: false,
   };
   const [state, dispatch] = useReducer(
@@ -57,22 +60,36 @@ export const TaskComponent: React.FC<TaskProp> = ({
           shadow
           w-full
         `}
-      draggable={!state.editable}
+      draggable={isEditable}
     >
       <div className="flex flex-row gap-2 items-center pr-2 pl-2">
-        <CheckBox task={task} state={state} dispatch={dispatch} />
+        <CheckBox
+          task={task}
+          state={state}
+          dispatch={dispatch}
+          isEditing={isEditing}
+        />
         <InputField
           task={task}
           state={state}
           dispatch={dispatch}
-          onEditableStateChange={onEditableStateChange}
+          isEditable={isEditable}
+          isEditing={isEditing}
+          setCurEditing={setCurEditing}
         />
-        <DueDateDisplay task={task} state={state} dispatch={dispatch} />
+        <DueDateDisplay
+          task={task}
+          state={state}
+          dispatch={dispatch}
+          isEditing={isEditing}
+        />
         <MoreOptions
           task={task}
           state={state}
           dispatch={dispatch}
-          onEditableStateChange={onEditableStateChange}
+          isEditable={isEditable}
+          isEditing={isEditing}
+          setCurEditing={setCurEditing}
         />
       </div>
     </div>
@@ -83,13 +100,19 @@ interface CheckBoxProp {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
+  isEditing: boolean;
 }
-const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
+const CheckBox: React.FC<CheckBoxProp> = ({
+  task,
+  state,
+  dispatch,
+  isEditing,
+}) => {
   //TODO:: Use React aria checkbok and make this its own general use custom
   //component
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const handleClick = () => {
-    if (state.editable || isLoading || state.isLoading) {
+    if (isEditing || isLoading || state.isLoading) {
       return;
     }
     dispatch({ type: "MUTATE_LOADING", payload: true });
@@ -115,7 +138,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
     }
   };
 
-  const isInteractive = !(state.editable || isLoading) || state.isLoading;
+  const isInteractive = !(isEditing || isLoading) || state.isLoading;
 
   return (
     <>
@@ -128,7 +151,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
             : undefined
         }
         className={`
-          ${state.editable ? "opacity-0" : "opacity-100"}
+          ${isEditing ? "opacity-0" : "opacity-100"}
           w-4.5 h-3.5 
           ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
           rounded-full border-2 
@@ -155,27 +178,29 @@ interface InputFieldProps {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-  onEditableStateChange: (isEditing: boolean) => void;
+  isEditing: boolean;
+  isEditable: boolean;
+  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
 const InputField: React.FC<InputFieldProps> = ({
   task,
   state,
   dispatch,
-  onEditableStateChange,
+  isEditing,
+  isEditable,
+  setCurEditing,
 }) => {
   return (
     <AutoResizeTextArea
-      value={state.editable ? state.inputTaskName : task.label}
+      value={isEditing ? state.inputTaskName : task.label}
       className={`
         w-full outline-none leading-4.5
-        ${state.editable ? "caret-gray-400" : "caret-transparent"}
+        ${isEditing ? "caret-gray-400" : "caret-transparent"}
       `}
-      readOnly={!state.editable}
+      readOnly={!isEditing}
       onDoubleClick={() => {
-        if (!state.editable) {
-          dispatch({ type: "MUTATE_INPUT", payload: task.label });
-          dispatch({ type: "MUTATE_EDITABLE", payload: true });
-          onEditableStateChange(true);
+        if (isEditable) {
+          setCurEditing(task.id);
         }
       }}
       onChange={(event) => {
@@ -188,12 +213,19 @@ interface DueDateProp {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
+  isEditing: boolean;
 }
-const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
+const DueDateDisplay: React.FC<DueDateProp> = ({
+  task,
+  state,
+  dispatch,
+  isEditing,
+}) => {
   const { isLoading, onDateButtonClicked } = useTaskDueDate(
     task,
     state,
     dispatch,
+    isEditing,
   );
   if (task.kind === "withoutDate") {
     return <></>;
@@ -208,13 +240,16 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
         className={`
           ${isLoading ? "dark:text-gray-300" : "dark:text-white"}
           ${isLoading ? "text-gray-400" : "text-blue-950"}
-          ${state.editable ? "opacity-0" : "opacity-100"}
+          ${isEditing ? "opacity-0" : "opacity-100"}
           text-xs
           w-10
         `}
       >
         <DialogTrigger>
-          <Button type="button">{`${date.day.toString()} ${monthAbbr}`}</Button>
+          <Button
+            isDisabled={isEditing}
+            type="button"
+          >{`${date.day.toString()} ${monthAbbr}`}</Button>
           <Popover>
             <Calendar
               value={date}
@@ -258,13 +293,17 @@ interface MoreOptionsProp {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-  onEditableStateChange: (isEditing: boolean) => void;
+  isEditable: boolean;
+  isEditing: boolean;
+  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
 const MoreOptions: React.FC<MoreOptionsProp> = ({
   task,
   state,
   dispatch,
-  onEditableStateChange,
+  setCurEditing,
+  isEditable,
+  isEditing,
 }) => {
   const {
     isLoading,
@@ -273,7 +312,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
     handleDeleteButtonClick,
     handleAddDateButtonClicked,
     handleRemoveButtonDateClicked,
-  } = useMoreOptions(task, state, dispatch, onEditableStateChange);
+  } = useMoreOptions(task, state, dispatch, setCurEditing);
 
   return (
     <>
@@ -285,8 +324,9 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
         <div className="flex">
           <DialogTrigger>
             <Button
+              isDisabled={isEditing || !isEditable}
               type="button"
-              className={state.editable ? "opacity-0" : "opacity-100"}
+              className={isEditing ? "opacity-0" : "opacity-100"}
             >
               <BsThreeDots className="text-blue-950 dark:text-white" />
             </Button>
@@ -338,18 +378,19 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
         <Button
           type="button"
           className={`"
-          ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : state.editable ? "text-green-700 dark:text-green-400" : ""}
+          ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : isEditing ? "text-green-700 dark:text-green-400" : ""}
         "`}
           onClick={
-            state.editable
+            isEditing
               ? handleConfirmButtonClick
               : () => {
-                  dispatch({ type: "MUTATE_EDITABLE", payload: true });
-                  onEditableStateChange(true);
+                  if (isEditable) {
+                    setCurEditing(task.id);
+                  }
                 }
           }
         >
-          {state.editable ? <FaCheck /> : <CiEdit />}
+          {isEditing ? <FaCheck /> : <CiEdit />}
         </Button>
       </div>
     </>
