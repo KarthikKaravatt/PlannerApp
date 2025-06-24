@@ -25,7 +25,7 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
   sortOrder,
   setSortState,
 }) => {
-  const [clearTasks] = useClearCompletedTasksMutation();
+  const [clearTasks, { isLoading }] = useClearCompletedTasksMutation();
   const onFilterButtonClick = () => {
     const filterOptions: FilterOption[] = ["ALL", "INCOMPLETE", "COMPLETE"];
     setFilterState((prev) => {
@@ -74,12 +74,13 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 
       <Button
         type="button"
-        className="
+        className={`
+          ${isLoading ? "text-gray-300" : ""}
           flex flex-1 flex-col 
           items-center justify-center 
           rounded-md border border-gray-300 
           text-center shadow-sm 
-        "
+        `}
         onClick={onClearButtonClick}
       >
         Clear
