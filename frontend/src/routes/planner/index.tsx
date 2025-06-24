@@ -1,14 +1,14 @@
-import {createFileRoute} from "@tanstack/react-router";
-import {Button} from "react-aria-components";
-import {FaSpinner} from "react-icons/fa6";
-import {TaskListComponent} from "@/app/TaskList/TaskListComponent";
-import {TaskListSideBar} from "@/app/TaskList/TaskListSideBar";
+import { createFileRoute } from "@tanstack/react-router";
+import { Button } from "react-aria-components";
+import { FaSpinner } from "react-icons/fa6";
+import { TaskListComponent } from "@/app/TaskList/TaskListComponent";
+import { TaskListSideBar } from "@/app/TaskList/TaskListSideBar";
 import {
   useGetTaskListOrderQuery,
   useGetTaskListQuery,
 } from "@/redux/api/apiSlice";
-import {logError} from "@/util/console";
-export const Route=createFileRoute("/planner/")({
+import { logError } from "@/util/console";
+export const Route = createFileRoute("/planner/")({
   component: Planner,
 });
 
@@ -28,23 +28,23 @@ function Planner() {
 interface TaskListsProps {
   className?: string;
 }
-const TaskLists: React.FC<TaskListsProps>=({className}) => {
+const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
   const {
     data: listData,
     isLoading: isListDataLoading,
     isSuccess: isListDataSuccess,
     refetch: listDataRefetch,
-  }=useGetTaskListQuery();
+  } = useGetTaskListQuery();
   const {
     data: listOrderData,
     isLoading: isListOrderDataLoading,
     isSuccess: isListOrderDataSuccess,
     refetch: listDataOroderRefetch,
-  }=useGetTaskListOrderQuery();
-  if(isListDataLoading||isListOrderDataLoading) {
+  } = useGetTaskListOrderQuery();
+  if (isListDataLoading || isListOrderDataLoading) {
     return <FaSpinner />;
   }
-  if(!isListDataSuccess||!isListOrderDataSuccess) {
+  if (!isListDataSuccess || !isListOrderDataSuccess) {
     return (
       <>
         <div className="flex flex-col justify-center items-center">
@@ -72,8 +72,8 @@ const TaskLists: React.FC<TaskListsProps>=({className}) => {
   return (
     <div className={className}>
       {listOrderData.map((listOrder) => {
-        const list=listData.find((l) => listOrder.id===l.id);
-        if(list) {
+        const list = listData.find((l) => listOrder.id === l.id);
+        if (list) {
           return (
             <TaskListComponent
               key={list.id}

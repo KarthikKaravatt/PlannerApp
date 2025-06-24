@@ -1,5 +1,5 @@
-import {parseAbsoluteToLocal} from "@internationalized/date";
-import {useCallback,useState} from "react";
+import { parseAbsoluteToLocal } from "@internationalized/date";
+import { useCallback, useState } from "react";
 import {
   Button,
   Dialog,
@@ -10,45 +10,45 @@ import {
   Modal,
   useDragAndDrop,
 } from "react-aria-components";
-import {FaSpinner} from "react-icons/fa";
-import {FaRegTrashCan} from "react-icons/fa6";
-import {MdDragIndicator} from "react-icons/md";
+import { FaSpinner } from "react-icons/fa";
+import { FaRegTrashCan } from "react-icons/fa6";
+import { MdDragIndicator } from "react-icons/md";
 import {
   useGetTaskOrderQuery,
   useGetTasksQuery,
   useMoveTaskOrderMutation,
   useRemoveTaskListMutation,
 } from "@/redux/api/apiSlice";
-import type {Task,TaskOrder} from "@/schemas/task";
-import type {FilterOption,SortOption} from "@/types/taskList";
-import {logError} from "@/util/console.ts";
-import {stopSpaceOnInput} from "@/util/hacks.ts";
-import {TaskComponent} from "./TaskComponent.tsx";
-import {TaskListInput} from "./TaskListInput.tsx";
-import {TaskListOptions} from "./TaskListOptions.tsx";
+import type { Task, TaskOrder } from "@/schemas/task";
+import type { FilterOption, SortOption } from "@/types/taskList";
+import { logError } from "@/util/console.ts";
+import { stopSpaceOnInput } from "@/util/hacks.ts";
+import { TaskComponent } from "./TaskComponent.tsx";
+import { TaskListInput } from "./TaskListInput.tsx";
+import { TaskListOptions } from "./TaskListOptions.tsx";
 
 interface TaskListComponentProps {
   listName: string;
   listId: string;
 }
 
-export const TaskListComponent: React.FC<TaskListComponentProps>=({
+export const TaskListComponent: React.FC<TaskListComponentProps> = ({
   listName,
   listId,
 }) => {
-  const [isEditingTask,setEditingTaskId]=useState<boolean>(false);
-  const [filterOption,setFilterOption]=useState<FilterOption>("ALL");
-  const [sortOption,setSortOption]=useState<SortOption>(() => {
-    const selection=localStorage.getItem("SORT_OPTION") as SortOption|null;
-    if(!selection) {
-      localStorage.setItem("SORT_OPTION","CUSTOM");
+  const [isEditingTask, setEditingTaskId] = useState<boolean>(false);
+  const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    const selection = localStorage.getItem("SORT_OPTION") as SortOption | null;
+    if (!selection) {
+      localStorage.setItem("SORT_OPTION", "CUSTOM");
       return "CUSTOM";
     }
     return selection;
   });
-  const handleTaskEditableStateChange=useCallback((isEditing: boolean) => {
+  const handleTaskEditableStateChange = useCallback((isEditing: boolean) => {
     setEditingTaskId(isEditing);
-  },[]);
+  }, []);
   return (
     <div className={"p-2 flex flex-col gap-1 h-full w-1/4 shrink-0"}>
       <div className="flex">
@@ -81,8 +81,8 @@ export const TaskListComponent: React.FC<TaskListComponentProps>=({
     </div>
   );
 };
-const TaskListDeleteListDiaLog: React.FC<{listId: string}>=({listId}) => {
-  const [removeTaskList]=useRemoveTaskListMutation();
+const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
+  const [removeTaskList] = useRemoveTaskListMutation();
   return (
     <>
       <DialogTrigger>
@@ -105,7 +105,7 @@ const TaskListDeleteListDiaLog: React.FC<{listId: string}>=({listId}) => {
               "
             role="alertdialog"
           >
-            {({close}) => (
+            {({ close }) => (
               <>
                 <Heading
                   className="font-bold text-lg text-red-500"
@@ -153,7 +153,7 @@ interface ViibleTasksProp {
   onTaskEditableStateChange: (isEditing: boolean) => void;
 }
 
-const VisibleTasks: React.FC<ViibleTasksProp>=({
+const VisibleTasks: React.FC<ViibleTasksProp> = ({
   listId,
   filterOption,
   sortOption,
@@ -166,60 +166,60 @@ const VisibleTasks: React.FC<ViibleTasksProp>=({
     isSuccess,
     isError,
     error,
-  }=useGetTasksQuery(listId);
+  } = useGetTasksQuery(listId);
   const {
     data: order,
     isLoading: isOrderLoading,
     isSuccess: isOrderSuccess,
     isError: isOrderError,
     error: orderError,
-  }=useGetTaskOrderQuery(listId);
-  const [moveTask /*{ isLoading: isMovingTask }*/]=useMoveTaskOrderMutation();
-  const {dragAndDropHooks}=useDragAndDrop({
+  } = useGetTaskOrderQuery(listId);
+  const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
+  const { dragAndDropHooks } = useDragAndDrop({
     isDisabled: isEditingTask,
     getItems: (keys) =>
       [...keys].map((key) => {
-        return {"text/plain": key.toString()};
+        return { "text/plain": key.toString() };
       }),
     onReorder: (e) => {
-      if(!(sortOption==="CUSTOM"&&filterOption==="ALL")) {
+      if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
         return;
       }
-      if(e.target.dropPosition==="before") {
+      if (e.target.dropPosition === "before") {
         moveTask({
           id1: Array.from(e.keys)[0].toString(),
           id2: e.target.key.toString(),
           pos: "Before",
           listId: listId,
         }).catch((err: unknown) => {
-          if(err instanceof Error) {
-            logError("Error moving task",err);
+          if (err instanceof Error) {
+            logError("Error moving task", err);
           }
         });
-      } else if(e.target.dropPosition==="after") {
+      } else if (e.target.dropPosition === "after") {
         moveTask({
           id1: Array.from(e.keys)[0].toString(),
           id2: e.target.key.toString(),
           pos: "After",
           listId: listId,
         }).catch((err: unknown) => {
-          if(err instanceof Error) {
-            logError("Error moving task",err);
+          if (err instanceof Error) {
+            logError("Error moving task", err);
           }
         });
       }
     },
   });
-  if(isLoading||isOrderLoading) {
+  if (isLoading || isOrderLoading) {
     return <FaSpinner className="text-blue950 dark:text-white" />;
   }
-  if(isError||isOrderError) {
-    logError("Error fetching tasks",error as Error);
-    logError("Error fetching tasks order",orderError as Error);
+  if (isError || isOrderError) {
+    logError("Error fetching tasks", error as Error);
+    logError("Error fetching tasks order", orderError as Error);
     return <p>Error: Failed to fetch tasks or task order</p>;
   }
-  if(isSuccess&&isOrderSuccess) {
-    const finalList=getFinalList(tasks,order,filterOption,sortOption);
+  if (isSuccess && isOrderSuccess) {
+    const finalList = getFinalList(tasks, order, filterOption, sortOption);
     return (
       //HACK: Bug in react aria see stopSpaceOnInput for more details
       <div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
@@ -235,7 +235,7 @@ const VisibleTasks: React.FC<ViibleTasksProp>=({
               textValue={`
                   Task Label: ${task.label}
                   Completed: ${String(task.completed)}
-                  ${task.kind==="withDate"? task.dueDate:""}
+                  ${task.kind === "withDate" ? task.dueDate : ""}
                 `}
               className="data-[dragging]:opacity-60"
             >
@@ -259,67 +259,67 @@ const VisibleTasks: React.FC<ViibleTasksProp>=({
 };
 
 function getFinalList(
-  data: Record<string,Task|undefined>,
+  data: Record<string, Task | undefined>,
   order: TaskOrder[],
   filterState: FilterOption,
   sortState: SortOption,
 ): Task[] {
-  const tasksArray=Object.values(data).filter((t) => t!==undefined);
-  const sortByDate=(a: Task,b: Task) => {
-    if(a.kind==="withDate"&&b.kind==="withDate") {
-      const aDate=parseAbsoluteToLocal(a.dueDate);
-      const bDate=parseAbsoluteToLocal(b.dueDate);
+  const tasksArray = Object.values(data).filter((t) => t !== undefined);
+  const sortByDate = (a: Task, b: Task) => {
+    if (a.kind === "withDate" && b.kind === "withDate") {
+      const aDate = parseAbsoluteToLocal(a.dueDate);
+      const bDate = parseAbsoluteToLocal(b.dueDate);
       return aDate.compare(bDate);
     }
-    if(a.kind==="withoutDate"||b.kind==="withDate") {
+    if (a.kind === "withoutDate" || b.kind === "withDate") {
       return 1;
     }
     return -1;
   };
 
-  const sortByName=(a: Task,b: Task) => {
+  const sortByName = (a: Task, b: Task) => {
     return a.label.localeCompare(b.label);
   };
-  const sortedList=(() => {
-    switch(sortState) {
-    case "CUSTOM": {
-      //order is immutable
-      const sortedOrder=Array.from(order).sort(
-        (a,b) => a.orderIndex-b.orderIndex,
-      );
-      const finalList=sortedOrder.map((t) => {
-        const result=tasksArray.find((task) => task.id===t.id);
-        //BUG: Race condition between tasks and taskOrder
-        //HACK: This fixes the race condition but its not ideal
-        if(result===undefined) {
-          return {
-            id: t.id,
-            label: "",
-            completed: false,
-            kind: "withoutDate",
-          } satisfies Task;
-        }
-        return result;
-      });
-      return finalList;
-    }
-    case "DATE": {
-      return tasksArray.sort((a,b) => sortByDate(a,b));
-    }
-    case "NAME": {
-      return tasksArray.sort((a,b) => sortByName(a,b));
-    }
+  const sortedList = (() => {
+    switch (sortState) {
+      case "CUSTOM": {
+        //order is immutable
+        const sortedOrder = Array.from(order).sort(
+          (a, b) => a.orderIndex - b.orderIndex,
+        );
+        const finalList = sortedOrder.map((t) => {
+          const result = tasksArray.find((task) => task.id === t.id);
+          //BUG: Race condition between tasks and taskOrder
+          //HACK: This fixes the race condition but its not ideal
+          if (result === undefined) {
+            return {
+              id: t.id,
+              label: "",
+              completed: false,
+              kind: "withoutDate",
+            } satisfies Task;
+          }
+          return result;
+        });
+        return finalList;
+      }
+      case "DATE": {
+        return tasksArray.sort((a, b) => sortByDate(a, b));
+      }
+      case "NAME": {
+        return tasksArray.sort((a, b) => sortByName(a, b));
+      }
     }
   })();
-  switch(filterState) {
-  case "ALL": {
-    return sortedList;
-  }
-  case "INCOMPLETE": {
-    return sortedList.filter((t) => !t.completed);
-  }
-  case "COMPLETE": {
-    return sortedList.filter((t) => t.completed);
-  }
+  switch (filterState) {
+    case "ALL": {
+      return sortedList;
+    }
+    case "INCOMPLETE": {
+      return sortedList.filter((t) => !t.completed);
+    }
+    case "COMPLETE": {
+      return sortedList.filter((t) => t.completed);
+    }
   }
 }
