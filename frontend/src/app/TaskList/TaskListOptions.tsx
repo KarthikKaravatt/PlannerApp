@@ -47,7 +47,7 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
 
   const onSortOrderChanged = (value: string) => {
     const sortChoice = value as SortOption;
-    localStorage.setItem("SORT_OPTION", sortChoice.toString());
+    localStorage.setItem(`${taskListId}:SORT_OPTION`, sortChoice.toString());
     setSortState(sortChoice);
   };
   return (

@@ -38,9 +38,11 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 }) => {
   const [filterOption, setFilterOption] = useState<FilterOption>("ALL");
   const [sortOption, setSortOption] = useState<SortOption>(() => {
-    const selection = localStorage.getItem("SORT_OPTION") as SortOption | null;
+    const selection = localStorage.getItem(
+      `${listId}:SORT_OPTION`,
+    ) as SortOption | null;
     if (!selection) {
-      localStorage.setItem("SORT_OPTION", "CUSTOM");
+      localStorage.setItem(`${listId}:SORT_OPTION`, "CUSTOM");
       return "CUSTOM";
     }
     return selection;
