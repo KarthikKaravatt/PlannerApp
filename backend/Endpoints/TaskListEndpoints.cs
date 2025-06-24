@@ -58,8 +58,7 @@ public static class TaskListEndpoints
         // get the order of all the task lists
         taskListApi.Map("/order", async (PlannerDbContext db) =>
         {
-            var orderList = await db.TaskLists.Select(item => new { item.Id, item.OrderIndex }).ToListAsync();
-            orderList.Sort(((x, y) => (int)x.OrderIndex-(int)y.OrderIndex));
+            var orderList = await db.TaskLists.Select(item => new { item.Id, item.OrderIndex }).OrderBy(t=>t.OrderIndex).ToListAsync();
             return Results.Ok(orderList);
         });
         //change a task lists order

@@ -103,11 +103,12 @@ public static class TaskEndpoints
                 {
                     return Results.NotFound();
                 }
-
-                var taskList = await db.Tasks
-                    .Where(task => task.TaskListId == listId).ToListAsync();
-                taskList.Sort((a, b) => (int)a.OrderIndex - (int)b.OrderIndex);
-                var taskLinkedList = new LinkedList<Task>(taskList);
+                var taskLinkedList = new LinkedList<Task>(
+                     await db.Tasks
+                        .Where(task => task.TaskListId == listId)
+                        .OrderBy(task => task.OrderIndex)
+                        .ToListAsync()
+                );
                 taskLinkedList.Remove(task1);
                 var posTaskNode = taskLinkedList.Find(task2);
                 if (posTaskNode == null)
