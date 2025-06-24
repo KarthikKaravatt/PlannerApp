@@ -15,6 +15,7 @@ import {
   useAddNewTaskListMutation,
   useGetTaskListOrderQuery,
   useGetTaskListQuery,
+  useMoveTaskListMutation,
   useUpdateTaskListMutation,
 } from "@/redux/api/apiSlice";
 import type { TaskList } from "@/schemas/taskList";
@@ -83,12 +84,37 @@ const TaskListsOrder: React.FC = () => {
     isLoading: isTaskListOrderLoading,
     isSuccess: isTaskListOrderQuerySuccess,
   } = useGetTaskListOrderQuery();
+  //TODO: Add loading state
+  const [moveTaskList] = useMoveTaskListMutation();
   const { dragAndDropHooks } = useDragAndDrop({
     isDisabled: currEditing !== "",
     getItems: (keys) =>
       [...keys].map((key) => {
         return { "text/plain": key.toString() };
       }),
+    onReorder: (e) => {
+      if (e.target.dropPosition === "before") {
+        moveTaskList({
+          moveId: Array.from(e.keys)[0].toString(),
+          request: {
+            targetId: e.target.key.toString(),
+            position: "Before",
+          },
+        }).catch(() => {
+          logError("Error chaning task list position");
+        });
+      } else if (e.target.dropPosition === "after") {
+        moveTaskList({
+          moveId: Array.from(e.keys)[0].toString(),
+          request: {
+            targetId: e.target.key.toString(),
+            position: "After",
+          },
+        }).catch(() => {
+          logError("Error chaning task list position");
+        });
+      }
+    },
   });
   if (isTaskListLoading || isTaskListOrderLoading) {
     return (
@@ -125,10 +151,13 @@ const TaskListsOrder: React.FC = () => {
       {/* HACK: Bug in react aria see stopSpaceOnInput for more details */}
       <div onKeyDownCapture={stopSpaceOnInput}>
         <GridList
+          keyboardNavigationBehavior="tab"
           aria-label="Side bar task lists"
+          items={taskListOrderData}
           dragAndDropHooks={dragAndDropHooks}
+          selectionMode="single"
         >
-          {taskListOrderData.map((listOrder) => {
+          {(listOrder) => {
             const list = taskListData.find((l) => l.id === listOrder.id);
             if (list) {
               return (
@@ -149,7 +178,7 @@ const TaskListsOrder: React.FC = () => {
               logError("List and order are out of sync");
               return <Fragment key={listOrder.id} />;
             }
-          })}
+          }}
         </GridList>
       </div>
     </>

@@ -16,6 +16,7 @@ import {
   taskListSchema,
 } from "@/schemas/taskList";
 import type {
+  MoveTaskListRequest,
   MoveTaskOrderPayload,
   NewTaskListRequest,
   NewTaskRequest,
@@ -75,6 +76,17 @@ export const apiSlice = createApi({
         body: data.request,
       }),
       invalidatesTags: ["TaskList"],
+    }),
+    moveTaskList: builder.mutation<
+      void,
+      { moveId: string; request: MoveTaskListRequest }
+    >({
+      query: (data) => ({
+        url: `/move/${data.moveId}`,
+        method: "PATCH",
+        body: data.request,
+      }),
+      invalidatesTags: ["TaskListOrder"],
     }),
     getTasks: builder.query<Record<string, Task | undefined>, string>({
       query: (id) => `/${id}/tasks`,
@@ -371,4 +383,5 @@ export const {
   useRemoveTaskListMutation,
   useUpdateTaskListMutation,
   useGetTaskListOrderQuery,
+  useMoveTaskListMutation,
 } = apiSlice;

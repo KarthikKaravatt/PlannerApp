@@ -21,3 +21,8 @@ export interface NewTaskListRequest {
 export interface TaskListUpdateRequest {
   name: string;
 }
+
+export interface MoveTaskListRequest {
+  targetId: string;
+  position: "Before" | "After";
+}

@@ -62,5 +62,50 @@ public static class TaskListEndpoints
             orderList.Sort(((x, y) => (int)x.OrderIndex-(int)y.OrderIndex));
             return Results.Ok(orderList);
         });
+        //change a task lists order
+        taskListApi.MapPatch("/move/{moveId:guid}", async (PlannerDbContext db, Guid moveId, TaskListMoveRequest request) =>
+        {
+            if (request.Position is not ("Before" or "After"))
+            {
+                return Results.BadRequest($"Invalid positional argument of: {request.Position}");
+            }
+            LinkedList<TaskList?> taskLists = new(await db.TaskLists.OrderBy(list => list.OrderIndex).ToListAsync());
+            var moveListItem = await db.TaskLists.FindAsync(moveId);
+            var targetListItem = await db.TaskLists.FindAsync(request.TargetId);
+            if (moveListItem is null || targetListItem is null)
+            {
+                return Results.NotFound("Items not found");
+            }
+            var moveList = taskLists.Find(moveListItem);
+            var targetList = taskLists.Find(targetListItem);
+            if (moveList is null || targetList is null)
+            {
+                return Results.NotFound("Node not found");
+            }
+            taskLists.Remove(moveList);
+            switch (request.Position)
+            {
+                case("Before"):
+                {
+                    taskLists.AddBefore(targetList, moveListItem);
+                    break;
+                }
+                case("After"):
+                {
+                    taskLists.AddAfter(targetList, moveListItem);
+                    break;
+                }
+            }
+
+            uint count = 0;
+            foreach (var list in taskLists.OfType<TaskList>())
+            {
+                list.OrderIndex = count;
+                count++;
+            }
+
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        });
     }
 }

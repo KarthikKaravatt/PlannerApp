@@ -107,7 +107,6 @@ public static class TaskEndpoints
                     .Where(task => task.TaskListId == listId).ToListAsync();
                 taskList.Sort((a, b) => (int)a.OrderIndex - (int)b.OrderIndex);
                 var taskLinkedList = new LinkedList<Task>(taskList);
-                //re index orderIndex
                 taskLinkedList.Remove(task1);
                 var posTaskNode = taskLinkedList.Find(task2);
                 if (posTaskNode == null)
