@@ -1,4 +1,4 @@
-import { Fragment, useReducer, useState } from "react";
+import { Fragment, useState } from "react";
 import {
   Button,
   GridList,
@@ -19,7 +19,6 @@ import {
   useUpdateTaskListMutation,
 } from "@/redux/api/apiSlice";
 import type { TaskList } from "@/schemas/taskList";
-import { taskListReducer } from "@/types/taskListReducer";
 import { logError } from "@/util/console";
 import { stopSpaceOnInput } from "@/util/hacks";
 export const TaskListSideBar: React.FC = () => {
@@ -215,10 +214,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
   isEditable,
   setCurEditing,
 }) => {
-  const [state, dispatch] = useReducer(taskListReducer, {
-    input: taskList.name,
-    loading: false,
-  });
+  const [input, setInput] = useState(taskList.name);
+  const [isLoading, setIsLoading] = useState(false);
   const [updateTaskList] = useUpdateTaskListMutation();
   return (
     <div
@@ -238,61 +235,48 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         onDoubleClick={() => {
           if (isEditable) {
             setCurEditing(taskList.id);
-            dispatch({
-              type: "MUTATE_INPUT_ACTION",
-              payload: taskList.name,
-            });
           }
         }}
-        value={!isEditing || isEditable ? taskList.name : state.input}
+        value={!isEditing || isEditable ? taskList.name : input}
         onChange={(event) => {
-          dispatch({
-            type: "MUTATE_INPUT_ACTION",
-            payload: event.target.value,
-          });
+          const filteredInput = event.target.value.replace(/\s+/g, " ");
+          if (filteredInput.length > 20) {
+            setInput(filteredInput);
+          }
         }}
       />
       <Button
         //TODO: Implement popover
         className={isEditing ? "opacity-0" : ""}
-        isDisabled={state.loading || !isEditing}
+        isDisabled={isLoading || !isEditing}
       >
         <BsThreeDots />
       </Button>
       <Button
-        isDisabled={state.loading}
+        isDisabled={isLoading}
         onClick={() => {
           if (isEditing) {
-            dispatch({ type: "MUTATE_LOADING_ACTION", payload: true });
+            setIsLoading(true);
             updateTaskList({
               listID: taskList.id,
-              request: { name: state.input },
+              request: { name: input },
             })
               .then(() => {
                 setCurEditing("");
-                dispatch({ type: "MUTATE_LOADING_ACTION", payload: false });
-                dispatch({
-                  type: "MUTATE_INPUT_ACTION",
-                  payload: taskList.name,
-                });
+                setIsLoading(false);
+                setInput(taskList.name);
               })
               .catch((err: unknown) => {
                 setCurEditing("");
-                dispatch({ type: "MUTATE_LOADING_ACTION", payload: false });
-                dispatch({
-                  type: "MUTATE_INPUT_ACTION",
-                  payload: taskList.name,
-                });
+                setIsLoading(false);
+                setInput(taskList.name);
                 if (err instanceof Error) {
                   logError("Error updating task list", err);
                 }
               });
           } else if (isEditable) {
             setCurEditing(taskList.id);
-            dispatch({
-              type: "MUTATE_INPUT_ACTION",
-              payload: taskList.name,
-            });
+            setInput(taskList.name);
           }
         }}
       >
