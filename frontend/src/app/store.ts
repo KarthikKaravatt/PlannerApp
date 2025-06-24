@@ -1,8 +1,17 @@
-import { configureStore } from "@reduxjs/toolkit";
+import {
+  addListener,
+  configureStore,
+  createListenerMiddleware,
+} from "@reduxjs/toolkit";
 import { apiSlice } from "@/redux/api/apiSlice";
 import { tasksReducer } from "@/redux/tasks/tasksListSlice";
-import { listenerMiddleware } from "./listenerMiddleware.ts";
 
+const listenerMiddleware = createListenerMiddleware();
+
+export const startAppListening = listenerMiddleware.stopListening.withTypes<
+  RootState,
+  AppDispatch
+>();
 export const store = configureStore({
   reducer: {
     tasks: tasksReducer,
@@ -17,3 +26,7 @@ export const store = configureStore({
 export type AppStore = typeof store;
 export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;
+
+export type AppStartListening = typeof startAppListening;
+export const addAppListner = addListener.withTypes<RootState, AppDispatch>();
+export type AppAddListener = typeof addAppListner;

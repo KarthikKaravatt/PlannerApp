@@ -20,10 +20,15 @@
       "recommended": true,
       "suspicious": {
         "noConsole": "error"
+      },
+      "nursery": {
+        "noUnresolvedImports": "off"
       }
     },
     "domains": {
-      "react": "all"
+      "react": "all",
+      "next": "all",
+      "project": "all"
     }
   },
   "javascript": {
