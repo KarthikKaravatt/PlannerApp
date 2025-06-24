@@ -21,6 +21,9 @@ import {
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 import { stopSpaceOnInput } from "@/util/hacks";
+
+const INPUT_LIMIT = 25;
+
 export const TaskListSideBar: React.FC = () => {
   //TODO: add a loading state
   const [addTaskList] = useAddNewTaskListMutation();
@@ -40,7 +43,9 @@ export const TaskListSideBar: React.FC = () => {
             onChange={(event) => {
               const newValue = event.target.value.replace(/\s+/g, " ");
               setNewListName(
-                newValue.length > 25 ? newValue.slice(0, 25) : newValue,
+                newValue.length > INPUT_LIMIT
+                  ? newValue.slice(0, INPUT_LIMIT)
+                  : newValue,
               );
             }}
             placeholder="Add new task list"
@@ -240,7 +245,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         value={!isEditing || isEditable ? taskList.name : input}
         onChange={(event) => {
           const filteredInput = event.target.value.replace(/\s+/g, " ");
-          if (filteredInput.length > 20) {
+          if (filteredInput.length > INPUT_LIMIT) {
             setInput(filteredInput);
           }
         }}

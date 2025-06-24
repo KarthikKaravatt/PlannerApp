@@ -4,6 +4,8 @@ import type {
   TaskComponentState,
 } from "@/types/taskReducer";
 
+const INPUT_LIMIT = 512;
+
 export const taskComponentReducer = (
   state: TaskComponentState,
   action: TaskComponentAction,
@@ -13,7 +15,9 @@ export const taskComponentReducer = (
       const filteredInput = action.payload.replace(/\s+/g, " ");
       return produce(state, (draftState) => {
         draftState.inputTaskName =
-          filteredInput.length < 512 ? filteredInput : state.inputTaskName;
+          filteredInput.length < INPUT_LIMIT
+            ? filteredInput
+            : state.inputTaskName;
       });
     }
     case "MUTATE_LOADING":
