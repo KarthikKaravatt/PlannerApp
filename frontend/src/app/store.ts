@@ -4,7 +4,6 @@ import {
   createListenerMiddleware,
 } from "@reduxjs/toolkit";
 import { apiSlice } from "@/redux/api/apiSlice";
-import { tasksReducer } from "@/redux/tasks/tasksListSlice";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -14,7 +13,6 @@ export const startAppListening = listenerMiddleware.stopListening.withTypes<
 >();
 export const store = configureStore({
   reducer: {
-    tasks: tasksReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleweare) =>
