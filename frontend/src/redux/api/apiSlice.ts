@@ -283,9 +283,10 @@ export const apiSlice = createApi({
     moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
         return {
-          url: `${moveTasks.listId}/tasks/move/${moveTasks.id1}/${moveTasks.id2}`,
+          url: `${moveTasks.listId}/tasks/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
+            targetTask: moveTasks.id2,
             pos: moveTasks.pos,
           },
         };
@@ -330,7 +331,7 @@ export const apiSlice = createApi({
     }),
     clearCompletedTasks: builder.mutation<void, string>({
       query: (listId) => ({
-        url: `${listId}/tasks/clear`,
+        url: `/${listId}/clear`,
         method: "DELETE",
       }),
       async onQueryStarted(listId, { dispatch, queryFulfilled }) {

@@ -1,5 +1,4 @@
 using backend.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Endpoints;
@@ -60,6 +59,28 @@ public static class TaskListEndpoints
         {
             var orderList = await db.TaskLists.Select(item => new { item.Id, item.OrderIndex }).OrderBy(t=>t.OrderIndex).ToListAsync();
             return Results.Ok(orderList);
+        });
+        // clear completed
+        taskListApi.MapDelete("/{listId:guid}/clear", async (PlannerDbContext db, Guid listId) =>
+        {
+            var tasksToDelete = await db.Tasks.Where(t => t.Completed && t.TaskListId == listId).ToListAsync();
+            if (tasksToDelete.Count == 0) return Results.Ok();
+            {
+                db.Tasks.RemoveRange(tasksToDelete);
+                var remainingTasks = await db.Tasks
+                    .Where(t => !t.Completed && t.TaskListId == listId)
+                    .OrderBy(t => t.OrderIndex)
+                    .ToListAsync();
+                uint count = 0;
+                foreach (var task in remainingTasks)
+                {
+                    task.OrderIndex = count;
+                    count++;
+                }
+
+                await db.SaveChangesAsync();
+            }
+            return Results.Ok();
         });
         //change a task lists order
         taskListApi.MapPatch("/move/{moveId:guid}", async (PlannerDbContext db, Guid moveId, TaskListMoveRequest request) =>

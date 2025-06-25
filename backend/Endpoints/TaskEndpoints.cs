@@ -65,41 +65,26 @@ public static class TaskEndpoints
             await db.SaveChangesAsync();
             return Results.Ok();
         });
-        // clear completed
-        tasksApi.MapDelete("/clear", async (PlannerDbContext db, Guid listId) =>
-        {
-            var tasksToDelete = await db.Tasks.Where(t => t.Completed && t.TaskListId == listId).ToListAsync();
-            if (tasksToDelete.Count == 0) return Results.Ok();
-            {
-                db.Tasks.RemoveRange(tasksToDelete);
-                var remainingTasks = await db.Tasks
-                    .Where(t => !t.Completed && t.TaskListId == listId)
-                    .OrderBy(t => t.OrderIndex)
-                    .ToListAsync();
-                uint count = 0;
-                foreach (var task in remainingTasks)
-                {
-                    task.OrderIndex = count;
-                    count++;
-                }
-
-                await db.SaveChangesAsync();
-            }
-            return Results.Ok();
-        });
+        
 
         // Move a tasks position
-        tasksApi.MapPatch("/move/{id1:guid}/{id2:guid}",
-            async (Guid id1, Guid id2, MoveTaskRequest request, PlannerDbContext db,Guid listId) =>
+        tasksApi.MapPatch("/move/{movedTaskId:guid}/",
+            async (PlannerDbContext db,Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
             {
-                if (id1 == id2)
+                // moving a task to its current position will nothing
+                if (movedTaskId == request.TargetTaskId)
                 {
                     return Results.Ok();
                 }
 
-                var task1 = await db.Tasks.FindAsync(id1);
-                var task2 = await db.Tasks.FindAsync(id2);
-                if (task1 == null || task2 == null)
+                if (request.Pos is not ("Before" or "After"))
+                {
+                    return Results.BadRequest("Invalid positional arguments");
+                }
+
+                var movedTask = await db.Tasks.FindAsync(movedTaskId);
+                var targetTask = await db.Tasks.FindAsync(request.TargetTaskId);
+                if (movedTask == null || targetTask == null)
                 {
                     return Results.NotFound();
                 }
@@ -109,8 +94,8 @@ public static class TaskEndpoints
                         .OrderBy(task => task.OrderIndex)
                         .ToListAsync()
                 );
-                taskLinkedList.Remove(task1);
-                var posTaskNode = taskLinkedList.Find(task2);
+                taskLinkedList.Remove(movedTask);
+                var posTaskNode = taskLinkedList.Find(targetTask);
                 if (posTaskNode == null)
                 {
                     return Results.NotFound();
@@ -119,10 +104,10 @@ public static class TaskEndpoints
                 switch (request.Pos)
                 {
                     case "After":
-                        taskLinkedList.AddAfter(posTaskNode, task1);
+                        taskLinkedList.AddAfter(posTaskNode, movedTask);
                         break;
                     case "Before":
-                        taskLinkedList.AddBefore(posTaskNode, task1);
+                        taskLinkedList.AddBefore(posTaskNode, movedTask);
                         break;
                 }
 
@@ -134,7 +119,6 @@ public static class TaskEndpoints
                 }
 
                 await db.SaveChangesAsync();
-                //case 4 task is only one in the list (probably wont be able to be moved)
                 return Results.Ok();
             });
     }
