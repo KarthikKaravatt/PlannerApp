@@ -70,6 +70,7 @@ export const TaskComponent: React.FC<TaskProp> = ({
           isEditing={isEditing}
         />
         <InputField
+          listId={taskListId}
           task={task}
           state={state}
           dispatch={dispatch}
@@ -175,6 +176,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({
   );
 };
 interface InputFieldProps {
+  listId: string;
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
@@ -183,6 +185,7 @@ interface InputFieldProps {
   setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
 const InputField: React.FC<InputFieldProps> = ({
+  listId,
   task,
   state,
   dispatch,
@@ -190,8 +193,24 @@ const InputField: React.FC<InputFieldProps> = ({
   isEditable,
   setCurEditing,
 }) => {
+  const [updateTask] = useUpdateTaskMutation();
   return (
     <AutoResizeTextArea
+      onBlur={() => {
+        if (isEditing) {
+          updateTask({
+            task: { ...task, label: state.inputTaskName },
+            listId: listId,
+          })
+            .then(() => {
+              setCurEditing("");
+            })
+            .catch(() => {
+              setCurEditing("");
+              logError("Error updating task");
+            });
+        }
+      }}
       value={isEditing ? state.inputTaskName : task.label}
       className={`
         w-full outline-none leading-4.5
