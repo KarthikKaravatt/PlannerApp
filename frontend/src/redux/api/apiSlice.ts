@@ -286,7 +286,7 @@ export const apiSlice = createApi({
           url: `${moveTasks.listId}/tasks/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
-            targetTask: moveTasks.id2,
+            targetTaskId: moveTasks.id2,
             pos: moveTasks.pos,
           },
         };
