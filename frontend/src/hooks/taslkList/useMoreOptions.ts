@@ -35,6 +35,8 @@ export const useMoreOptions = (
             logError(`Error updating task: ${err}`);
           }
         });
+    } else {
+      setCurEditing("");
     }
   };
   const handleDeleteButtonClick = () => {

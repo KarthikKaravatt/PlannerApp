@@ -53,24 +53,22 @@ export const TaskComponent: React.FC<TaskProp> = ({
     // biome-ignore lint/a11y/noStaticElementInteractions: This is not a static element
     <div
       onBlur={() => {
-        if (isEditing) {
-          if (task.label !== state.inputTaskName) {
-            // dispatch({ type: "MUTATE_LOADING", payload: true });
-            updateTask({
-              task: { ...task, label: state.inputTaskName },
-              listId: state.taskListId,
+        if (isEditing && task.label !== state.inputTaskName) {
+          // dispatch({ type: "MUTATE_LOADING", payload: true });
+          updateTask({
+            task: { ...task, label: state.inputTaskName },
+            listId: state.taskListId,
+          })
+            .finally(() => {
+              setCurEditing("");
+              dispatch({ type: "MUTATE_LOADING", payload: false });
             })
-              .finally(() => {
-                setCurEditing("");
-                dispatch({ type: "MUTATE_LOADING", payload: false });
-              })
-              .catch((err: unknown) => {
-                dispatch({ type: "MUTATE_INPUT", payload: task.label });
-                if (err instanceof Error) {
-                  logError(`Error updating task: ${err}`);
-                }
-              });
-          }
+            .catch((err: unknown) => {
+              dispatch({ type: "MUTATE_INPUT", payload: task.label });
+              if (err instanceof Error) {
+                logError(`Error updating task: ${err}`);
+              }
+            });
         }
       }}
       className={`
@@ -248,7 +246,8 @@ const DueDateDisplay: React.FC<DueDateProp> = ({
     isEditing,
   );
   if (task.kind === "withoutDate") {
-    return "";
+    // biome-ignore lint/complexity/noUselessFragments: Need a way of representing return nothing
+    return <></>;
   }
   const date = parseAbsoluteToLocal(task.dueDate);
   const monthAbbr = new Intl.DateTimeFormat("en-US", {
