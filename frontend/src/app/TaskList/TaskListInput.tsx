@@ -31,43 +31,41 @@ export const TaskListInput: React.FC<TaskListInputProps> = ({ taskListId }) => {
     setInputTask("");
   };
   return (
-    <>
-      <div
-        className="
+    <div
+      className="
           flex rounded-lg
           border-2
           border-gray-300 dark:border-white
           w-full
           p-1
         "
-      >
-        <AutoResizeTextArea
-          className="
+    >
+      <AutoResizeTextArea
+        className="
             text-blue-950 dark:text-white
             dark:placeholder-gray-300
             outline-none
             w-2/3
             pl-1
           "
-          placeholder="Enter new task"
-          onChange={onInputChanged}
-          value={inputTask}
-        />
-        <Button
-          isDisabled={isLoading}
-          className="
+        placeholder="Enter new task"
+        onChange={onInputChanged}
+        value={inputTask}
+      />
+      <Button
+        isDisabled={isLoading}
+        className="
             w-1/3
             bg-blue-200
             dark:bg-white
             dark:text-black
             rounded-lg
           "
-          type="button"
-          onClick={onAddButtonClick}
-        >
-          Add task
-        </Button>
-      </div>
-    </>
+        type="button"
+        onClick={onAddButtonClick}
+      >
+        Add task
+      </Button>
+    </div>
   );
 };

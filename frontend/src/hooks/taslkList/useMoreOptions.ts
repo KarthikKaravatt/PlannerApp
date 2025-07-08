@@ -20,23 +20,22 @@ export const useMoreOptions = (
   const [deleteTask, { isLoading: isDeleteLoading }] = useDeleteTaskMutation();
   const handleConfirmButtonClick = () => {
     if (task.label !== state.inputTaskName) {
-      dispatch({ type: "MUTATE_LOADING", payload: true });
+      // dispatch({ type: "MUTATE_LOADING", payload: true });
       updateTask({
         task: { ...task, label: state.inputTaskName },
         listId: state.taskListId,
       })
-        .then(() => {
+        .finally(() => {
+          setCurEditing("");
           dispatch({ type: "MUTATE_LOADING", payload: false });
         })
         .catch((err: unknown) => {
           dispatch({ type: "MUTATE_INPUT", payload: task.label });
-          dispatch({ type: "MUTATE_LOADING", payload: false });
           if (err instanceof Error) {
             logError(`Error updating task: ${err}`);
           }
         });
     }
-    setCurEditing("");
   };
   const handleDeleteButtonClick = () => {
     deleteTask({ taskId: task.id, listId: state.taskListId }).catch(

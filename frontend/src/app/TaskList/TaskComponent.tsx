@@ -48,8 +48,31 @@ export const TaskComponent: React.FC<TaskProp> = ({
     taskComponentReducer,
     initalTaskComponentState,
   );
+  const [updateTask] = useUpdateTaskMutation();
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: This is not a static element
     <div
+      onBlur={() => {
+        if (isEditing) {
+          if (task.label !== state.inputTaskName) {
+            // dispatch({ type: "MUTATE_LOADING", payload: true });
+            updateTask({
+              task: { ...task, label: state.inputTaskName },
+              listId: state.taskListId,
+            })
+              .finally(() => {
+                setCurEditing("");
+                dispatch({ type: "MUTATE_LOADING", payload: false });
+              })
+              .catch((err: unknown) => {
+                dispatch({ type: "MUTATE_INPUT", payload: task.label });
+                if (err instanceof Error) {
+                  logError(`Error updating task: ${err}`);
+                }
+              });
+          }
+        }
+      }}
       className={`
           dark:bg-dark-background-c bg-sky-100 
           ${state.isLoading ? "dark:text-gray-300" : "dark:text-white"}
@@ -142,16 +165,15 @@ const CheckBox: React.FC<CheckBoxProp> = ({
   const isInteractive = !(isEditing || isLoading) || state.isLoading;
 
   return (
-    <>
-      <div
-        onClick={
-          isInteractive
-            ? () => {
-                handleClick();
-              }
-            : undefined
-        }
-        className={`
+    <div
+      onClick={
+        isInteractive
+          ? () => {
+              handleClick();
+            }
+          : undefined
+      }
+      className={`
           ${isEditing ? "opacity-0" : "opacity-100"}
           w-4.5 h-3.5 
           ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
@@ -160,19 +182,18 @@ const CheckBox: React.FC<CheckBoxProp> = ({
           ${isInteractive ? "cursor-pointer" : "cursor-default"}
           ${isLoading ? "opacity-50" : ""}
         `}
-        tabIndex={isInteractive ? 0 : -1}
-        onKeyDown={
-          isInteractive
-            ? (event) => {
-                handleKeyDown(event);
-              }
-            : undefined
-        }
-        role="checkbox"
-        aria-checked={task.completed}
-        aria-disabled={!isInteractive}
-      />
-    </>
+      tabIndex={isInteractive ? 0 : -1}
+      onKeyDown={
+        isInteractive
+          ? (event) => {
+              handleKeyDown(event);
+            }
+          : undefined
+      }
+      role="checkbox"
+      aria-checked={task.completed}
+      aria-disabled={!isInteractive}
+    />
   );
 };
 interface InputFieldProps {
@@ -185,32 +206,14 @@ interface InputFieldProps {
   setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
 const InputField: React.FC<InputFieldProps> = ({
-  listId,
   task,
   state,
   dispatch,
   isEditing,
-  isEditable,
   setCurEditing,
 }) => {
-  const [updateTask] = useUpdateTaskMutation();
   return (
     <AutoResizeTextArea
-      onBlur={() => {
-        if (isEditing) {
-          updateTask({
-            task: { ...task, label: state.inputTaskName },
-            listId: listId,
-          })
-            .then(() => {
-              setCurEditing("");
-            })
-            .catch(() => {
-              setCurEditing("");
-              logError("Error updating task");
-            });
-        }
-      }}
       value={isEditing ? state.inputTaskName : task.label}
       className={`
         w-full outline-none leading-4.5
@@ -218,9 +221,7 @@ const InputField: React.FC<InputFieldProps> = ({
       `}
       readOnly={!isEditing}
       onDoubleClick={() => {
-        if (isEditable) {
-          setCurEditing(task.id);
-        }
+        setCurEditing(task.id);
       }}
       onChange={(event) => {
         dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
@@ -247,65 +248,63 @@ const DueDateDisplay: React.FC<DueDateProp> = ({
     isEditing,
   );
   if (task.kind === "withoutDate") {
-    return <></>;
+    return "";
   }
   const date = parseAbsoluteToLocal(task.dueDate);
   const monthAbbr = new Intl.DateTimeFormat("en-US", {
     month: "short",
   }).format(date.toDate());
   return (
-    <>
-      <div
-        className={`
+    <div
+      className={`
           ${isLoading ? "dark:text-gray-300" : "dark:text-white"}
           ${isLoading ? "text-gray-400" : "text-blue-950"}
           ${isEditing ? "opacity-0" : "opacity-100"}
           text-xs
           w-10
         `}
-      >
-        <DialogTrigger>
-          <Button
-            isDisabled={isEditing}
-            type="button"
-          >{`${date.day.toString()} ${monthAbbr}`}</Button>
-          <Popover>
-            <Calendar
-              value={date}
-              defaultValue={date}
-              onChange={(event) => {
-                onDateButtonClicked(event);
-              }}
-              aria-label="Appointment date"
-              className="bg-sky-100 outline-1 outline-gray-300 text-xs"
-            >
-              <header className="flex items-center mx-1 mb-2">
-                <Button slot="previous" className="p-0">
-                  ◀
-                </Button>
-                <Heading className="flex-1 m-0 text-center" />
-                <Button slot="next" className="p-0">
-                  ▶
-                </Button>
-              </header>
-              <CalendarGrid className="gird grid-cols-7">
-                {(date) => (
-                  <CalendarCell
-                    date={date}
-                    className="
+    >
+      <DialogTrigger>
+        <Button
+          isDisabled={isEditing}
+          type="button"
+        >{`${date.day.toString()} ${monthAbbr}`}</Button>
+        <Popover>
+          <Calendar
+            value={date}
+            defaultValue={date}
+            onChange={(event) => {
+              onDateButtonClicked(event);
+            }}
+            aria-label="Appointment date"
+            className="bg-sky-100 outline-1 outline-gray-300 text-xs"
+          >
+            <header className="flex items-center mx-1 mb-2">
+              <Button slot="previous" className="p-0">
+                ◀
+              </Button>
+              <Heading className="flex-1 m-0 text-center" />
+              <Button slot="next" className="p-0">
+                ▶
+              </Button>
+            </header>
+            <CalendarGrid className="gird grid-cols-7">
+              {(date) => (
+                <CalendarCell
+                  date={date}
+                  className="
                     text-center p-0.5
                     data-[outside-month]:hidden data-[pressed]:bg-gray-100
                     data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-blue-500
                     data-[selected]:bg-blue-500 data-[selected]:text-white
                     "
-                  />
-                )}
-              </CalendarGrid>
-            </Calendar>
-          </Popover>
-        </DialogTrigger>
-      </div>
-    </>
+                />
+              )}
+            </CalendarGrid>
+          </Calendar>
+        </Popover>
+      </DialogTrigger>
+    </div>
   );
 };
 interface MoreOptionsProp {
@@ -334,25 +333,24 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
   } = useMoreOptions(task, state, dispatch, setCurEditing);
 
   return (
-    <>
-      <div
-        className="
+    <div
+      className="
           flex flex-row items-center
         "
-      >
-        <div className="flex">
-          <DialogTrigger>
-            <Button
-              isDisabled={isEditing || !isEditable}
-              type="button"
-              className={isEditing ? "opacity-0" : "opacity-100"}
-            >
-              <BsThreeDots className="text-blue-950 dark:text-white" />
-            </Button>
-            <Popover>
-              <Dialog>
-                <div
-                  className="
+    >
+      <div className="flex">
+        <DialogTrigger>
+          <Button
+            isDisabled={isEditing || !isEditable}
+            type="button"
+            className={isEditing ? "opacity-0" : "opacity-100"}
+          >
+            <BsThreeDots className="text-blue-950 dark:text-white" />
+          </Button>
+          <Popover>
+            <Dialog>
+              <div
+                className="
                   text-xs
                   flex flex-col     
                   justify-center
@@ -362,56 +360,59 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
                   rounded
                   p-0.5
                 "
+              >
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleAddDateButtonClicked();
+                  }}
                 >
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      handleAddDateButtonClicked();
-                    }}
-                  >
-                    Add Date
-                  </Button>
-                  <hr />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      handleRemoveButtonDateClicked();
-                    }}
-                  >
-                    Remove Date
-                  </Button>
-                  <hr />
-                  <Button
-                    onClick={() => {
-                      handleDeleteButtonClick();
-                    }}
-                    type="button"
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Dialog>
-            </Popover>
-          </DialogTrigger>
-        </div>
-        <Button
-          type="button"
-          className={`"
-          ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : isEditing ? "text-green-700 dark:text-green-400" : ""}
-        "`}
-          onClick={
-            isEditing
-              ? handleConfirmButtonClick
-              : () => {
-                  if (isEditable) {
-                    setCurEditing(task.id);
-                  }
-                }
-          }
-        >
-          {isEditing ? <FaCheck /> : <CiEdit />}
-        </Button>
+                  Add Date
+                </Button>
+                <hr />
+                <Button
+                  type="button"
+                  onClick={() => {
+                    handleRemoveButtonDateClicked();
+                  }}
+                >
+                  Remove Date
+                </Button>
+                <hr />
+                <Button
+                  onClick={() => {
+                    handleDeleteButtonClick();
+                  }}
+                  type="button"
+                >
+                  Delete
+                </Button>
+              </div>
+            </Dialog>
+          </Popover>
+        </DialogTrigger>
       </div>
-    </>
+      <Button
+        type="button"
+        className={`"
+          ${
+            isLoading || isDeleteLoading || state.isLoading
+              ? "text-gray-400"
+              : isEditing
+                ? "text-green-700 dark:text-green-400"
+                : ""
+          }
+        "`}
+        onClick={() => {
+          if (isEditing) {
+            handleConfirmButtonClick();
+          } else {
+            setCurEditing(task.id);
+          }
+        }}
+      >
+        {isEditing ? <FaCheck /> : <CiEdit />}
+      </Button>
+    </div>
   );
 };

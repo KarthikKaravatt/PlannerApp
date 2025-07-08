@@ -29,49 +29,47 @@ export const TaskListSideBar: React.FC = () => {
   const [addTaskList] = useAddNewTaskListMutation();
   const [newListName, setNewListName] = useState("");
   return (
-    <>
-      <SideBar>
-        <div
-          className="
+    <SideBar>
+      <div
+        className="
             flex flex-row ml-1 justify-between
             border-1 border-gray-300 dark:border-white
             rounded-md
           "
+      >
+        <AutoResizeTextArea
+          value={newListName}
+          onChange={(event) => {
+            const newValue = event.target.value.replace(/\s+/g, " ");
+            setNewListName(
+              newValue.length > INPUT_LIMIT
+                ? newValue.slice(0, INPUT_LIMIT)
+                : newValue,
+            );
+          }}
+          placeholder="Add new task list"
+          className="p-1 outline-none"
+        />
+        <Button
+          type="button"
+          className={"text-sm bg-blue-200 rounded-md p-1"}
+          onClick={() => {
+            addTaskList({ name: newListName })
+              .then(() => {
+                setNewListName("");
+              })
+              .catch((err: unknown) => {
+                if (err instanceof Error) {
+                  logError("Error adding task list", err);
+                }
+              });
+          }}
         >
-          <AutoResizeTextArea
-            value={newListName}
-            onChange={(event) => {
-              const newValue = event.target.value.replace(/\s+/g, " ");
-              setNewListName(
-                newValue.length > INPUT_LIMIT
-                  ? newValue.slice(0, INPUT_LIMIT)
-                  : newValue,
-              );
-            }}
-            placeholder="Add new task list"
-            className="p-1 outline-none"
-          />
-          <Button
-            type="button"
-            className={"text-sm bg-blue-200 rounded-md p-1"}
-            onClick={() => {
-              addTaskList({ name: newListName })
-                .then(() => {
-                  setNewListName("");
-                })
-                .catch((err: unknown) => {
-                  if (err instanceof Error) {
-                    logError("Error adding task list", err);
-                  }
-                });
-            }}
-          >
-            Add
-          </Button>
-        </div>
-        <TaskListsOrder />
-      </SideBar>
-    </>
+          Add
+        </Button>
+      </div>
+      <TaskListsOrder />
+    </SideBar>
   );
 };
 
@@ -138,33 +136,27 @@ const TaskListsOrder: React.FC = () => {
     },
   });
   if (isTaskListLoading || isTaskListOrderLoading) {
-    return (
-      <>
-        <FaSpinner />
-      </>
-    );
+    return <FaSpinner />;
   }
   //TODO: Make improve error handling
   if (!isTaskListQuerySuccess || !isTaskListOrderQuerySuccess) {
     return (
-      <>
-        <div className="flex flex-col justify-center items-center p-2">
-          <p>Error loading task list data, press button to retry</p>
-          <Button
-            className="
+      <div className="flex flex-col justify-center items-center p-2">
+        <p>Error loading task list data, press button to retry</p>
+        <Button
+          className="
             bg-blue-200 font-bold
             p-1 rounded-md
           "
-            onClick={() => {
-              refetch().catch(() => {
-                logError("Error fetching task list data");
-              });
-            }}
-          >
-            Retry
-          </Button>
-        </div>
-      </>
+          onClick={() => {
+            refetch().catch(() => {
+              logError("Error fetching task list data");
+            });
+          }}
+        >
+          Retry
+        </Button>
+      </div>
     );
   }
   return (

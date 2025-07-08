@@ -80,64 +80,59 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
 const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   const [removeTaskList] = useRemoveTaskListMutation();
   return (
-    <>
-      <DialogTrigger>
-        <Button className={"justify-end"}>
-          <FaRegTrashCan />
-        </Button>
-        <Modal
-          className="
+    <DialogTrigger>
+      <Button className={"justify-end"}>
+        <FaRegTrashCan />
+      </Button>
+      <Modal
+        className="
             fixed inset-0 
             flex items-center justify-center
             text-blue-950 dark:text-white
           "
-        >
-          <Dialog
-            className="
+      >
+        <Dialog
+          className="
                 w-3/4
                 border-gray-300 border-2
                 bg-blue-100
                 p-2 rounded-xl
               "
-            role="alertdialog"
-          >
-            {({ close }) => (
-              <>
-                <Heading
-                  className="font-bold text-lg text-red-500"
-                  slot="title"
+          role="alertdialog"
+        >
+          {({ close }) => (
+            <>
+              <Heading className="font-bold text-lg text-red-500" slot="title">
+                Delete task list
+              </Heading>
+              <p>
+                This will delete this task list and all tasks associsated with
+                it
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  className={"bg-blue-200 p-1 rounded-md"}
+                  onPress={close}
                 >
-                  Delete task list
-                </Heading>
-                <p>
-                  This will delete this task list and all tasks associsated with
-                  it
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    className={"bg-blue-200 p-1 rounded-md"}
-                    onPress={close}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className={"bg-red-200 p-1 rounded-md"}
-                    onPress={() => {
-                      removeTaskList(listId).catch(() => {
-                        logError("Error deleting task list");
-                      });
-                      close();
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </>
-            )}
-          </Dialog>
-        </Modal>
-      </DialogTrigger>
-    </>
+                  Cancel
+                </Button>
+                <Button
+                  className={"bg-red-200 p-1 rounded-md"}
+                  onPress={() => {
+                    removeTaskList(listId).catch(() => {
+                      logError("Error deleting task list");
+                    });
+                    close();
+                  }}
+                >
+                  Delete
+                </Button>
+              </div>
+            </>
+          )}
+        </Dialog>
+      </Modal>
+    </DialogTrigger>
   );
 };
 

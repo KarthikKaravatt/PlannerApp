@@ -14,14 +14,12 @@ export const Route = createFileRoute("/planner/")({
 
 function Planner() {
   return (
-    <>
-      <div className="w-full h-screen text-blue-950 dark:text-white">
-        <div className="w-full h-full flex flex-row overflow-x-auto">
-          <TaskListSideBar />
-          <TaskLists className="flex flex-row shrink-0 w-320 md:w-450" />
-        </div>
+    <div className="w-full h-screen text-blue-950 dark:text-white">
+      <div className="w-full h-full flex flex-row overflow-x-auto">
+        <TaskListSideBar />
+        <TaskLists className="flex flex-row shrink-0 w-320 md:w-450" />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -46,27 +44,25 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
   }
   if (!isListDataSuccess || !isListOrderDataSuccess) {
     return (
-      <>
-        <div className="flex flex-col justify-center items-center">
-          <p>Error loading task list data, press button to retry</p>
-          <Button
-            className="
+      <div className="flex flex-col justify-center items-center">
+        <p>Error loading task list data, press button to retry</p>
+        <Button
+          className="
             bg-blue-200 font-bold
             p-1 rounded-md
           "
-            onClick={() => {
-              listDataRefetch().catch(() => {
-                logError("Error fetching task list data");
-              });
-              listDataOroderRefetch().catch(() => {
-                logError("Error fetching task list data");
-              });
-            }}
-          >
-            Retry
-          </Button>
-        </div>
-      </>
+          onClick={() => {
+            listDataRefetch().catch(() => {
+              logError("Error fetching task list data");
+            });
+            listDataOroderRefetch().catch(() => {
+              logError("Error fetching task list data");
+            });
+          }}
+        >
+          Retry
+        </Button>
+      </div>
     );
   }
   return (
