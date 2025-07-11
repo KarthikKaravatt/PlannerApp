@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { useReducer } from "react";
+import { useReducer, useRef } from "react";
 import {
   Button,
   Calendar,
@@ -49,26 +49,31 @@ export const TaskComponent: React.FC<TaskProp> = ({
     initalTaskComponentState,
   );
   const [updateTask] = useUpdateTaskMutation();
+  const taskRef = useRef<HTMLDivElement>(null);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: This is not a static element
     <div
-      onBlur={() => {
-        if (isEditing && task.label !== state.inputTaskName) {
-          // dispatch({ type: "MUTATE_LOADING", payload: true });
-          updateTask({
-            task: { ...task, label: state.inputTaskName },
-            listId: state.taskListId,
-          })
-            .finally(() => {
-              setCurEditing("");
-              dispatch({ type: "MUTATE_LOADING", payload: false });
+      ref={taskRef}
+      onBlur={(event) => {
+        // don't lose focus when tab is pressed for navigation
+        if (taskRef.current && !taskRef.current.contains(event.relatedTarget)) {
+          if (isEditing && task.label !== state.inputTaskName) {
+            // dispatch({ type: "MUTATE_LOADING", payload: true });
+            updateTask({
+              task: { ...task, label: state.inputTaskName },
+              listId: state.taskListId,
             })
-            .catch((err: unknown) => {
-              dispatch({ type: "MUTATE_INPUT", payload: task.label });
-              if (err instanceof Error) {
-                logError(`Error updating task: ${err}`);
-              }
-            });
+              .finally(() => {
+                setCurEditing("");
+                dispatch({ type: "MUTATE_LOADING", payload: false });
+              })
+              .catch((err: unknown) => {
+                dispatch({ type: "MUTATE_INPUT", payload: task.label });
+                if (err instanceof Error) {
+                  logError(`Error updating task: ${err}`);
+                }
+              });
+          }
         }
       }}
       className={`
