@@ -1,4 +1,4 @@
-import { uuidv7, z } from "zod/v4";
+import { uuidv7, z } from "zod";
 
 export const taskListSchema = z.object({
   id: z.readonly(uuidv7()),

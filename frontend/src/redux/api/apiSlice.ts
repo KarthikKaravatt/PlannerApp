@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { v7 as uuidv7 } from "uuid";
-import { z } from "zod/v4";
+import { z } from "zod";
 import {
   type Task,
   type TaskOrder,

@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 const baseTaskSchema = z.object({
   id: z.uuidv7(),
