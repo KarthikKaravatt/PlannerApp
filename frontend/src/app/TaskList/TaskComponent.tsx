@@ -55,7 +55,7 @@ export const TaskComponent: React.FC<TaskProp> = ({
     <div
       ref={taskRef}
       onBlur={(event) => {
-        // don't lose focus when tab is pressed for navigation
+        // don't lose focus when tab is pressed for navigation (within task)
         if (taskRef.current && !taskRef.current.contains(event.relatedTarget)) {
           if (isEditing && task.label !== state.inputTaskName) {
             dispatch({ type: "MUTATE_LOADING", payload: true });

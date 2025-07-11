@@ -40,7 +40,10 @@ export const TaskListSideBar: React.FC = () => {
         <AutoResizeTextArea
           value={newListName}
           onChange={(event) => {
-            const newValue = event.target.value.replace(/\s+/g, " ");
+            // no colons for local storage sort order persistence
+            const newValue = event.target.value
+              .replace(/\s+/g, " ")
+              .replace(/:/g, "");
             setNewListName(
               newValue.length > INPUT_LIMIT
                 ? newValue.slice(0, INPUT_LIMIT)
@@ -54,15 +57,17 @@ export const TaskListSideBar: React.FC = () => {
           type="button"
           className={"text-sm bg-blue-200 rounded-md p-1"}
           onClick={() => {
-            addTaskList({ name: newListName })
-              .then(() => {
-                setNewListName("");
-              })
-              .catch((err: unknown) => {
-                if (err instanceof Error) {
-                  logError("Error adding task list", err);
-                }
-              });
+            if (!(newListName === "" || newListName === " ")) {
+              addTaskList({ name: newListName })
+                .then(() => {
+                  setNewListName("");
+                })
+                .catch((err: unknown) => {
+                  if (err instanceof Error) {
+                    logError("Error adding task list", err);
+                  }
+                });
+            }
           }}
         >
           Add
