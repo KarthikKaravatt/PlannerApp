@@ -58,22 +58,19 @@ export const TaskComponent: React.FC<TaskProp> = ({
         // don't lose focus when tab is pressed for navigation
         if (taskRef.current && !taskRef.current.contains(event.relatedTarget)) {
           if (isEditing && task.label !== state.inputTaskName) {
-            // dispatch({ type: "MUTATE_LOADING", payload: true });
+            dispatch({ type: "MUTATE_LOADING", payload: true });
             updateTask({
               task: { ...task, label: state.inputTaskName },
               listId: state.taskListId,
-            })
-              .finally(() => {
-                setCurEditing("");
-                dispatch({ type: "MUTATE_LOADING", payload: false });
-              })
-              .catch((err: unknown) => {
-                dispatch({ type: "MUTATE_INPUT", payload: task.label });
-                if (err instanceof Error) {
-                  logError(`Error updating task: ${err}`);
-                }
-              });
+            }).catch((err: unknown) => {
+              dispatch({ type: "MUTATE_INPUT", payload: task.label });
+              if (err instanceof Error) {
+                logError(`Error updating task: ${err}`);
+              }
+            });
           }
+          setCurEditing("");
+          dispatch({ type: "MUTATE_LOADING", payload: false });
         }
       }}
       className={`
