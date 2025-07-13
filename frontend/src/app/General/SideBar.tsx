@@ -9,6 +9,7 @@ interface SideBarProps {
 export const SideBar: React.FC<SideBarProps> = ({ children }) => {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   return (
+    //TODO: Maybe find a way to not use hidden here?
     <div className="flex h-full">
       <div
         className={`
@@ -16,7 +17,7 @@ export const SideBar: React.FC<SideBarProps> = ({ children }) => {
       `}
       >
         <Button
-          className={"self-end"}
+          className={"self-start pb-1"}
           type="button"
           onClick={() => {
             setSideBarOpen((prev) => !prev);

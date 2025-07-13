@@ -30,6 +30,7 @@ export const TaskListSideBar: React.FC = () => {
   const [newListName, setNewListName] = useState("");
   return (
     <SideBar>
+      <h1 className="font-bold p-1">Task Lists</h1>
       <div
         className="
             flex flex-row ml-1 justify-between
