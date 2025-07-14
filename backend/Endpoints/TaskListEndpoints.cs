@@ -27,6 +27,12 @@ public static class TaskListEndpoints
         {
             return (await db.TaskLists.OrderBy((list)=>list.OrderIndex).Select((list)=> new TaskListPayload(list.Id, list.Name)).ToListAsync());
         });
+        // get a task list
+        taskListApi.MapGet("/{id:guid}", async (PlannerDbContext db, Guid id) =>
+        {
+            var taskList = await db.TaskLists.FindAsync(id);
+            return taskList != null ? Results.Ok(taskList) : Results.NotFound();
+        });
         // remove a task list
         taskListApi.MapDelete("/{id:guid}", async (PlannerDbContext db, Guid id) =>
         {
@@ -127,5 +133,6 @@ public static class TaskListEndpoints
             await db.SaveChangesAsync();
             return Results.Ok();
         });
+        
     }
 }
