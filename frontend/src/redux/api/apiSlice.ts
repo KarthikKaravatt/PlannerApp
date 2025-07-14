@@ -104,6 +104,7 @@ export const apiSlice = createApi({
         });
       },
     }),
+    //TODO: Make this optimistic
     moveTaskList: builder.mutation<
       void,
       { moveId: string; request: MoveTaskListRequest }
@@ -225,7 +226,6 @@ export const apiSlice = createApi({
             updateTasks.undo();
           });
       },
-      invalidatesTags: ["Tasks", "TaskOrder"],
     }),
     deleteTask: builder.mutation<void, { listId: string; taskId: string }>({
       query: (ids) => ({
@@ -267,7 +267,6 @@ export const apiSlice = createApi({
           taskOrderPatchResult.undo();
         });
       },
-      invalidatesTags: ["Tasks", "TaskOrder"],
     }),
     updateTask: builder.mutation<void, { task: Task; listId: string }>({
       query: (taskData) => {
