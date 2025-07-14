@@ -31,13 +31,23 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
   tagTypes: ["Tasks", "TaskOrder", "TaskList", "TaskListOrder"],
   endpoints: (builder) => ({
-    getTaskList: builder.query<TaskList[], void>({
+    getTaskLists: builder.query<TaskList[], void>({
       query: () => ({
         url: "",
         method: "GET",
       }),
       responseSchema: z.array(taskListSchema),
-      providesTags: ["TaskList"],
+      providesTags: (result) => {
+        if (result) {
+          return [
+            ...result.map((list) => ({
+              type: "TaskList" as const,
+              id: list.id,
+            })),
+          ];
+        }
+        return ["TaskList"];
+      },
     }),
     getTaskListOrder: builder.query<TaskListOrder[], void>({
       query: () => ({
@@ -65,7 +75,6 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["TaskList"],
     }),
-    //TODO:Make this optimistic
     updateTaskList: builder.mutation<
       void,
       { listID: string; request: TaskListUpdateRequest }
@@ -75,7 +84,25 @@ export const apiSlice = createApi({
         method: "PATCH",
         body: data.request,
       }),
-      invalidatesTags: ["TaskList"],
+      async onQueryStarted(taskListPayload, { dispatch, queryFulfilled }) {
+        const updateTaskListName = dispatch(
+          apiSlice.util.updateQueryData(
+            "getTaskLists",
+            undefined,
+            (draftTaskLists) => {
+              const updatingTaskList = draftTaskLists.find(
+                (val) => val.id === taskListPayload.listID,
+              );
+              if (updatingTaskList) {
+                updatingTaskList.name = taskListPayload.request.name;
+              }
+            },
+          ),
+        );
+        await queryFulfilled.catch(() => {
+          updateTaskListName.undo();
+        });
+      },
     }),
     moveTaskList: builder.mutation<
       void,
@@ -378,7 +405,7 @@ export const {
   useClearCompletedTasksMutation,
   useMoveTaskOrderMutation,
   useGetTaskOrderQuery,
-  useGetTaskListQuery,
+  useGetTaskListsQuery,
   useAddNewTaskListMutation,
   useRemoveTaskListMutation,
   useUpdateTaskListMutation,

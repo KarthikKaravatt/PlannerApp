@@ -5,7 +5,7 @@ import { TaskListComponent } from "@/app/TaskList/TaskListComponent";
 import { TaskListSideBar } from "@/app/TaskList/TaskListSideBar";
 import {
   useGetTaskListOrderQuery,
-  useGetTaskListQuery,
+  useGetTaskListsQuery,
 } from "@/redux/api/apiSlice";
 import { logError } from "@/util/console";
 export const Route = createFileRoute("/planner/")({
@@ -32,7 +32,7 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
     isLoading: isListDataLoading,
     isSuccess: isListDataSuccess,
     refetch: listDataRefetch,
-  } = useGetTaskListQuery();
+  } = useGetTaskListsQuery();
   const {
     data: listOrderData,
     isLoading: isListOrderDataLoading,

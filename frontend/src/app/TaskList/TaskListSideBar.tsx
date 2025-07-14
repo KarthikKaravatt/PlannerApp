@@ -14,7 +14,7 @@ import { SideBar } from "@/app/General/SideBar";
 import {
   useAddNewTaskListMutation,
   useGetTaskListOrderQuery,
-  useGetTaskListQuery,
+  useGetTaskListsQuery,
   useMoveTaskListMutation,
   useUpdateTaskListMutation,
 } from "@/redux/api/apiSlice";
@@ -85,7 +85,7 @@ const TaskListsOrder: React.FC = () => {
     isLoading: isTaskListLoading,
     isSuccess: isTaskListQuerySuccess,
     refetch,
-  } = useGetTaskListQuery();
+  } = useGetTaskListsQuery();
   const [currEditing, setCurEditing] = useState<string>("");
   const {
     data: taskListOrderData,
@@ -243,7 +243,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         value={!isEditing || isEditable ? taskList.name : input}
         onChange={(event) => {
           const filteredInput = event.target.value.replace(/\s+/g, " ");
-          if (filteredInput.length > INPUT_LIMIT) {
+          if (filteredInput.length < INPUT_LIMIT) {
             setInput(filteredInput);
           }
         }}
@@ -267,7 +267,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
               .then(() => {
                 setCurEditing("");
                 setIsLoading(false);
-                setInput(taskList.name);
               })
               .catch((err: unknown) => {
                 setCurEditing("");
