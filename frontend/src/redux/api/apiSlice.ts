@@ -37,10 +37,8 @@ export const apiSlice = createApi({
         method: "GET",
       }),
       rawResponseSchema: z.array(taskListSchema),
-      transformResponse: (response) => {
-        //validated in raw response
-        const taskLists = response as TaskList[];
-        return taskLists.reduce<Record<string, TaskList | undefined>>(
+      transformResponse: (response: TaskList[]) => {
+        return response.reduce<Record<string, TaskList | undefined>>(
           (acc, task) => {
             acc[task.id] = task;
             return acc;
@@ -149,7 +147,8 @@ export const apiSlice = createApi({
     }),
     getTasks: builder.query<Record<string, Task | undefined>, string>({
       query: (id) => `/${id}/tasks`,
-      transformResponse: (response) => {
+      rawResponseSchema: z.array(taskResponseSchema),
+      transformResponse: (response: Task[]) => {
         const transformedTaskSchema = z
           .array(taskResponseSchema)
           .transform((data) => {
