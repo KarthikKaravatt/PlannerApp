@@ -23,6 +23,7 @@ import type {
   TaskListUpdateRequest,
 } from "@/types/api";
 import { logError } from "@/util/console";
+import { arrayToRecord } from "@/util/recordFunctions";
 
 const apiUrl = `${import.meta.env.VITE_BACKEND_APP_API_URL}/taskLists`;
 
@@ -31,23 +32,19 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
   tagTypes: ["Tasks", "TaskOrder", "TaskList", "TaskListOrder"],
   endpoints: (builder) => ({
-    getTaskLists: builder.query<TaskList[], void>({
+    getTaskLists: builder.query<Record<string, TaskList | undefined>, void>({
       query: () => ({
         url: "",
         method: "GET",
       }),
-      responseSchema: z.array(taskListSchema),
-      providesTags: (result) => {
-        if (result) {
-          return [
-            ...result.map((list) => ({
-              type: "TaskList" as const,
-              id: list.id,
-            })),
-          ];
-        }
-        return ["TaskList"];
+      rawResponseSchema: z.array(taskListSchema),
+      transformResponse: (response) => {
+        //validated in raw response
+        const taskLists = response as TaskList[];
+        return arrayToRecord(taskLists);
       },
+      responseSchema: z.record(z.string(), taskListSchema),
+      providesTags: ["TaskList"],
     }),
     getTaskListOrder: builder.query<TaskListOrder[], void>({
       query: () => ({
@@ -65,6 +62,37 @@ export const apiSlice = createApi({
         body: request,
       }),
       responseSchema: taskListSchema,
+      // async onQueryStarted(newTaskListRequest, { dispatch, queryFulfilled }) {
+      //   const tempId = uuidv7();
+      //   const addNewTaskListMutation = dispatch(
+      //     apiSlice.util.updateQueryData(
+      //       "getTaskLists",
+      //       undefined,
+      //       (draftTaskList) => {
+      //         draftTaskList.push({ ...newTaskListRequest, id: tempId });
+      //       },
+      //     ),
+      //   );
+      //   const addNewTaskListOrderMutation = dispatch(
+      //     apiSlice.util.updateQueryData(
+      //       "getTaskListOrder",
+      //       undefined,
+      //       (draftTasksOrder) => {
+      //         draftTasksOrder.push({
+      //           id: tempId,
+      //           orderIndex: draftTasksOrder.length,
+      //         });
+      //       },
+      //     ),
+      //   );
+      //   await queryFulfilled
+      //     .then((response) => {})
+      //     .catch(() => {
+      //       logError("Error adding task");
+      //       addNewTaskListMutation.undo();
+      //       addNewTaskListOrderMutation.undo();
+      //     });
+      // },
       invalidatesTags: ["TaskList", "TaskListOrder"],
     }),
     //TODO:Make this optimistic
@@ -90,9 +118,7 @@ export const apiSlice = createApi({
             "getTaskLists",
             undefined,
             (draftTaskLists) => {
-              const updatingTaskList = draftTaskLists.find(
-                (val) => val.id === taskListPayload.listID,
-              );
+              const updatingTaskList = draftTaskLists[taskListPayload.listID];
               if (updatingTaskList) {
                 updatingTaskList.name = taskListPayload.request.name;
               }

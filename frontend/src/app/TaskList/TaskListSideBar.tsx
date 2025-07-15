@@ -101,7 +101,7 @@ const TaskListsOrder: React.FC = () => {
     }
     return taskListOrderData
       .map((orderItem) => {
-        const list = taskListData.find((l) => l.id === orderItem.id);
+        const list = taskListData[orderItem.id];
         if (!list) return null;
         return {
           ...list,
@@ -177,7 +177,7 @@ const TaskListsOrder: React.FC = () => {
           selectionMode="single"
         >
           {(listMetaData) => {
-            const list = taskListData.find((l) => l.id === listMetaData.id);
+            const list = taskListData[listMetaData.id];
             if (list) {
               return (
                 <GridListItem textValue={list.name} key={list.id}>

@@ -68,7 +68,7 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
   return (
     <div className={className}>
       {listOrderData.map((listOrder) => {
-        const list = listData.find((l) => listOrder.id === l.id);
+        const list = listData[listOrder.id];
         if (list) {
           return (
             <TaskListComponent
