@@ -24,7 +24,7 @@ import type {
 } from "@/types/api";
 import { logError } from "@/util/console";
 
-const apiUrl: string = import.meta.env.VITE_BACKEND_APP_API_URL;
+const apiUrl = `${import.meta.env.VITE_BACKEND_APP_API_URL}/taskLists`;
 
 export const apiSlice = createApi({
   reducerPath: "api",
@@ -304,7 +304,6 @@ export const apiSlice = createApi({
           patchResult.undo();
         });
       },
-      // invalidatesTags: ["Tasks"],
     }),
     moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
