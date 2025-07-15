@@ -8,6 +8,7 @@ import {
   type TaskResponse,
   taskOrderSchema,
   taskResponseSchema,
+  taskSchemea,
 } from "@/schemas/task";
 import {
   type TaskList,
@@ -46,7 +47,7 @@ export const apiSlice = createApi({
           {},
         );
       },
-      responseSchema: z.record(z.string(), taskListSchema),
+      responseSchema: z.record(z.uuidv7(), taskListSchema),
       providesTags: ["TaskList"],
     }),
     getTaskListOrder: builder.query<TaskListOrder[], void>({
@@ -173,6 +174,7 @@ export const apiSlice = createApi({
           "Failed to validate API response. Data format is incorrect.",
         );
       },
+      responseSchema: z.record(z.uuidv7(), taskSchemea),
       providesTags: ["Tasks"],
     }),
     getTaskOrder: builder.query<TaskOrder[], string>({
