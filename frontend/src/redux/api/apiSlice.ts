@@ -23,7 +23,6 @@ import type {
   TaskListUpdateRequest,
 } from "@/types/api";
 import { logError } from "@/util/console";
-import { arrayToRecord } from "@/util/recordFunctions";
 
 const apiUrl = `${import.meta.env.VITE_BACKEND_APP_API_URL}/taskLists`;
 
@@ -41,7 +40,13 @@ export const apiSlice = createApi({
       transformResponse: (response) => {
         //validated in raw response
         const taskLists = response as TaskList[];
-        return arrayToRecord(taskLists);
+        return taskLists.reduce<Record<string, TaskList | undefined>>(
+          (acc, task) => {
+            acc[task.id] = task;
+            return acc;
+          },
+          {},
+        );
       },
       responseSchema: z.record(z.string(), taskListSchema),
       providesTags: ["TaskList"],
