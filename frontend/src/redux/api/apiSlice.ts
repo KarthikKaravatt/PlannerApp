@@ -66,38 +66,64 @@ export const apiSlice = createApi({
         body: request,
       }),
       responseSchema: taskListSchema,
-      // async onQueryStarted(newTaskListRequest, { dispatch, queryFulfilled }) {
-      //   const tempId = uuidv7();
-      //   const addNewTaskListMutation = dispatch(
-      //     apiSlice.util.updateQueryData(
-      //       "getTaskLists",
-      //       undefined,
-      //       (draftTaskList) => {
-      //         draftTaskList.push({ ...newTaskListRequest, id: tempId });
-      //       },
-      //     ),
-      //   );
-      //   const addNewTaskListOrderMutation = dispatch(
-      //     apiSlice.util.updateQueryData(
-      //       "getTaskListOrder",
-      //       undefined,
-      //       (draftTasksOrder) => {
-      //         draftTasksOrder.push({
-      //           id: tempId,
-      //           orderIndex: draftTasksOrder.length,
-      //         });
-      //       },
-      //     ),
-      //   );
-      //   await queryFulfilled
-      //     .then((response) => {})
-      //     .catch(() => {
-      //       logError("Error adding task");
-      //       addNewTaskListMutation.undo();
-      //       addNewTaskListOrderMutation.undo();
-      //     });
-      // },
-      invalidatesTags: ["TaskList", "TaskListOrder"],
+      async onQueryStarted(newTaskListRequest, { dispatch, queryFulfilled }) {
+        const tempId = uuidv7();
+        const addNewTaskListMutation = dispatch(
+          apiSlice.util.updateQueryData(
+            "getTaskLists",
+            undefined,
+            (draftTaskList) => {
+              draftTaskList[tempId] = { ...newTaskListRequest, id: tempId };
+            },
+          ),
+        );
+        const addNewTaskListOrderMutation = dispatch(
+          apiSlice.util.updateQueryData(
+            "getTaskListOrder",
+            undefined,
+            (draftTasksOrder) => {
+              draftTasksOrder.push({
+                id: tempId,
+                orderIndex: draftTasksOrder.length,
+              });
+            },
+          ),
+        );
+        await queryFulfilled
+          .then((response) => {
+            dispatch(
+              apiSlice.util.updateQueryData(
+                "getTaskLists",
+                undefined,
+                (draftTasksList) => {
+                  // we are using immer
+                  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                  delete draftTasksList[tempId];
+                  draftTasksList[response.data.id] = response.data;
+                },
+              ),
+            );
+            dispatch(
+              apiSlice.util.updateQueryData(
+                "getTaskListOrder",
+                undefined,
+                (draftTasksListOrder) => {
+                  const tempTask = draftTasksListOrder.find(
+                    (o) => o.id === tempId,
+                  );
+                  if (tempTask) {
+                    tempTask.id = response.data.id;
+                  }
+                },
+              ),
+            );
+          })
+          .catch(() => {
+            logError("Error adding task");
+            addNewTaskListMutation.undo();
+            addNewTaskListOrderMutation.undo();
+          });
+      },
     }),
     //TODO:Make this optimistic
     removeTaskList: builder.mutation<void, string>({
