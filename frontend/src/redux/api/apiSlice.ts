@@ -58,7 +58,6 @@ export const apiSlice = createApi({
       responseSchema: z.array(taskListOrderSchema),
       providesTags: ["TaskListOrder"],
     }),
-    //TODO:Make this optimistic
     addNewTaskList: builder.mutation<TaskList, NewTaskListRequest>({
       query: (request) => ({
         url: "",
