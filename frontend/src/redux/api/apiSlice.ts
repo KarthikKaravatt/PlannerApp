@@ -124,13 +124,38 @@ export const apiSlice = createApi({
           });
       },
     }),
-    //TODO:Make this optimistic
     removeTaskList: builder.mutation<void, string>({
       query: (id) => ({
         url: `/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["TaskList"],
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        const updateTaskListData = dispatch(
+          apiSlice.util.updateQueryData(
+            "getTaskLists",
+            undefined,
+            (draftTaskList) => {
+              // using immer
+              // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+              delete draftTaskList[id];
+            },
+          ),
+        );
+        const updateTaskListOrderData = dispatch(
+          apiSlice.util.updateQueryData(
+            "getTaskListOrder",
+            undefined,
+            (draftTaskListOrder) => {
+              return draftTaskListOrder.filter((o) => o.id !== id);
+            },
+          ),
+        );
+        await queryFulfilled.catch(() => {
+          logError("Error removing task");
+          updateTaskListData.undo();
+          updateTaskListOrderData.undo();
+        });
+      },
     }),
     updateTaskList: builder.mutation<
       void,
