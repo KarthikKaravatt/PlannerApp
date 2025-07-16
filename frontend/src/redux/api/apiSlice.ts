@@ -184,7 +184,6 @@ export const apiSlice = createApi({
         });
       },
     }),
-    //TODO: Make this optimistic
     moveTaskList: builder.mutation<
       void,
       { moveId: string; request: MoveTaskListRequest }
@@ -194,7 +193,42 @@ export const apiSlice = createApi({
         method: "PATCH",
         body: data.request,
       }),
-      invalidatesTags: ["TaskListOrder"],
+      async onQueryStarted({ moveId, request }, { dispatch, queryFulfilled }) {
+        const taskListOrderUpdate = dispatch(
+          apiSlice.util.updateQueryData(
+            "getTaskListOrder",
+            undefined,
+            (draftTaskListOrder) => {
+              if (request.targetId === moveId) return;
+              const moveTaskIndex = draftTaskListOrder.findIndex(
+                (o) => o.id === moveId,
+              );
+              const [movedTask] = draftTaskListOrder.splice(moveTaskIndex, 1);
+              const targetTaskIndex = draftTaskListOrder.findIndex(
+                (o) => o.id === request.targetId,
+              );
+              switch (request.position) {
+                case "Before": {
+                  draftTaskListOrder.splice(targetTaskIndex, 0, movedTask);
+                  break;
+                }
+                case "After": {
+                  draftTaskListOrder.splice(targetTaskIndex + 1, 0, movedTask);
+                  break;
+                }
+              }
+              // re-index
+              for (const [index, value] of draftTaskListOrder.entries()) {
+                value.orderIndex = index;
+              }
+            },
+          ),
+        );
+        await queryFulfilled.catch(() => {
+          logError("Error moving task list");
+          taskListOrderUpdate.undo();
+        });
+      },
     }),
     getTasks: builder.query<Record<string, Task | undefined>, string>({
       query: (id) => `/${id}/tasks`,

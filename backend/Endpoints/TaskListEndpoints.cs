@@ -95,6 +95,11 @@ public static class TaskListEndpoints
             {
                 return Results.BadRequest($"Invalid positional argument of: {request.Position}");
             }
+
+            if (moveId == request.TargetId)
+            {
+                return Results.Ok();
+            }
             LinkedList<TaskList?> taskLists = new(await db.TaskLists.OrderBy(list => list.OrderIndex).ToListAsync());
             var moveListItem = await db.TaskLists.FindAsync(moveId);
             var targetListItem = await db.TaskLists.FindAsync(request.TargetId);
