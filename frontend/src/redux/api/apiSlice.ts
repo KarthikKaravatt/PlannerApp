@@ -468,7 +468,6 @@ export const apiSlice = createApi({
           patchResult.undo();
         });
       },
-      invalidatesTags: ["TaskOrder"],
     }),
     clearCompletedTasks: builder.mutation<void, string>({
       query: (listId) => ({
@@ -507,7 +506,6 @@ export const apiSlice = createApi({
           taskOrderPatchResult.undo();
         });
       },
-      invalidatesTags: ["Tasks", "TaskOrder"],
     }),
   }),
 });
