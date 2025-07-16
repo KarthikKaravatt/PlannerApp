@@ -297,22 +297,16 @@ function getFinalList(
   const sortedList = (() => {
     switch (sortState) {
       case "CUSTOM": {
-        //order is immutable
-        const finalList = order.map((t) => {
-          const result = tasksArray.find((task) => task.id === t.id);
-          //BUG: Race condition between tasks and taskOrder
-          //HACK: This fixes the race condition but its not ideal
-          if (result === undefined) {
-            return {
-              id: t.id,
-              label: "",
-              completed: false,
-              kind: "withoutDate",
-            } satisfies Task;
+        // To avoid having undefined tasks if there is a race condition between
+        // order and the list item. Also using a map for fast lookup
+        const taskMap = new Map(tasksArray.map((task) => [task.id, task]));
+        return order.reduce<Task[]>((acc, orderItem) => {
+          const task = taskMap.get(orderItem.id);
+          if (task) {
+            acc.push(task);
           }
-          return result;
-        });
-        return finalList;
+          return acc;
+        }, []);
       }
       case "DATE": {
         return tasksArray.sort((a, b) => sortByDate(a, b));
