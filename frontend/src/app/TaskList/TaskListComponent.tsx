@@ -298,10 +298,7 @@ function getFinalList(
     switch (sortState) {
       case "CUSTOM": {
         //order is immutable
-        const sortedOrder = Array.from(order).sort(
-          (a, b) => a.orderIndex - b.orderIndex,
-        );
-        const finalList = sortedOrder.map((t) => {
+        const finalList = order.map((t) => {
           const result = tasksArray.find((task) => task.id === t.id);
           //BUG: Race condition between tasks and taskOrder
           //HACK: This fixes the race condition but its not ideal
