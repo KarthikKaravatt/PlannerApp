@@ -3,7 +3,8 @@ import {
   configureStore,
   createListenerMiddleware,
 } from "@reduxjs/toolkit";
-import { apiSlice } from "@/redux/api/apiSlice";
+import { apiSlice } from "@/redux/apiSlice";
+import { uiReducer } from "@/redux/uiSlice";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -14,6 +15,7 @@ export const startAppListening = listenerMiddleware.stopListening.withTypes<
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
+    ui: uiReducer,
   },
   middleware: (getDefaultMiddleweare) =>
     getDefaultMiddleweare()

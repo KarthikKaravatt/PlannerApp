@@ -18,7 +18,7 @@ import {
   useGetTasksQuery,
   useMoveTaskOrderMutation,
   useRemoveTaskListMutation,
-} from "@/redux/api/apiSlice";
+} from "@/redux/apiSlice.ts";
 import type { Task, TaskOrder } from "@/schemas/task";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";

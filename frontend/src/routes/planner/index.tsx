@@ -6,7 +6,7 @@ import { TaskListSideBar } from "@/app/TaskList/TaskListSideBar";
 import {
   useGetTaskListOrderQuery,
   useGetTaskListsQuery,
-} from "@/redux/api/apiSlice";
+} from "@/redux/apiSlice";
 import { logError } from "@/util/console";
 export const Route = createFileRoute("/planner/")({
   component: Planner,

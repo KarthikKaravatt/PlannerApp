@@ -1,6 +1,6 @@
 import { type ChangeEvent, useState } from "react";
 import { Button } from "react-aria-components";
-import { useAddNewTaskMutation } from "@/redux/api/apiSlice";
+import { useAddNewTaskMutation } from "@/redux/apiSlice.ts";
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 

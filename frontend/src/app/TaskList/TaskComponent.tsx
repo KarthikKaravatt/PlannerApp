@@ -16,7 +16,7 @@ import { FaCheck } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
-import { useUpdateTaskMutation } from "@/redux/api/apiSlice";
+import { useUpdateTaskMutation } from "@/redux/apiSlice.ts";
 import type { Task } from "@/schemas/task";
 import type {
   TaskComponentAction,

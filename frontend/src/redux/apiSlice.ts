@@ -172,10 +172,10 @@ export const apiSlice = createApi({
             "getTaskLists",
             undefined,
             (draftTaskLists) => {
-              const updatingTaskList = draftTaskLists[taskListPayload.listID];
-              if (updatingTaskList) {
-                updatingTaskList.name = taskListPayload.request.name;
-              }
+              draftTaskLists[taskListPayload.listID] = {
+                id: taskListPayload.listID,
+                name: taskListPayload.request.name,
+              };
             },
           ),
         );

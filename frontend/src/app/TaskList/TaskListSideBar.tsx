@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import {
   Button,
   GridList,
@@ -11,13 +11,14 @@ import { FaCheck, FaSpinner } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
 import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
 import { SideBar } from "@/app/General/SideBar";
+import { useTaskListEditing } from "@/hooks/taslkList/useTaskListEditing";
 import {
   useAddNewTaskListMutation,
   useGetTaskListOrderQuery,
   useGetTaskListsQuery,
   useMoveTaskListMutation,
   useUpdateTaskListMutation,
-} from "@/redux/api/apiSlice";
+} from "@/redux/apiSlice";
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 import { stopSpaceOnInput } from "@/util/hacks";
@@ -86,33 +87,16 @@ const TaskListsOrder: React.FC = () => {
     isSuccess: isTaskListQuerySuccess,
     refetch,
   } = useGetTaskListsQuery();
-  const [currEditing, setCurEditing] = useState<string>("");
   const {
     data: taskListOrderData,
     isLoading: isTaskListOrderLoading,
     isSuccess: isTaskListOrderQuerySuccess,
   } = useGetTaskListOrderQuery();
+  const { editingId } = useTaskListEditing(null);
   //TODO: Add loading state
   const [moveTaskList] = useMoveTaskListMutation();
-  //Got to do this otherwise grid list state will not update
-  const itemsWithEditingState = (() => {
-    if (!taskListOrderData || !taskListData) {
-      return [];
-    }
-    return taskListOrderData
-      .map((orderItem) => {
-        const list = taskListData[orderItem.id];
-        if (!list) return null;
-        return {
-          ...list,
-          isEditing: currEditing === list.id,
-          isEditable: currEditing === "",
-        };
-      })
-      .filter((item) => item !== null);
-  })();
   const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: currEditing !== "",
+    isDisabled: editingId !== null,
     getItems: (keys) =>
       [...keys].map((key) => {
         return { "text/plain": key.toString() };
@@ -172,7 +156,7 @@ const TaskListsOrder: React.FC = () => {
         <GridList
           keyboardNavigationBehavior="tab"
           aria-label="Side bar task lists"
-          items={itemsWithEditingState}
+          items={taskListOrderData}
           dragAndDropHooks={dragAndDropHooks}
           selectionMode="single"
         >
@@ -185,12 +169,7 @@ const TaskListsOrder: React.FC = () => {
                     <Button slot="drag" aria-label="Drag item">
                       <MdDragIndicator />
                     </Button>
-                    <TaskListItem
-                      taskList={list}
-                      isEditing={listMetaData.isEditing}
-                      isEditable={listMetaData.isEditable}
-                      setCurEditing={setCurEditing}
-                    />
+                    <TaskListItem taskList={list} />
                   </div>
                 </GridListItem>
               );
@@ -207,20 +186,14 @@ const TaskListsOrder: React.FC = () => {
 
 interface TaskListItemProps {
   taskList: TaskList;
-  isEditing: boolean;
-  isEditable: boolean;
-  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
-const TaskListItem: React.FC<TaskListItemProps> = ({
-  taskList,
-  isEditing,
-  isEditable,
-  setCurEditing,
-}) => {
+const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
+  const { isEditing, canEdit, setEditing } = useTaskListEditing(taskList.id);
   const [input, setInput] = useState(taskList.name);
-  const [isLoading, setIsLoading] = useState(false);
-  const [updateTaskList] = useUpdateTaskListMutation();
+  const [updateTaskList, { isLoading }] = useUpdateTaskListMutation();
+  const listRef = useRef<HTMLDivElement>(null);
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: Not static
     <div
       className="
         w-full flex flex-row pl-2 pr-2
@@ -228,6 +201,32 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         items-center
         justify-between
       "
+      ref={listRef}
+      onBlur={(event) => {
+        if (listRef.current && !listRef.current.contains(event.relatedTarget)) {
+          if (isEditing) {
+            if (taskList.name !== input) {
+              updateTaskList({
+                listID: taskList.id,
+                request: { name: input },
+              })
+                .unwrap()
+                .then(() => {
+                  setEditing(null);
+                })
+                .catch((err: unknown) => {
+                  setEditing(null);
+                  setInput(taskList.name);
+                  if (err instanceof Error) {
+                    logError("Error updating task list", err);
+                  }
+                });
+            } else {
+              setEditing(null);
+            }
+          }
+        }
+      }}
     >
       <AutoResizeTextArea
         className={`
@@ -235,16 +234,20 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
           outline-none
         `}
         readOnly={!isEditing}
+        //HACK: This really should show the taskList.name when editing but for
+        //some reason that doesn't update properly
+        value={input}
         onDoubleClick={() => {
-          if (isEditable) {
-            setCurEditing(taskList.id);
+          if (canEdit) {
+            setEditing(taskList.id);
           }
         }}
-        value={!isEditing || isEditable ? taskList.name : input}
         onChange={(event) => {
-          const filteredInput = event.target.value.replace(/\s+/g, " ");
-          if (filteredInput.length < INPUT_LIMIT) {
-            setInput(filteredInput);
+          if (isEditing) {
+            const filteredInput = event.target.value.replace(/\s+/g, " ");
+            if (filteredInput.length < INPUT_LIMIT) {
+              setInput(filteredInput);
+            }
           }
         }}
       />
@@ -259,26 +262,27 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
         isDisabled={isLoading}
         onClick={() => {
           if (isEditing) {
-            setIsLoading(true);
-            updateTaskList({
-              listID: taskList.id,
-              request: { name: input },
-            })
-              .then(() => {
-                setCurEditing("");
-                setIsLoading(false);
+            if (taskList.name !== input) {
+              updateTaskList({
+                listID: taskList.id,
+                request: { name: input },
               })
-              .catch((err: unknown) => {
-                setCurEditing("");
-                setIsLoading(false);
-                setInput(taskList.name);
-                if (err instanceof Error) {
-                  logError("Error updating task list", err);
-                }
-              });
-          } else if (isEditable) {
-            setCurEditing(taskList.id);
-            setInput(taskList.name);
+                .unwrap()
+                .then(() => {
+                  setEditing(null);
+                })
+                .catch((err: unknown) => {
+                  setEditing(null);
+                  setInput(taskList.name);
+                  if (err instanceof Error) {
+                    logError("Error updating task list", err);
+                  }
+                });
+            } else {
+              setEditing(null);
+            }
+          } else if (canEdit) {
+            setEditing(taskList.id);
           }
         }}
       >
