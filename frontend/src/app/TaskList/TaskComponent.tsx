@@ -216,7 +216,7 @@ const InputField: React.FC<InputFieldProps> = ({
     <AutoResizeTextArea
       value={isEditing ? state.inputTaskName : task.label}
       className={`
-        w-full outline-transparent leading-4.5
+        w-full outline-1 outline-transparent leading-4.5
         ${isEditing ? "caret-gray-400" : "caret-transparent"}
       `}
       readOnly={!isEditing}

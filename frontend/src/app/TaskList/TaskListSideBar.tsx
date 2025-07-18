@@ -231,6 +231,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
       <AutoResizeTextArea
         className={`
           ${isEditing ? "caret-gray-400" : "caret-transparent"}
+          outline-1
           outline-transparent
         `}
         readOnly={!isEditing}
