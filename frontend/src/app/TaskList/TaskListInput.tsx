@@ -44,7 +44,7 @@ export const TaskListInput: React.FC<TaskListInputProps> = ({ taskListId }) => {
         className="
             text-blue-950 dark:text-white
             dark:placeholder-gray-300
-            outline-none
+            outline-transparent
             w-2/3
             pl-1
           "

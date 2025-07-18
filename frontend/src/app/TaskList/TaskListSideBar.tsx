@@ -53,7 +53,7 @@ export const TaskListSideBar: React.FC = () => {
             );
           }}
           placeholder="Add new task list"
-          className="p-1 outline-none"
+          className="m-1 outline-1 outline-transparent"
         />
         <Button
           type="button"
@@ -231,7 +231,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
       <AutoResizeTextArea
         className={`
           ${isEditing ? "caret-gray-400" : "caret-transparent"}
-          outline-none
+          outline-transparent
         `}
         readOnly={!isEditing}
         //HACK: This really should show the taskList.name when editing but for
