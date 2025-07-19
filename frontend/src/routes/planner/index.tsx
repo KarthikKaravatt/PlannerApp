@@ -42,7 +42,7 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
     refetch: listDataOroderRefetch,
   } = useGetTaskListOrderQuery();
   if (isListDataLoading || isListOrderDataLoading) {
-    return <FaSpinner />;
+    return <FaSpinner className="animate-spin" />;
   }
   if (!isListDataSuccess || !isListOrderDataSuccess) {
     return (

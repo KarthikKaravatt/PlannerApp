@@ -199,7 +199,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     },
   });
   if (isLoading || isOrderLoading) {
-    return <FaSpinner className="text-blue950 dark:text-white" />;
+    return <FaSpinner className="text-blue950 dark:text-white animate-spin" />;
   }
   if (isError || isOrderError) {
     logError("Error fetching tasks", error as Error);
