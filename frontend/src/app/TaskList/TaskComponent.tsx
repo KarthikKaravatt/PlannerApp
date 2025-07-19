@@ -5,12 +5,10 @@ import {
   Calendar,
   CalendarCell,
   CalendarGrid,
-  Dialog,
   DialogTrigger,
   Heading,
   Popover,
 } from "react-aria-components";
-import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
@@ -24,6 +22,7 @@ import type {
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
+import { PopOverMenu } from "../General/PopOverMenu.tsx";
 
 export interface TaskProp {
   task: Task;
@@ -339,60 +338,35 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
           flex flex-row items-center
         "
     >
-      <div className="flex">
-        <DialogTrigger>
-          <Button
-            isDisabled={isEditing || !isEditable}
-            type="button"
-            className={isEditing ? "opacity-0" : "opacity-100"}
-          >
-            <BsThreeDots className="text-blue-950 dark:text-white" />
-          </Button>
-          <Popover>
-            <Dialog>
-              <div
-                className="
-                  text-xs
-                  flex flex-col     
-                  justify-center
-                  text-blue-950 dark:text-white
-                  dark:bg-dark-background-c bg-blue-100
-                  border-2 border-gray-300 dark:border-gray-200
-                  rounded
-                  p-0.5
-                "
-              >
-                <Button
-                  type="button"
-                  onClick={() => {
-                    handleAddDateButtonClicked();
-                  }}
-                >
-                  Add Date
-                </Button>
-                <hr />
-                <Button
-                  type="button"
-                  onClick={() => {
-                    handleRemoveButtonDateClicked();
-                  }}
-                >
-                  Remove Date
-                </Button>
-                <hr />
-                <Button
-                  onClick={() => {
-                    handleDeleteButtonClick();
-                  }}
-                  type="button"
-                >
-                  Delete
-                </Button>
-              </div>
-            </Dialog>
-          </Popover>
-        </DialogTrigger>
-      </div>
+      <PopOverMenu isDisabled={isEditing || !isEditable}>
+        <Button
+          className={"border-1 border-gray-300 rounded-md p-1"}
+          type="button"
+          onClick={() => {
+            handleAddDateButtonClicked();
+          }}
+        >
+          Add Date
+        </Button>
+        <Button
+          className={"border-1 border-gray-300 rounded-md p-1"}
+          type="button"
+          onClick={() => {
+            handleRemoveButtonDateClicked();
+          }}
+        >
+          Remove Date
+        </Button>
+        <Button
+          className={"border-1 border-gray-300 rounded-md p-1"}
+          onClick={() => {
+            handleDeleteButtonClick();
+          }}
+          type="button"
+        >
+          Delete
+        </Button>
+      </PopOverMenu>
       <Button
         type="button"
         className={`"

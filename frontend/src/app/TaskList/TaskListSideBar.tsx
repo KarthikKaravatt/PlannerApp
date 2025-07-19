@@ -1,14 +1,18 @@
 import { Fragment, useRef, useState } from "react";
 import {
   Button,
+  Dialog,
+  DialogTrigger,
   GridList,
   GridListItem,
+  Heading,
+  Popover,
   useDragAndDrop,
 } from "react-aria-components";
-import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck, FaSpinner } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
+import { TbTrash } from "react-icons/tb";
 import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
 import { SideBar } from "@/app/General/SideBar";
 import { useTaskListEditing } from "@/hooks/taslkList/useTaskListEditing";
@@ -17,6 +21,7 @@ import {
   useGetTaskListOrderQuery,
   useGetTaskListsQuery,
   useMoveTaskListMutation,
+  useRemoveTaskListMutation,
   useUpdateTaskListMutation,
 } from "@/redux/apiSlice";
 import type { TaskList } from "@/schemas/taskList";
@@ -190,6 +195,8 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
   const { isEditing, canEdit, setEditing } = useTaskListEditing(taskList.id);
   const [input, setInput] = useState(taskList.name);
   const [updateTaskList, { isLoading }] = useUpdateTaskListMutation();
+  const [removeTaskList, { isLoading: isLoadingDelete }] =
+    useRemoveTaskListMutation();
   const listRef = useRef<HTMLDivElement>(null);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Not static
@@ -251,15 +258,58 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
           }
         }}
       />
+      <DialogTrigger>
+        <Button>
+          <TbTrash />
+        </Button>
+        <Popover>
+          <Dialog
+            className="
+                w-3/4
+                border-gray-300 border-2
+                bg-blue-100
+                p-2 rounded-xl
+              "
+            role="alertdialog"
+          >
+            {({ close }) => (
+              <>
+                <Heading
+                  className="font-bold text-lg text-red-500"
+                  slot="title"
+                >
+                  Delete task list
+                </Heading>
+                <p>
+                  This will delete this task list and all tasks associsated with
+                  it
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    className={"bg-blue-200 p-1 rounded-md"}
+                    onPress={close}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className={"bg-red-200 p-1 rounded-md"}
+                    onPress={() => {
+                      removeTaskList(taskList.id).catch(() => {
+                        logError("Error deleting task list");
+                      });
+                      close();
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </>
+            )}
+          </Dialog>
+        </Popover>
+      </DialogTrigger>
       <Button
-        //TODO: Implement popover
-        className={isEditing ? "opacity-0" : ""}
-        isDisabled={isLoading || !isEditing}
-      >
-        <BsThreeDots />
-      </Button>
-      <Button
-        isDisabled={isLoading}
+        isDisabled={isLoading || isLoadingDelete}
         onClick={() => {
           if (isEditing) {
             if (taskList.name !== input) {
