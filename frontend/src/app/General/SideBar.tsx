@@ -12,23 +12,28 @@ import { IoMdClose } from "react-icons/io";
 interface SideBarProps {
   children: React.ReactNode;
   title: string;
+  textColor: string;
 }
 
-export const SideBar: React.FC<SideBarProps> = ({ children, title }) => {
+export const SideBar: React.FC<SideBarProps> = ({
+  children,
+  title,
+  textColor,
+}) => {
   return (
     <DialogTrigger>
       <Button>
-        <GiHamburgerMenu className="m-2 text-lg" />
+        <GiHamburgerMenu className={`m-2 text-lg ${textColor}`} />
       </Button>
       <ModalOverlay className="fixed inset-0 backdrop-blur-xs">
         <Modal
           className="
-                  fixed top-0 bottom-0 left-0 w-fit 
-                  bg-sky-100
-                  outline-none border-l border-l-[var(--border-color)] shadow-xl
-                "
+            fixed top-0 bottom-0 left-0 w-fit 
+            bg-sky-100
+            outline-none border-l border-l-[var(--border-color)] shadow-xl
+            "
         >
-          <Dialog className="text-blue-950 p-1">
+          <Dialog className={`p-1 ${textColor}`}>
             <div className="flex flex-row gap-1">
               <Button slot="close">
                 <IoMdClose />
