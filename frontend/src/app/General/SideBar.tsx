@@ -1,32 +1,46 @@
-import { useState } from "react";
-import { Button } from "react-aria-components";
+import {
+  Button,
+  Dialog,
+  DialogTrigger,
+  Heading,
+  Modal,
+  ModalOverlay,
+} from "react-aria-components";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { IoMdClose } from "react-icons/io";
 
 interface SideBarProps {
   children: React.ReactNode;
+  title: string;
 }
 
-export const SideBar: React.FC<SideBarProps> = ({ children }) => {
-  const [sideBarOpen, setSideBarOpen] = useState(false);
+export const SideBar: React.FC<SideBarProps> = ({ children, title }) => {
   return (
-    //TODO: Maybe find a way to not use hidden here?
-    <div className="flex h-full">
-      <div
-        className={`
-        flex flex-col
-      `}
-      >
-        <Button
-          className={"self-start pb-1"}
-          type="button"
-          onClick={() => {
-            setSideBarOpen((prev) => !prev);
-          }}
+    <DialogTrigger>
+      <Button>
+        <GiHamburgerMenu className="m-2 text-lg" />
+      </Button>
+      <ModalOverlay className="fixed inset-0 backdrop-blur-xs">
+        <Modal
+          className="
+                  fixed top-0 bottom-0 left-0 w-fit 
+                  bg-sky-100
+                  outline-none border-l border-l-[var(--border-color)] shadow-xl
+                "
         >
-          <GiHamburgerMenu className="mt-2 text-2xl bg-blue-200 rounded-md ml-1 p-1" />
-        </Button>
-        <div hidden={!sideBarOpen}>{children}</div>
-      </div>
-    </div>
+          <Dialog className="text-blue-950 p-1">
+            <div className="flex flex-row gap-1">
+              <Button slot="close">
+                <IoMdClose />
+              </Button>
+              <Heading className="font-bold" slot="title">
+                {title}
+              </Heading>
+            </div>
+            {children}
+          </Dialog>
+        </Modal>
+      </ModalOverlay>
+    </DialogTrigger>
   );
 };

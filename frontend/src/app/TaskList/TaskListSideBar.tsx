@@ -30,8 +30,7 @@ export const TaskListSideBar: React.FC = () => {
   const [addTaskList] = useAddNewTaskListMutation();
   const [newListName, setNewListName] = useState("");
   return (
-    <SideBar>
-      <h1 className="font-bold p-1">Task Lists</h1>
+    <SideBar title="Task Lists">
       <div
         className="
             flex flex-row ml-1 justify-between
