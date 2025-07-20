@@ -216,7 +216,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
                 listID: taskList.id,
                 request: { name: input },
               })
-                .unwrap()
                 .then(() => {
                   setEditing(null);
                 })
@@ -317,7 +316,6 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
                 listID: taskList.id,
                 request: { name: input },
               })
-                .unwrap()
                 .then(() => {
                   setEditing(null);
                 })
