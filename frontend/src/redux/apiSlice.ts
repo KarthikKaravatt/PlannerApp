@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
@@ -159,10 +158,10 @@ export const apiSlice = createApi({
     }),
     updateTaskList: builder.mutation<
       void,
-      { listID: string; request: TaskListUpdateRequest }
+      { listId: string; request: TaskListUpdateRequest }
     >({
       query: (data) => ({
-        url: `/${data.listID}`,
+        url: `/${data.listId}`,
         method: "PATCH",
         body: data.request,
       }),
@@ -172,8 +171,8 @@ export const apiSlice = createApi({
             "getTaskLists",
             undefined,
             (draftTaskLists) => {
-              draftTaskLists[taskListPayload.listID] = {
-                id: taskListPayload.listID,
+              draftTaskLists[taskListPayload.listId] = {
+                id: taskListPayload.listId,
                 name: taskListPayload.request.name,
               };
             },

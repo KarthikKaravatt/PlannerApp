@@ -201,7 +201,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
           if (isEditing) {
             if (taskList.name !== input) {
               updateTaskList({
-                listID: taskList.id,
+                listId: taskList.id,
                 request: { name: input },
               })
                 .then(() => {
@@ -292,7 +292,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
           if (isEditing) {
             if (taskList.name !== input) {
               updateTaskList({
-                listID: taskList.id,
+                listId: taskList.id,
                 request: { name: input },
               })
                 .then(() => {

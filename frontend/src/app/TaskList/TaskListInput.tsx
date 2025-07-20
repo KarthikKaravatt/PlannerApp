@@ -4,6 +4,8 @@ import { useAddNewTaskMutation } from "@/redux/apiSlice.ts";
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
+const MAX_TASK_LENGTH = 256;
+
 interface TaskListInputProps {
   taskListId: string;
 }
@@ -12,7 +14,7 @@ export const TaskListInput: React.FC<TaskListInputProps> = ({ taskListId }) => {
   const [inputTask, setInputTask] = useState<string>("");
   const [addNewTask, { isLoading }] = useAddNewTaskMutation();
   const onInputChanged = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    if (event.target.value.length < 256) {
+    if (event.target.value.length < MAX_TASK_LENGTH) {
       setInputTask(event.target.value.replace(/\s+/g, " "));
     }
   };

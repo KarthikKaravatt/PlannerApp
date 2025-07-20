@@ -18,10 +18,27 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noConsole": "error"
+        "noConsole": "error",
+        "useAwait": "error",
+        "noEmptyBlockStatements": "warn"
       },
       "nursery": {
-        "noUnresolvedImports": "off"
+        "noUnresolvedImports": "off",
+        "noFloatingPromises": "error",
+        "useExhaustiveSwitchCases": "error",
+        "useUnifiedTypeSignature": "error",
+        "useReadonlyClassProperties": "error",
+        "noMisusedPromises": "error",
+        "noMagicNumbers": "warn",
+        "noTsIgnore": "error",
+        "noReactPropAssign": "error"
+      },
+      "style": {
+        "useForOf": "warn",
+        "useAsConstAssertion": "error",
+        "noInferrableTypes": "error",
+        "useNamingConvention": "warn",
+        "useConsistentArrayType": "warn"
       }
     },
     "domains": {
