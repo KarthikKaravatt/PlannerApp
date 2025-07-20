@@ -2,7 +2,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-dark-background-c: #151618;
+  --color-dark-background-c: oklch(0.14 0 0);
+  --color-dark-background-sub-c: oklch(0.27 0 0);
 }
 
 body {
