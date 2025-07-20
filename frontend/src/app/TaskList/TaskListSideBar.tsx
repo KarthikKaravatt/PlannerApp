@@ -27,6 +27,7 @@ import {
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 import { stopSpaceOnInput } from "@/util/hacks";
+import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
 const INPUT_LIMIT = 25;
 
@@ -36,13 +37,8 @@ export const TaskListSideBar: React.FC = () => {
   const [newListName, setNewListName] = useState("");
   return (
     <SideBar title="Task Lists" textColor="text-blue-950">
-      <div
-        className="
-            flex flex-row ml-1 justify-between
-            border-1 border-gray-300 dark:border-white
-            rounded-md
-          "
-      >
+      <div className=" ml-1 flex flex-row justify-between rounded-md border-1 border-gray-300 dark:border-white ">
+        <ThemeSwitcher />
         <AutoResizeTextArea
           value={newListName}
           onChange={(event) => {
@@ -135,13 +131,10 @@ const TaskListsOrder: React.FC = () => {
   //TODO: Make improve error handling
   if (!isTaskListQuerySuccess || !isTaskListOrderQuerySuccess) {
     return (
-      <div className="flex flex-col justify-center items-center p-2">
+      <div className="flex flex-col items-center justify-center p-2">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className="
-            bg-blue-200 font-bold
-            p-1 rounded-md
-          "
+          className=" rounded-md bg-blue-200 p-1 font-bold "
           onClick={() => {
             refetch().catch(() => {
               logError("Error fetching task list data");
@@ -201,12 +194,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Not static
     <div
-      className="
-        w-full flex flex-row pl-2 pr-2
-        border-gray-300 border-1 rounded-md
-        items-center
-        justify-between
-      "
+      className=" flex w-full flex-row items-center justify-between rounded-md border-1 border-gray-300 pr-2 pl-2 "
       ref={listRef}
       onBlur={(event) => {
         if (listRef.current && !listRef.current.contains(event.relatedTarget)) {
@@ -234,11 +222,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
       }}
     >
       <AutoResizeTextArea
-        className={`
-          ${isEditing ? "caret-gray-400" : "caret-transparent"}
-          outline-1
-          outline-transparent
-        `}
+        className={` ${isEditing ? "caret-gray-400" : "caret-transparent"} outline-1 outline-transparent `}
         readOnly={!isEditing}
         //HACK: This really should show the taskList.name when editing but for
         //some reason that doesn't update properly
@@ -263,18 +247,13 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
         </Button>
         <Popover>
           <Dialog
-            className="
-                w-3/4
-                border-gray-300 border-2
-                bg-blue-100
-                p-2 rounded-xl
-              "
+            className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 "
             role="alertdialog"
           >
             {({ close }) => (
               <>
                 <Heading
-                  className="font-bold text-lg text-red-500"
+                  className="text-lg font-bold text-red-500"
                   slot="title"
                 >
                   Delete task list

@@ -7,10 +7,7 @@ export const ThemeSwitcher: React.FC = () => {
     <button
       type="button"
       onClick={toggleTheme}
-      className="
-        p-2 rounded
-        transition-colors duration-150
-      "
+      className=" rounded p-2 transition-colors duration-150 "
       aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
     >
       {theme === "light" ? "🌙 " : "☀️"}

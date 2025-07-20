@@ -50,13 +50,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
   return (
     <div className={"p-2 flex flex-col gap-1 h-full w-1/4 shrink-0"}>
       <div className="flex">
-        <p
-          className="
-          text-blue-950 dark:text-white
-          font-bold text-left w-full
-          pl-1
-          "
-        >
+        <p className=" w-full pl-1 text-left font-bold text-blue-950 dark:text-white ">
           {listName}
         </p>
         <TaskListDeleteListDiaLog listId={listId} />
@@ -84,25 +78,14 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
       <Button className={"justify-end"}>
         <FaRegTrashCan />
       </Button>
-      <Modal
-        className="
-            fixed inset-0 
-            flex items-center justify-center
-            text-blue-950 dark:text-white
-          "
-      >
+      <Modal className=" fixed inset-0 flex items-center justify-center text-blue-950 dark:text-white ">
         <Dialog
-          className="
-                w-3/4
-                border-gray-300 border-2
-                bg-blue-100
-                p-2 rounded-xl
-              "
+          className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 "
           role="alertdialog"
         >
           {({ close }) => (
             <>
-              <Heading className="font-bold text-lg text-red-500" slot="title">
+              <Heading className="text-lg font-bold text-red-500" slot="title">
                 Delete task list
               </Heading>
               <p>
@@ -199,7 +182,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     },
   });
   if (isLoading || isOrderLoading) {
-    return <FaSpinner className="text-blue950 dark:text-white animate-spin" />;
+    return <FaSpinner className="text-blue950 animate-spin dark:text-white" />;
   }
   if (isError || isOrderError) {
     logError("Error fetching tasks", error as Error);

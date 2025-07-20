@@ -72,19 +72,10 @@ export const TaskComponent: React.FC<TaskProp> = ({
           dispatch({ type: "MUTATE_LOADING", payload: false });
         }
       }}
-      className={`
-          dark:bg-dark-background-c bg-sky-100 
-          ${state.isLoading ? "dark:text-gray-300" : "dark:text-white"}
-          ${state.isLoading ? "text-gray-400" : "text-blue-950"}
-          dark:border-white border-gray-300 
-          border-1
-          rounded-lg
-          shadow
-          w-full
-        `}
+      className={`${state.isLoading ? "dark:text-gray-300" : "dark:text-white"} ${state.isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
       draggable={isEditable}
     >
-      <div className="flex flex-row gap-2 items-center pr-2 pl-2">
+      <div className="flex flex-row items-center gap-2 pr-2 pl-2">
         <CheckBox
           task={task}
           state={state}
@@ -172,15 +163,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({
             }
           : undefined
       }
-      className={`
-          ${isEditing ? "opacity-0" : "opacity-100"}
-          w-4.5 h-3.5 
-          ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} 
-          rounded-full border-2 
-          ${task.completed ? "border-green-900" : "border-gray-500"}
-          ${isInteractive ? "cursor-pointer" : "cursor-default"}
-          ${isLoading ? "opacity-50" : ""}
-        `}
+      className={`${isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
       tabIndex={isInteractive ? 0 : -1}
       onKeyDown={
         isInteractive
@@ -214,10 +197,7 @@ const InputField: React.FC<InputFieldProps> = ({
   return (
     <AutoResizeTextArea
       value={isEditing ? state.inputTaskName : task.label}
-      className={`
-        w-full outline-1 outline-transparent leading-4.5
-        ${isEditing ? "caret-gray-400" : "caret-transparent"}
-      `}
+      className={` ${isEditing ? "caret-gray-400" : "caret-transparent"} w-full leading-4.5 outline-1 outline-transparent `}
       readOnly={!isEditing}
       onDoubleClick={() => {
         setCurEditing(task.id);
@@ -256,13 +236,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({
   }).format(date.toDate());
   return (
     <div
-      className={`
-          ${isLoading ? "dark:text-gray-300" : "dark:text-white"}
-          ${isLoading ? "text-gray-400" : "text-blue-950"}
-          ${isEditing ? "opacity-0" : "opacity-100"}
-          text-xs
-          w-10
-        `}
+      className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} ${isEditing ? "opacity-0" : "opacity-100"} w-10 text-xs `}
     >
       <DialogTrigger>
         <Button
@@ -277,13 +251,13 @@ const DueDateDisplay: React.FC<DueDateProp> = ({
               onDateButtonClicked(event);
             }}
             aria-label="Appointment date"
-            className="bg-sky-100 outline-1 outline-gray-300 text-xs"
+            className="bg-sky-100 text-xs outline-1 outline-gray-300"
           >
-            <header className="flex items-center mx-1 mb-2">
+            <header className="mx-1 mb-2 flex items-center">
               <Button slot="previous" className="p-0">
                 ◀
               </Button>
-              <Heading className="flex-1 m-0 text-center" />
+              <Heading className="m-0 flex-1 text-center" />
               <Button slot="next" className="p-0">
                 ▶
               </Button>
@@ -292,12 +266,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({
               {(date) => (
                 <CalendarCell
                   date={date}
-                  className="
-                    text-center p-0.5
-                    data-[outside-month]:hidden data-[pressed]:bg-gray-100
-                    data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-blue-500
-                    data-[selected]:bg-blue-500 data-[selected]:text-white
-                    "
+                  className=" p-0.5 text-center data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-blue-500 data-[outside-month]:hidden data-[pressed]:bg-gray-100 data-[selected]:bg-blue-500 data-[selected]:text-white "
                 />
               )}
             </CalendarGrid>
