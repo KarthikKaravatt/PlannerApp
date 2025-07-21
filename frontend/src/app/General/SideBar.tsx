@@ -25,7 +25,10 @@ export const SideBar: React.FC<SideBarProps> = ({
       <Button>
         <GiHamburgerMenu className={`m-2 text-lg ${textColor}`} />
       </Button>
-      <ModalOverlay className="fixed inset-0 backdrop-blur-xs">
+      <ModalOverlay
+        isDismissable={true}
+        className="fixed inset-0 backdrop-blur-xs"
+      >
         <Modal className=" fixed top-0 bottom-0 left-0 w-fit bg-sky-100 dark:bg-dark-background-c outline-none border-l border-l-[var(--border-color)] shadow-xl ">
           <Dialog className={`p-1 ${textColor}`}>
             <div className="flex flex-row gap-1">
