@@ -33,7 +33,7 @@ export const TaskListInput: React.FC<TaskListInputProps> = ({ taskListId }) => {
     setInputTask("");
   };
   return (
-    <div className=" flex w-full border-b-1 border-gray-400 p-1 dark:border-white ">
+    <div className=" flex w-full border-b-1 border-gray-400 p-1 dark:border-blue-100">
       <AutoResizeTextArea
         className=" w-2/3 pl-1 text-blue-950 outline-1 outline-transparent dark:text-white dark:placeholder-gray-300 "
         placeholder="Enter new task"

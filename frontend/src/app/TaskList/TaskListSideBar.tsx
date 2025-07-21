@@ -36,9 +36,8 @@ export const TaskListSideBar: React.FC = () => {
   const [addTaskList] = useAddNewTaskListMutation();
   const [newListName, setNewListName] = useState("");
   return (
-    <SideBar title="Task Lists" textColor="text-blue-950">
-      <div className=" ml-1 flex flex-row justify-between rounded-md border-1 border-gray-300 dark:border-white ">
-        <ThemeSwitcher />
+    <SideBar title="Task Lists" textColor="text-blue-950 dark:text-white">
+      <div className="p-1 ml-1 flex flex-row justify-between border-b-1 border-gray-300 dark:border-white ">
         <AutoResizeTextArea
           value={newListName}
           onChange={(event) => {
@@ -57,7 +56,7 @@ export const TaskListSideBar: React.FC = () => {
         />
         <Button
           type="button"
-          className={"text-sm bg-blue-200 rounded-md p-1"}
+          className="dark:text-black text-sm bg-blue-200 dark:bg-white rounded-md p-1"
           onClick={() => {
             if (!(newListName === "" || newListName === " ")) {
               addTaskList({ name: newListName })
@@ -76,6 +75,7 @@ export const TaskListSideBar: React.FC = () => {
         </Button>
       </div>
       <TaskListsOrder />
+      <ThemeSwitcher />
     </SideBar>
   );
 };
@@ -194,7 +194,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Not static
     <div
-      className=" flex w-full flex-row items-center justify-between rounded-md border-1 border-gray-300 pr-2 pl-2 "
+      className=" flex w-full flex-row items-center justify-between rounded-md pr-2 pl-2 "
       ref={listRef}
       onBlur={(event) => {
         if (listRef.current && !listRef.current.contains(event.relatedTarget)) {
