@@ -94,8 +94,6 @@ export const apiSlice = createApi({
                 "getTaskLists",
                 undefined,
                 (draftTasksList) => {
-                  // we are using immer
-                  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                   delete draftTasksList[tempId];
                   draftTasksList[response.data.id] = response.data;
                 },
@@ -134,8 +132,6 @@ export const apiSlice = createApi({
             "getTaskLists",
             undefined,
             (draftTaskList) => {
-              // using immer
-              // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
               delete draftTaskList[id];
             },
           ),
@@ -311,8 +307,6 @@ export const apiSlice = createApi({
                 listId,
                 (draftTasks) => {
                   if (Object.hasOwn(draftTasks, tempId)) {
-                    // we are using immer so this is okay
-                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                     delete draftTasks[tempId];
                   }
                   draftTasks[serverTask.id] = serverTask;
@@ -354,8 +348,6 @@ export const apiSlice = createApi({
             ids.listId,
             (draftTasks) => {
               if (Object.hasOwn(draftTasks, ids.taskId)) {
-                // we are using immer so this is okay
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                 const deleted = delete draftTasks[ids.taskId];
                 if (!deleted) {
                   logError("Error delting task");
@@ -482,8 +474,6 @@ export const apiSlice = createApi({
                 const task = draft[key];
                 if (task?.completed) {
                   deletedTasks.set(key, "");
-                  // we are using immer so this is fine
-                  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                   delete draft[key];
                 }
               }

@@ -39,6 +39,9 @@
         "noInferrableTypes": "error",
         "useNamingConvention": "warn",
         "useConsistentArrayType": "warn"
+      },
+      "performance": {
+        "noDelete": "error"
       }
     },
     "domains": {
