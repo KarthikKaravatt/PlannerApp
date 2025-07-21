@@ -309,7 +309,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
     >
       <PopOverMenu isDisabled={isEditing || !isEditable}>
         <Button
-          className={"rounded-md p-1"}
+          className="rounded-md p-1"
           type="button"
           onClick={() => {
             handleAddDateButtonClicked();
@@ -318,7 +318,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
           Add Date
         </Button>
         <Button
-          className={"rounded-md p-1"}
+          className="rounded-md p-1"
           type="button"
           onClick={() => {
             handleRemoveButtonDateClicked();
@@ -327,7 +327,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
           Remove Date
         </Button>
         <Button
-          className={"rounded-md p-1"}
+          className="rounded-md p-1"
           onClick={() => {
             handleDeleteButtonClick();
           }}
@@ -338,15 +338,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
       </PopOverMenu>
       <Button
         type="button"
-        className={`"
-          ${
-            isLoading || isDeleteLoading || state.isLoading
-              ? "text-gray-400"
-              : isEditing
-                ? "text-green-700 dark:text-green-400"
-                : ""
-          }
-        "`}
+        className={`" ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
         onClick={() => {
           if (isEditing) {
             handleConfirmButtonClick();
