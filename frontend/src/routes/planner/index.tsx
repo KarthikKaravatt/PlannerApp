@@ -49,10 +49,7 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
       <div className="flex flex-col justify-center items-center">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className="
-            bg-blue-200 font-bold
-            p-1 rounded-md
-          "
+          className=" bg-blue-200 font-bold p-1 rounded-md "
           onClick={() => {
             listDataRefetch().catch(() => {
               logError("Error fetching task list data");
