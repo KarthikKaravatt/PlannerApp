@@ -231,7 +231,7 @@ export const apiSlice = createApi({
         });
       },
     }),
-    getTasks: builder.query<Record<string, Task | undefined>, string>({
+    getTasks: builder.query<Record<string, Task>, string>({
       query: (id) => `/${id}/tasks`,
       rawResponseSchema: z.array(taskResponseSchema),
       transformResponse: (response: Task[]) => {
