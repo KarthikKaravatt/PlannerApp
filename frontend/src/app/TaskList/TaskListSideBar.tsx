@@ -37,7 +37,7 @@ export const TaskListSideBar: React.FC = () => {
   const [newListName, setNewListName] = useState("");
   return (
     <SideBar title="Task Lists" textColor="text-blue-950 dark:text-white">
-      <div className="p-1 ml-1 flex flex-row justify-between border-b-1 border-gray-300 dark:border-white ">
+      <div className="ml-1 flex flex-row justify-between border-b-1 border-gray-300 p-1 dark:border-white ">
         <AutoResizeTextArea
           value={newListName}
           onChange={(event) => {
@@ -56,7 +56,7 @@ export const TaskListSideBar: React.FC = () => {
         />
         <Button
           type="button"
-          className="dark:text-black text-sm bg-blue-200 dark:bg-white rounded-md p-1"
+          className="rounded-md bg-blue-200 p-1 text-sm dark:bg-white dark:text-black"
           onClick={() => {
             if (!(newListName === "" || newListName === " ")) {
               addTaskList({ name: newListName })
@@ -92,11 +92,11 @@ const TaskListsOrder: React.FC = () => {
     isLoading: isTaskListOrderLoading,
     isSuccess: isTaskListOrderQuerySuccess,
   } = useGetTaskListOrderQuery();
-  const { editingId } = useTaskListEditing(null);
+  const { canEdit } = useTaskListEditing(null);
   //TODO: Add loading state
   const [moveTaskList] = useMoveTaskListMutation();
   const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: editingId !== null,
+    isDisabled: !canEdit,
     getItems: (keys) =>
       [...keys].map((key) => {
         return { "text/plain": key.toString() };

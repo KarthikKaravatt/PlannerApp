@@ -10,7 +10,6 @@ export const useTaskListEditing = (taskListId: string | null) => {
   const editingId = useSelector(selectEditingTaskListId);
   const canEdit = useSelector(selectCanEditTaskList);
   return {
-    editingId,
     isEditing: taskListId ? editingId === taskListId : false,
     canEdit,
     setEditing: (id: string | null) => dispatch(setEditingTaskList(id)),
