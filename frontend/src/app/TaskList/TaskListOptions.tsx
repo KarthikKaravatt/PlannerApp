@@ -31,7 +31,12 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
     setFilterState((prev) => {
       const currentIndex = filterOptions.indexOf(prev);
       const nextIndex = (currentIndex + 1) % filterOptions.length;
-      return filterOptions[nextIndex];
+      const nextOption = filterOptions[nextIndex];
+      if (nextOption) {
+        return nextOption;
+      } else {
+        return "ALL";
+      }
     });
   };
 

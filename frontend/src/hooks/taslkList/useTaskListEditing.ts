@@ -3,7 +3,7 @@ import {
   selectCanEditTaskList,
   selectEditingTaskListId,
   setEditingTaskList,
-} from "@/redux/uiSlice";
+} from "@/redux/taskListSlice";
 
 export const useTaskListEditing = (taskListId: string | null) => {
   const dispatch = useDispatch();

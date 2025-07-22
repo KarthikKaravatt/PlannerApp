@@ -153,12 +153,13 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
         return { "text/plain": key.toString() };
       }),
     onReorder: (e) => {
+      const key = Array.from(e.keys)[0];
       if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
         return;
       }
       if (e.target.dropPosition === "before") {
         moveTask({
-          id1: Array.from(e.keys)[0].toString(),
+          id1: key ? key.toString() : "",
           id2: e.target.key.toString(),
           pos: "Before",
           listId: listId,
@@ -169,7 +170,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
         });
       } else if (e.target.dropPosition === "after") {
         moveTask({
-          id1: Array.from(e.keys)[0].toString(),
+          id1: key ? key.toString() : "",
           id2: e.target.key.toString(),
           pos: "After",
           listId: listId,

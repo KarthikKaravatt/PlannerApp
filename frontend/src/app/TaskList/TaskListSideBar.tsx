@@ -102,9 +102,10 @@ const TaskListsOrder: React.FC = () => {
         return { "text/plain": key.toString() };
       }),
     onReorder: (e) => {
+      const key = Array.from(e.keys)[0];
       if (e.target.dropPosition === "before") {
         moveTaskList({
-          moveId: Array.from(e.keys)[0].toString(),
+          moveId: key ? key.toString() : "",
           request: {
             targetId: e.target.key.toString(),
             position: "Before",
@@ -114,7 +115,7 @@ const TaskListsOrder: React.FC = () => {
         });
       } else if (e.target.dropPosition === "after") {
         moveTaskList({
-          moveId: Array.from(e.keys)[0].toString(),
+          moveId: key ? key.toString() : "",
           request: {
             targetId: e.target.key.toString(),
             position: "After",

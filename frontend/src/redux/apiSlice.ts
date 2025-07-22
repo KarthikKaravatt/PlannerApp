@@ -32,20 +32,17 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
   tagTypes: ["Tasks", "TaskOrder", "TaskList", "TaskListOrder"],
   endpoints: (builder) => ({
-    getTaskLists: builder.query<Record<string, TaskList | undefined>, void>({
+    getTaskLists: builder.query<Record<string, TaskList>, void>({
       query: () => ({
         url: "",
         method: "GET",
       }),
       rawResponseSchema: z.array(taskListSchema),
       transformResponse: (response: TaskList[]) => {
-        return response.reduce<Record<string, TaskList | undefined>>(
-          (acc, task) => {
-            acc[task.id] = task;
-            return acc;
-          },
-          {},
-        );
+        return response.reduce<Record<string, TaskList>>((acc, task) => {
+          acc[task.id] = task;
+          return acc;
+        }, {});
       },
       responseSchema: z.record(z.uuidv7(), taskListSchema),
       providesTags: ["TaskList"],
@@ -203,15 +200,23 @@ export const apiSlice = createApi({
               const targetTaskIndex = draftTaskListOrder.findIndex(
                 (o) => o.id === request.targetId,
               );
-              switch (request.position) {
-                case "Before": {
-                  draftTaskListOrder.splice(targetTaskIndex, 0, movedTask);
-                  break;
+              if (movedTask) {
+                switch (request.position) {
+                  case "Before": {
+                    draftTaskListOrder.splice(targetTaskIndex, 0, movedTask);
+                    break;
+                  }
+                  case "After": {
+                    draftTaskListOrder.splice(
+                      targetTaskIndex + 1,
+                      0,
+                      movedTask,
+                    );
+                    break;
+                  }
                 }
-                case "After": {
-                  draftTaskListOrder.splice(targetTaskIndex + 1, 0, movedTask);
-                  break;
-                }
+              } else {
+                logError("error accessing task from order");
               }
               // re-index
               for (const [index, value] of draftTaskListOrder.entries()) {
@@ -325,7 +330,10 @@ export const apiSlice = createApi({
                   if (removeIndex === -1) {
                     throw new Error("Task to remove not found");
                   }
-                  draftOrder[removeIndex].id = serverTask.id;
+                  const oldTaskOrder = draftOrder[removeIndex];
+                  if (oldTaskOrder) {
+                    oldTaskOrder.id = serverTask.id;
+                  }
                 },
               ),
             );
@@ -466,19 +474,23 @@ export const apiSlice = createApi({
               const anchorTaskIndex = draft.findIndex(
                 (t) => t.id === payload.id2,
               );
-              switch (payload.pos) {
-                case "Before": {
-                  draft.splice(anchorTaskIndex, 0, movedTask);
-                  break;
+              if (movedTask) {
+                switch (payload.pos) {
+                  case "Before": {
+                    draft.splice(anchorTaskIndex, 0, movedTask);
+                    break;
+                  }
+                  case "After": {
+                    draft.splice(anchorTaskIndex + 1, 0, movedTask);
+                    break;
+                  }
                 }
-                case "After": {
-                  draft.splice(anchorTaskIndex + 1, 0, movedTask);
-                  break;
-                }
+              } else {
+                logError("Moved task is not in the state");
               }
               // re-index
-              for (let i = 0; i < draft.length; i++) {
-                draft[i].orderIndex = i;
+              for (const [index, task] of draft.entries()) {
+                task.orderIndex = index;
               }
             },
           ),
