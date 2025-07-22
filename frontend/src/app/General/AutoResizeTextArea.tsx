@@ -11,6 +11,7 @@ export const AutoResizeTextArea: React.FC<
   className,
   onDoubleClick,
   placeholder,
+  style,
   ...rest
 }) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -119,7 +120,7 @@ export const AutoResizeTextArea: React.FC<
       }}
       value={value}
       ref={textAreaRef}
-      className={`overflow-hidden resize-none ${className ?? ""}`}
+      className={`${className ?? ""} resize-none overflow-hidden`}
     />
   );
 };

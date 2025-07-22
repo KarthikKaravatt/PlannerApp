@@ -13,7 +13,7 @@ export const PopOverMenu: React.FC<PopOverMenuProps> = ({
 }) => {
   return (
     <DialogTrigger>
-      <Button isDisabled={isDisabled}>
+      <Button isDisabled={isDisabled ?? false}>
         <BsThreeDots />
       </Button>
       <Popover>

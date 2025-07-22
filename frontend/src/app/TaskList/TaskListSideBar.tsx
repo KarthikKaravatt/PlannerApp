@@ -126,7 +126,12 @@ const TaskListsOrder: React.FC = () => {
       }
     },
   });
-  if (isTaskListLoading || isTaskListOrderLoading) {
+  if (
+    isTaskListLoading ||
+    isTaskListOrderLoading ||
+    !taskListOrderData ||
+    !taskListData
+  ) {
     return <FaSpinner className="animate-spin" />;
   }
   //TODO: Make improve error handling

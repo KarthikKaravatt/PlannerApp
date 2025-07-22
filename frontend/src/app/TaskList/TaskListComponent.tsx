@@ -190,7 +190,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     logError("Error fetching tasks order", orderError as Error);
     return <p>Error: Failed to fetch tasks or task order</p>;
   }
-  if (isSuccess && isOrderSuccess) {
+  if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, filterOption, sortOption);
     const finalListWithEditingState = (() => {
       if (sortOption === "CUSTOM") {
@@ -257,7 +257,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
 };
 
 function getFinalList(
-  data: Record<string, Task | undefined>,
+  data: Record<string, Task>,
   order: TaskOrder[],
   filterState: FilterOption,
   sortState: SortOption,

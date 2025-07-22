@@ -14,12 +14,12 @@ export const Route = createFileRoute("/planner/")({
 
 function Planner() {
   return (
-    <div className="w-full h-screen text-blue-950 dark:text-white">
-      <div className="w-full h-full flex flex-row overflow-x-auto relative">
-        <div className="sticky left-0  backdrop-blur-xs shadow-blue-200">
+    <div className="h-screen w-full text-blue-950 dark:text-white">
+      <div className="relative flex h-full w-full flex-row overflow-x-auto">
+        <div className="sticky left-0  shadow-blue-200 backdrop-blur-xs">
           <TaskListSideBar />
         </div>
-        <TaskLists className="flex flex-row shrink-0 w-320 md:w-450" />
+        <TaskLists className="flex w-320 shrink-0 flex-row md:w-450" />
       </div>
     </div>
   );
@@ -41,15 +41,20 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
     isSuccess: isListOrderDataSuccess,
     refetch: listDataOroderRefetch,
   } = useGetTaskListOrderQuery();
-  if (isListDataLoading || isListOrderDataLoading) {
+  if (
+    isListDataLoading ||
+    isListOrderDataLoading ||
+    !listOrderData ||
+    !listData
+  ) {
     return <FaSpinner className="animate-spin" />;
   }
   if (!isListDataSuccess || !isListOrderDataSuccess) {
     return (
-      <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-col items-center justify-center">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className=" bg-blue-200 font-bold p-1 rounded-md "
+          className=" rounded-md bg-blue-200 p-1 font-bold "
           onClick={() => {
             listDataRefetch().catch(() => {
               logError("Error fetching task list data");
