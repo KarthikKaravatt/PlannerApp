@@ -13,6 +13,7 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
+import { useTask } from "@/hooks/taslkList/useTask.ts";
 import {
   useGetTaskOrderQuery,
   useGetTasksQuery,
@@ -145,9 +146,9 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     error: orderError,
   } = useGetTaskOrderQuery(listId);
   const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
-  const [curEditing, setCurEditing] = useState("");
+  const { canEdit } = useTask(listId);
   const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: curEditing !== "" || sortOption !== "CUSTOM",
+    isDisabled: !canEdit || sortOption !== "CUSTOM",
     getItems: (keys) =>
       [...keys].map((key) => {
         return { "text/plain": key.toString() };
@@ -192,34 +193,12 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
   }
   if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, filterOption, sortOption);
-    const finalListWithEditingState = (() => {
-      if (sortOption === "CUSTOM") {
-        return order
-          .map((o) => {
-            const task = finalList.find((t) => t.id === o.id);
-            if (!task) return null;
-            return {
-              ...task,
-              isEditing: curEditing === task.id,
-              isEditable: curEditing === "",
-            };
-          })
-          .filter((item) => item !== null);
-      }
-      return finalList.map((t) => {
-        return {
-          ...t,
-          isEditing: curEditing === t.id,
-          isEditable: curEditing === "",
-        };
-      });
-    })();
     return (
       //HACK: Bug in react aria see stopSpaceOnInput for more details
       <div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
         <GridList
           keyboardNavigationBehavior="tab"
-          items={finalListWithEditingState}
+          items={finalList}
           aria-label="Tasks"
           dragAndDropHooks={dragAndDropHooks}
           selectionMode="single"
@@ -239,9 +218,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
                     <MdDragIndicator />
                   </Button>
                   <TaskComponent
-                    setCurEditing={setCurEditing}
-                    isEditable={taskWithMetaData.isEditable}
-                    isEditing={taskWithMetaData.isEditing}
                     taskListId={listId}
                     key={taskWithMetaData.id}
                     task={taskWithMetaData}

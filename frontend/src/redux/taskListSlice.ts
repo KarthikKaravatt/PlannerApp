@@ -9,20 +9,20 @@ const taskListSlice = createSlice({
   name: "taskListSlice",
   initialState,
   reducers: {
-    setEditingTask: (state, action: PayloadAction<string | null>) => {
-      state.editingId = action.payload;
-    },
     setEditingTaskList: (state, action: PayloadAction<string | null>) => {
       state.editingId = action.payload;
     },
   },
 });
 
-export const { setEditingTaskList, setEditingTask } = taskListSlice.actions;
+export const { setEditingTaskList } = taskListSlice.actions;
 
 export const taskListReducer = taskListSlice.reducer;
 
-export const selectEditingTaskListId = (state: { ui: TaskListState }) =>
-  state.ui.editingId;
-export const selectCanEditTaskList = (state: { ui: TaskListState }) =>
-  state.ui.editingId === null;
+export const selectEditingTaskListId = (state: TaskListState) =>
+  state.editingId;
+export const selectIsEditing = (state: TaskListState, listId: string) => {
+  return state.editingId === listId;
+};
+export const selectCanEditTaskList = (state: TaskListState) =>
+  state.editingId === null;

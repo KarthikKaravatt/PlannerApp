@@ -22,3 +22,11 @@ interface MutateLoading {
 }
 
 export type TaskComponentAction = MutateInputAction | MutateLoading;
+
+export interface TaskState {
+  editingTaskId: string | null;
+}
+
+export interface AllTaskState {
+  [taskListId: string]: TaskState;
+}

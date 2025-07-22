@@ -12,6 +12,7 @@ import {
 import { CiEdit } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
+import { useTask } from "@/hooks/taslkList/useTask.ts";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
 import {
@@ -31,22 +32,14 @@ import { PopOverMenu } from "../General/PopOverMenu.tsx";
 export interface TaskProp {
   task: Task;
   taskListId: string;
-  isEditable: boolean;
-  isEditing: boolean;
-  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
-export const TaskComponent: React.FC<TaskProp> = ({
-  task,
-  taskListId,
-  isEditing,
-  isEditable,
-  setCurEditing,
-}) => {
+export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
   const initalTaskComponentState: TaskComponentState = {
     inputTaskName: task.label,
     taskListId,
     isLoading: false,
   };
+  const { isEditing, setEditingTask, canEdit } = useTask(taskListId, task.id);
   const [state, dispatch] = useReducer(
     taskComponentReducer,
     initalTaskComponentState,
@@ -77,43 +70,18 @@ export const TaskComponent: React.FC<TaskProp> = ({
               }
             });
           }
-          setCurEditing("");
+          setEditingTask(null);
           dispatch({ type: "MUTATE_LOADING", payload: false });
         }
       }}
       className={`${state.isLoading ? "dark:text-gray-300" : "dark:text-white"} ${state.isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
-      draggable={isEditable}
+      draggable={canEdit}
     >
       <div className="flex flex-row items-center gap-2 pr-2 pl-2">
-        <CheckBox
-          task={task}
-          state={state}
-          dispatch={dispatch}
-          isEditing={isEditing}
-        />
-        <InputField
-          listId={taskListId}
-          task={task}
-          state={state}
-          dispatch={dispatch}
-          isEditable={isEditable}
-          isEditing={isEditing}
-          setCurEditing={setCurEditing}
-        />
-        <DueDateDisplay
-          task={task}
-          state={state}
-          dispatch={dispatch}
-          isEditing={isEditing}
-        />
-        <MoreOptions
-          task={task}
-          state={state}
-          dispatch={dispatch}
-          isEditable={isEditable}
-          isEditing={isEditing}
-          setCurEditing={setCurEditing}
-        />
+        <CheckBox task={task} state={state} dispatch={dispatch} />
+        <InputField task={task} state={state} dispatch={dispatch} />
+        <DueDateDisplay task={task} state={state} dispatch={dispatch} />
+        <MoreOptions task={task} state={state} dispatch={dispatch} />
       </div>
     </div>
   );
@@ -123,17 +91,12 @@ interface CheckBoxProp {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-  isEditing: boolean;
 }
-const CheckBox: React.FC<CheckBoxProp> = ({
-  task,
-  state,
-  dispatch,
-  isEditing,
-}) => {
+const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
   //TODO:: Use React aria checkbok and make this its own general use custom
   //component
   const [toggleCompletion, { isLoading }] = useToggleTaskCompetionMutation();
+  const { isEditing } = useTask(state.taskListId, task.id);
   const handleClick = () => {
     if (isEditing || isLoading || state.isLoading) {
       return;
@@ -185,28 +148,19 @@ const CheckBox: React.FC<CheckBoxProp> = ({
   );
 };
 interface InputFieldProps {
-  listId: string;
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-  isEditing: boolean;
-  isEditable: boolean;
-  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
-const InputField: React.FC<InputFieldProps> = ({
-  task,
-  state,
-  dispatch,
-  isEditing,
-  setCurEditing,
-}) => {
+const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
+  const { isEditing, setEditingTask } = useTask(state.taskListId, task.id);
   return (
     <AutoResizeTextArea
       value={isEditing ? state.inputTaskName : task.label}
       className={` ${isEditing ? "caret-gray-400" : "caret-transparent"} w-full leading-4.5 outline-1 outline-transparent `}
       readOnly={!isEditing}
       onDoubleClick={() => {
-        setCurEditing(task.id);
+        setEditingTask(task.id);
       }}
       onChange={(event) => {
         dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
@@ -218,19 +172,13 @@ interface DueDateProp {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-  isEditing: boolean;
 }
-const DueDateDisplay: React.FC<DueDateProp> = ({
-  task,
-  state,
-  dispatch,
-  isEditing,
-}) => {
+const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
+  const { isEditing } = useTask(state.taskListId, task.id);
   const { isLoading, onDateButtonClicked } = useTaskDueDate(
     task,
     state,
     dispatch,
-    isEditing,
   );
   if (task.kind === "withoutDate") {
     // biome-ignore lint/complexity/noUselessFragments: Need a way of representing return nothing
@@ -286,18 +234,12 @@ interface MoreOptionsProp {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-  isEditable: boolean;
-  isEditing: boolean;
-  setCurEditing: React.Dispatch<React.SetStateAction<string>>;
 }
-const MoreOptions: React.FC<MoreOptionsProp> = ({
-  task,
-  state,
-  dispatch,
-  setCurEditing,
-  isEditable,
-  isEditing,
-}) => {
+const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
+  const { isEditing, canEdit, setEditingTask } = useTask(
+    state.taskListId,
+    task.id,
+  );
   const {
     isLoading,
     isDeleteLoading,
@@ -305,7 +247,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
     handleDeleteButtonClick,
     handleAddDateButtonClicked,
     handleRemoveButtonDateClicked,
-  } = useMoreOptions(task, state, dispatch, setCurEditing);
+  } = useMoreOptions(task, state, dispatch);
 
   return (
     <div
@@ -313,7 +255,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
           flex flex-row items-center
         "
     >
-      <PopOverMenu isDisabled={isEditing || !isEditable}>
+      <PopOverMenu isDisabled={isEditing || !canEdit}>
         <Button
           className="rounded-md p-1"
           type="button"
@@ -349,7 +291,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({
           if (isEditing) {
             handleConfirmButtonClick();
           } else {
-            setCurEditing(task.id);
+            setEditingTask(task.id);
           }
         }}
       >
