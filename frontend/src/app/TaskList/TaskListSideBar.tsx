@@ -1,19 +1,17 @@
-import { Fragment, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Button,
   Dialog,
   DialogTrigger,
-  GridList,
-  GridListItem,
   Heading,
   Popover,
-  useDragAndDrop,
 } from "react-aria-components";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck, FaSpinner } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
 import { TbTrash } from "react-icons/tb";
 import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
+import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import { SideBar } from "@/app/General/SideBar";
 import { useTaskListEditing } from "@/hooks/taslkList/useTaskList.ts";
 import {
@@ -95,37 +93,21 @@ const TaskListsOrder: React.FC = () => {
   const { canEdit } = useTaskListEditing(null);
   //TODO: Add loading state
   const [moveTaskList] = useMoveTaskListMutation();
-  const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: !canEdit,
-    getItems: (keys) =>
-      [...keys].map((key) => {
-        return { "text/plain": key.toString() };
-      }),
-    onReorder: (e) => {
-      const key = Array.from(e.keys)[0];
-      if (e.target.dropPosition === "before") {
-        moveTaskList({
-          moveId: key ? key.toString() : "",
-          request: {
-            targetId: e.target.key.toString(),
-            position: "Before",
-          },
-        }).catch(() => {
-          logError("Error chaning task list position");
-        });
-      } else if (e.target.dropPosition === "after") {
-        moveTaskList({
-          moveId: key ? key.toString() : "",
-          request: {
-            targetId: e.target.key.toString(),
-            position: "After",
-          },
-        }).catch(() => {
-          logError("Error chaning task list position");
-        });
-      }
-    },
-  });
+  const handleReorder = (
+    draggedId: string,
+    targetId: string,
+    position: "before" | "after",
+  ) => {
+    moveTaskList({
+      moveId: draggedId,
+      request: {
+        targetId: targetId,
+        position: position === "before" ? "Before" : "After",
+      },
+    }).catch(() => {
+      logError("Error changing task list position");
+    });
+  };
   if (
     isTaskListLoading ||
     isTaskListOrderLoading ||
@@ -152,36 +134,39 @@ const TaskListsOrder: React.FC = () => {
       </div>
     );
   }
+  const draggableItems: (DraggableItem & { taskList: TaskList })[] =
+    taskListOrderData
+      .map((listMetaData) => {
+        const list = taskListData[listMetaData.id];
+        if (list) {
+          return {
+            id: list.id,
+            taskList: list,
+          };
+        }
+        logError("List and order are out of sync");
+        return null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
   return (
     <>
       {/* HACK: Bug in react aria see stopSpaceOnInput for more details */}
       <div onKeyDownCapture={stopSpaceOnInput}>
-        <GridList
-          keyboardNavigationBehavior="tab"
+        <DraggableList
+          items={draggableItems}
+          onReorder={handleReorder}
+          isDisabled={!canEdit}
           aria-label="Side bar task lists"
-          items={taskListOrderData}
-          dragAndDropHooks={dragAndDropHooks}
-          selectionMode="single"
-        >
-          {(listMetaData) => {
-            const list = taskListData[listMetaData.id];
-            if (list) {
-              return (
-                <GridListItem textValue={list.name} key={list.id}>
-                  <div className="flex flex-row">
-                    <Button slot="drag" aria-label="Drag item">
-                      <MdDragIndicator />
-                    </Button>
-                    <TaskListItem taskList={list} />
-                  </div>
-                </GridListItem>
-              );
-            } else {
-              logError("List and order are out of sync");
-              return <Fragment key={listMetaData.id} />;
-            }
-          }}
-        </GridList>
+          renderItem={(item) => (
+            <div className="flex flex-row">
+              <div className="flex items-center p-1 cursor-move">
+                <MdDragIndicator />
+              </div>
+              <TaskListItem taskList={item.taskList} />
+            </div>
+          )}
+        />
       </div>
     </>
   );

@@ -4,15 +4,13 @@ import {
   Button,
   Dialog,
   DialogTrigger,
-  GridList,
-  GridListItem,
   Heading,
   Modal,
-  useDragAndDrop,
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
+import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import { useTask } from "@/hooks/taslkList/useTask.ts";
 import {
   useGetTaskOrderQuery,
@@ -147,42 +145,26 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
   } = useGetTaskOrderQuery(listId);
   const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
   const { canEdit } = useTask(listId);
-  const { dragAndDropHooks } = useDragAndDrop({
-    isDisabled: !canEdit || sortOption !== "CUSTOM",
-    getItems: (keys) =>
-      [...keys].map((key) => {
-        return { "text/plain": key.toString() };
-      }),
-    onReorder: (e) => {
-      const key = Array.from(e.keys)[0];
-      if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
-        return;
+  const handleReorder = (
+    draggedId: string,
+    targetId: string,
+    position: "before" | "after",
+  ) => {
+    if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
+      return;
+    }
+
+    moveTask({
+      id1: draggedId,
+      id2: targetId,
+      pos: position === "before" ? "Before" : "After",
+      listId: listId,
+    }).catch((err: unknown) => {
+      if (err instanceof Error) {
+        logError("Error moving task", err);
       }
-      if (e.target.dropPosition === "before") {
-        moveTask({
-          id1: key ? key.toString() : "",
-          id2: e.target.key.toString(),
-          pos: "Before",
-          listId: listId,
-        }).catch((err: unknown) => {
-          if (err instanceof Error) {
-            logError("Error moving task", err);
-          }
-        });
-      } else if (e.target.dropPosition === "after") {
-        moveTask({
-          id1: key ? key.toString() : "",
-          id2: e.target.key.toString(),
-          pos: "After",
-          listId: listId,
-        }).catch((err: unknown) => {
-          if (err instanceof Error) {
-            logError("Error moving task", err);
-          }
-        });
-      }
-    },
-  });
+    });
+  };
   if (isLoading || isOrderLoading) {
     return <FaSpinner className="text-blue950 animate-spin dark:text-white" />;
   }
@@ -193,39 +175,34 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
   }
   if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, filterOption, sortOption);
+    const draggableItems: (DraggableItem & { task: Task })[] = finalList.map(
+      (task) => ({
+        id: task.id,
+        task,
+      }),
+    );
+
     return (
       //HACK: Bug in react aria see stopSpaceOnInput for more details
       <div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
-        <GridList
-          keyboardNavigationBehavior="tab"
-          items={finalList}
+        <DraggableList
+          items={draggableItems}
+          onReorder={handleReorder}
+          isDisabled={!canEdit || sortOption !== "CUSTOM"}
           aria-label="Tasks"
-          dragAndDropHooks={dragAndDropHooks}
-        >
-          {(taskWithMetaData) => {
-            return (
-              <GridListItem
-                textValue={`
-                  Task Label: ${taskWithMetaData.label}
-                  Completed: ${String(taskWithMetaData.completed)}
-                  ${taskWithMetaData.kind === "withDate" ? taskWithMetaData.dueDate : ""}
-                `}
-                className="data-[dragging]:opacity-60"
-              >
-                <div className="flex flex-row">
-                  <Button slot="drag" aria-label="Drag item">
-                    <MdDragIndicator />
-                  </Button>
-                  <TaskComponent
-                    taskListId={listId}
-                    key={taskWithMetaData.id}
-                    task={taskWithMetaData}
-                  />
-                </div>
-              </GridListItem>
-            );
-          }}
-        </GridList>
+          renderItem={(item, _isDragging) => (
+            <div className="flex flex-row">
+              <div className="flex items-center p-1 cursor-move">
+                <MdDragIndicator />
+              </div>
+              <TaskComponent
+                taskListId={listId}
+                key={item.task.id}
+                task={item.task}
+              />
+            </div>
+          )}
+        />
       </div>
     );
   }
