@@ -15,7 +15,7 @@ import { MdDragIndicator } from "react-icons/md";
 import { TbTrash } from "react-icons/tb";
 import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
 import { SideBar } from "@/app/General/SideBar";
-import { useTaskListEditing } from "@/hooks/taslkList/useTaskListEditing";
+import { useTaskListEditing } from "@/hooks/taslkList/useTaskList.ts";
 import {
   useAddNewTaskListMutation,
   useGetTaskListOrderQuery,

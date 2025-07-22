@@ -201,7 +201,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
           items={finalList}
           aria-label="Tasks"
           dragAndDropHooks={dragAndDropHooks}
-          selectionMode="single"
         >
           {(taskWithMetaData) => {
             return (
