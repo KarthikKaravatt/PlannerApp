@@ -35,13 +35,20 @@ public static class TaskEndpoints
                 .ToListAsync();
             return Results.Ok(taskListOrder);
         });
-        // Update a task
-        tasksApi.MapPatch("/{id:guid}", async (PlannerDbContext db, TaskPayLoad taskUpload, Guid id) =>
+        //complete a task
+        tasksApi.MapPatch("/{id:guid}/toggle-completion", async (PlannerDbContext db, Guid id) =>
+        {
+            var task = await db.Tasks.FindAsync(id);
+            if (task is null) return Results.NotFound();
+            task.Completed = !task.Completed;
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        });
+        tasksApi.MapPatch("/{id:guid}", async (PlannerDbContext db, UpdateTaskPayLoad taskUpload, Guid id) =>
         {
             var oldTask = await db.Tasks.FindAsync(id);
-            if (oldTask == null) return Results.NotFound();
+            if (oldTask is null) return Results.NotFound();
             //TODO: validate this properly
-            oldTask.Completed = taskUpload.Completed;
             oldTask.DueDate = taskUpload.DueDate;
             oldTask.Label = taskUpload.Label;
             db.Tasks.Update(oldTask);
@@ -53,7 +60,7 @@ public static class TaskEndpoints
         {
             var task = await db.Tasks.FindAsync(id);
             Console.WriteLine(id);
-            if (task == null)
+            if (task is null)
             {
                 return Results.NotFound();
             }
@@ -84,7 +91,7 @@ public static class TaskEndpoints
 
                 var movedTask = await db.Tasks.FindAsync(movedTaskId);
                 var targetTask = await db.Tasks.FindAsync(request.TargetTaskId);
-                if (movedTask == null || targetTask == null)
+                if (movedTask is null || targetTask is null)
                 {
                     return Results.NotFound();
                 }
@@ -96,7 +103,7 @@ public static class TaskEndpoints
                 );
                 taskLinkedList.Remove(movedTask);
                 var posTaskNode = taskLinkedList.Find(targetTask);
-                if (posTaskNode == null)
+                if (posTaskNode is null)
                 {
                     return Results.NotFound();
                 }
