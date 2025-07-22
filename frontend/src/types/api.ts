@@ -1,3 +1,5 @@
+import type { Task } from "@/schemas/task";
+
 interface NewTaskWithoutDatePayload {
   label: string;
   completed: boolean;
@@ -26,3 +28,7 @@ export interface MoveTaskListRequest {
   targetId: string;
   position: "Before" | "After";
 }
+
+export type TaskUpdate = Omit<Task, "kind" | "completed" | "id"> & {
+  dueDate: string | null;
+};

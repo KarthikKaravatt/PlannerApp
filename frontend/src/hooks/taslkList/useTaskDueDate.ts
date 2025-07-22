@@ -22,8 +22,12 @@ export const useTaskDueDate = (
     switch (task.kind) {
       case "withDate": {
         updateTask({
-          task: { ...task, dueDate: inputDate.toAbsoluteString() },
+          taskUpdate: {
+            dueDate: inputDate.toAbsoluteString(),
+            label: task.label,
+          },
           listId: state.taskListId,
+          taskId: task.id,
         }).catch((err: unknown) => {
           if (err instanceof Error) {
             logError("Error updating task:", err);

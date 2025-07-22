@@ -14,8 +14,12 @@ import { FaCheck } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
-import { useUpdateTaskMutation } from "@/redux/apiSlice.ts";
+import {
+  useToggleTaskCompetionMutation,
+  useUpdateTaskMutation,
+} from "@/redux/apiSlice.ts";
 import type { Task } from "@/schemas/task";
+import type { TaskUpdate } from "@/types/api.ts";
 import type {
   TaskComponentAction,
   TaskComponentState,
@@ -58,8 +62,13 @@ export const TaskComponent: React.FC<TaskProp> = ({
         if (taskRef.current && !taskRef.current.contains(event.relatedTarget)) {
           if (isEditing && task.label !== state.inputTaskName) {
             dispatch({ type: "MUTATE_LOADING", payload: true });
+            const updateTaskPayload: TaskUpdate = {
+              dueDate: task.kind === "withDate" ? task.dueDate : null,
+              label: state.inputTaskName,
+            };
             updateTask({
-              task: { ...task, label: state.inputTaskName },
+              taskUpdate: updateTaskPayload,
+              taskId: task.id,
               listId: state.taskListId,
             }).catch((err: unknown) => {
               dispatch({ type: "MUTATE_INPUT", payload: task.label });
@@ -124,16 +133,13 @@ const CheckBox: React.FC<CheckBoxProp> = ({
 }) => {
   //TODO:: Use React aria checkbok and make this its own general use custom
   //component
-  const [updateTask, { isLoading }] = useUpdateTaskMutation();
+  const [toggleCompletion, { isLoading }] = useToggleTaskCompetionMutation();
   const handleClick = () => {
     if (isEditing || isLoading || state.isLoading) {
       return;
     }
     dispatch({ type: "MUTATE_LOADING", payload: true });
-    updateTask({
-      task: { ...task, completed: !task.completed },
-      listId: state.taskListId,
-    })
+    toggleCompletion({ listId: state.taskListId, taskId: task.id })
       .then(() => {
         dispatch({ type: "MUTATE_LOADING", payload: false });
       })

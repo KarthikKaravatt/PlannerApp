@@ -21,6 +21,7 @@ import type {
   NewTaskListRequest,
   NewTaskRequest,
   TaskListUpdateRequest,
+  TaskUpdate,
 } from "@/types/api";
 import { logError } from "@/util/console";
 
@@ -375,35 +376,63 @@ export const apiSlice = createApi({
         });
       },
     }),
-    updateTask: builder.mutation<void, { task: Task; listId: string }>({
-      query: (taskData) => {
-        type TaskRequest = Omit<Task, "kind"> & {
-          dueDate: string | null;
-        };
-        let newBody: TaskRequest;
-        const task = taskData.task;
-        switch (task.kind) {
-          case "withDate": {
-            const { kind: _kind, ...transformedBody } = task;
-            newBody = transformedBody;
-            break;
-          }
-          case "withoutDate": {
-            const { kind: _kind, ...transformedBody } = task;
-            newBody = { dueDate: null, ...transformedBody };
-          }
-        }
+    toggleTaskCompetion: builder.mutation<
+      void,
+      { listId: string; taskId: string }
+    >({
+      query: ({ taskId, listId }) => ({
+        url: `/${listId}/tasks/${taskId}/toggle-completion`,
+        method: "PATCH",
+      }),
+      async onQueryStarted({ taskId, listId }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
+            const task = draftTasks[taskId];
+            if (task) {
+              draftTasks[taskId] = { ...task, completed: !task.completed };
+            }
+          }),
+        );
+        await queryFulfilled.catch(() => {
+          patchResult.undo();
+          logError("error completing task");
+        });
+      },
+    }),
+    updateTask: builder.mutation<
+      void,
+      { listId: string; taskId: string; taskUpdate: TaskUpdate }
+    >({
+      query: ({ listId, taskId, taskUpdate }) => {
         return {
-          url: `/${taskData.listId}/tasks/${task.id}`,
+          url: `/${listId}/tasks/${taskId}`,
           method: "PATCH",
-          body: newBody,
+          body: taskUpdate,
         };
       },
       async onQueryStarted(taskData, { dispatch, queryFulfilled }) {
-        const { task, listId } = taskData;
+        const { taskUpdate, taskId, listId } = taskData;
         const patchResult = dispatch(
           apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
-            draftTasks[task.id] = task;
+            const oldTask = draftTasks[taskId];
+            if (oldTask) {
+              if (taskUpdate.dueDate === null) {
+                draftTasks[taskId] = {
+                  id: taskId,
+                  completed: oldTask.completed,
+                  label: taskUpdate.label,
+                  kind: "withoutDate",
+                };
+              } else {
+                draftTasks[taskId] = {
+                  id: taskId,
+                  completed: oldTask.completed,
+                  label: taskUpdate.label,
+                  kind: "withDate",
+                  dueDate: taskUpdate.dueDate,
+                };
+              }
+            }
           }),
         );
         await queryFulfilled.catch(() => {
@@ -512,4 +541,5 @@ export const {
   useUpdateTaskListMutation,
   useGetTaskListOrderQuery,
   useMoveTaskListMutation,
+  useToggleTaskCompetionMutation,
 } = apiSlice;

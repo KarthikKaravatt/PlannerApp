@@ -18,8 +18,13 @@ export const useMoreOptions = (
   const handleConfirmButtonClick = () => {
     if (task.label !== state.inputTaskName) {
       // dispatch({ type: "MUTATE_LOADING", payload: true });
+
       updateTask({
-        task: { ...task, label: state.inputTaskName },
+        taskId: task.id,
+        taskUpdate: {
+          dueDate: task.kind === "withDate" ? task.dueDate : null,
+          label: state.inputTaskName,
+        },
         listId: state.taskListId,
       })
         .finally(() => {
@@ -49,9 +54,11 @@ export const useMoreOptions = (
     dispatch({ type: "MUTATE_LOADING", payload: false });
     switch (task.kind) {
       case "withDate": {
-        const { kind: _kind, dueDate: _dueDate, ...transformedTask } = task;
-        const updatedTask = { kind: "withoutDate", ...transformedTask } as Task;
-        updateTask({ task: updatedTask, listId: state.taskListId })
+        updateTask({
+          taskUpdate: { dueDate: null, label: task.label },
+          listId: state.taskListId,
+          taskId: task.id,
+        })
           .then(() => {
             dispatch({ type: "MUTATE_LOADING", payload: false });
           })
@@ -77,13 +84,14 @@ export const useMoreOptions = (
         return;
       }
       case "withoutDate": {
-        const { kind: _kind, ...transformedTask } = task;
-        const updatedTask = {
-          kind: "withDate",
-          dueDate: now(getLocalTimeZone()).toAbsoluteString(),
-          ...transformedTask,
-        } as Task;
-        updateTask({ task: updatedTask, listId: state.taskListId })
+        updateTask({
+          taskUpdate: {
+            dueDate: now(getLocalTimeZone()).toAbsoluteString(),
+            label: task.label,
+          },
+          listId: state.taskListId,
+          taskId: task.id,
+        })
           .then(() => {
             dispatch({ type: "MUTATE_LOADING", payload: false });
           })
