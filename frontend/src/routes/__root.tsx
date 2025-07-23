@@ -1,6 +1,6 @@
 // import { ThemeSwitcher } from "@/app/ThemeSwitcher";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+// import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export const Route = createRootRoute({
   component: () => (
@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       {/* 	<ThemeSwitcher /> */}
       {/* </header> */}
       <Outlet />
-      <TanStackRouterDevtools />
+      {/* <TanStackRouterDevtools /> */}
     </>
   ),
 });
