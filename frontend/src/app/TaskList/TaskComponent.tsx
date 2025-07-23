@@ -74,7 +74,7 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
         }
       }}
       className={`${state.isLoading ? "dark:text-gray-300" : "dark:text-white"} ${state.isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
-      draggable={!state.isEditing}
+      draggable={state.isEditing}
     >
       <div className="flex flex-row items-center gap-2 pr-2 pl-2">
         <CheckBox task={task} state={state} dispatch={dispatch} />
