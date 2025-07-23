@@ -1,19 +1,19 @@
-import {resolve} from "node:path";
+import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
-import {TanStackRouterVite} from "@tanstack/router-plugin/vite";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import {defineConfig} from "vitest/config";
+import { defineConfig } from "vitest/config";
 
-const ReactCompilerConfig={
+const ReactCompilerConfig = {
   /* ... */
 };
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    TanStackRouterVite({autoCodeSplitting: true}),
+    TanStackRouterVite({ autoCodeSplitting: true }),
     viteReact({
       babel: {
-        plugins: [["babel-plugin-react-compiler",ReactCompilerConfig]],
+        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
       },
     }),
     tailwindcss(),
@@ -21,10 +21,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    setupFiles: ["./test-setup.ts"],
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname,"./src"),
+      "@": resolve(__dirname, "./src"),
     },
   },
 });
