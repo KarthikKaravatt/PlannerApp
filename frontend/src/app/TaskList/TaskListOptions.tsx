@@ -33,8 +33,13 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
       const nextIndex = (currentIndex + 1) % filterOptions.length;
       const nextOption = filterOptions[nextIndex];
       if (nextOption) {
+        localStorage.setItem(
+          `${taskListId}:FILTER_OPTION`,
+          nextOption.toString(),
+        );
         return nextOption;
       } else {
+        localStorage.setItem(`${taskListId}:FILTER_OPTION`, "ALL");
         return "ALL";
       }
     });

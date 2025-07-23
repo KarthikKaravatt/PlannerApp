@@ -31,7 +31,6 @@ export function DraggableList<T extends DraggableItem>({
   const [dropPosition, setDropPosition] = useState<"before" | "after" | null>(
     null,
   );
-
   const handleDragStart = (e: React.DragEvent, item: T) => {
     if (isDisabled) return;
     setDraggedId(item.id);
@@ -119,7 +118,6 @@ export function DraggableList<T extends DraggableItem>({
         const isDragging = draggedId === item.id;
         const isDragOver = dragOverId === item.id;
         const showDropIndicator = isDragOver && dropPosition && !isDragging;
-
         return (
           <li key={item.id} className="relative list-none">
             {/* biome-ignore lint/a11y/useSemanticElements: Drag and drop requires div element */}
