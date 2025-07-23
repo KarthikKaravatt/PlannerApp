@@ -33,45 +33,51 @@ export const TaskListSideBar: React.FC = () => {
   const [newListName, setNewListName] = useState("");
   return (
     <SideBar title="Task Lists" textColor="text-blue-950 dark:text-white">
-      <div className="ml-1 flex flex-row justify-between border-b-1 border-gray-300 p-1 dark:border-white ">
-        <AutoResizeTextArea
-          value={newListName}
-          onChange={(event) => {
-            // no colons for local storage sort order persistence
-            const newValue = event.target.value
-              .replace(/\s+/g, " ")
-              .replace(/:/g, "");
-            setNewListName(
-              newValue.length > INPUT_LIMIT
-                ? newValue.slice(0, INPUT_LIMIT)
-                : newValue,
-            );
-          }}
-          placeholder="Add new task list"
-          className="m-1 outline-1 outline-transparent"
-        />
-        <Button
-          type="button"
-          className="rounded-md bg-blue-200 p-1 text-sm dark:bg-white dark:text-black"
-          onClick={() => {
-            if (!(newListName === "" || newListName === " ")) {
-              addTaskList({ name: newListName })
-                .then(() => {
-                  setNewListName("");
-                })
-                .catch((err: unknown) => {
-                  if (err instanceof Error) {
-                    logError("Error adding task list", err);
-                  }
-                });
-            }
-          }}
-        >
-          Add
-        </Button>
+      <div className="flex h-[calc(100vh-2rem)] flex-col">
+        <div className="ml-1 flex flex-row justify-between border-b-1 border-gray-300 p-1 dark:border-white">
+          <AutoResizeTextArea
+            value={newListName}
+            onChange={(event) => {
+              // no colons for local storage sort order persistence
+              const newValue = event.target.value
+                .replace(/\s+/g, " ")
+                .replace(/:/g, "");
+              setNewListName(
+                newValue.length > INPUT_LIMIT
+                  ? newValue.slice(0, INPUT_LIMIT)
+                  : newValue,
+              );
+            }}
+            placeholder="Add new task list"
+            className="m-1 outline-1 outline-transparent"
+          />
+          <Button
+            type="button"
+            className="rounded-md bg-blue-200 p-1 text-sm dark:bg-white dark:text-black"
+            onClick={() => {
+              if (!(newListName === "" || newListName === " ")) {
+                addTaskList({ name: newListName })
+                  .then(() => {
+                    setNewListName("");
+                  })
+                  .catch((err: unknown) => {
+                    if (err instanceof Error) {
+                      logError("Error adding task list", err);
+                    }
+                  });
+              }
+            }}
+          >
+            Add
+          </Button>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <TaskListsOrder />
+        </div>
+        <div className="flex-shrink-0 p-1">
+          <ThemeSwitcher />
+        </div>
       </div>
-      <TaskListsOrder />
-      <ThemeSwitcher />
     </SideBar>
   );
 };
@@ -148,6 +154,7 @@ const TaskListsOrder: React.FC = () => {
 
   return (
     <DraggableList
+      className="overflow-auto"
       items={draggableItems}
       onReorder={handleReorder}
       aria-label="Side bar task lists"
@@ -176,7 +183,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Not static
     <div
-      className=" flex w-full flex-row items-center justify-between rounded-md pr-2 pl-2 "
+      className=" flex w-full flex-row items-center justify-between rounded-md pr-2 pl-2"
       ref={listRef}
       onBlur={(event) => {
         if (listRef.current && !listRef.current.contains(event.relatedTarget)) {
