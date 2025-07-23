@@ -13,7 +13,6 @@ import { TbTrash } from "react-icons/tb";
 import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
 import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import { SideBar } from "@/app/General/SideBar";
-import { useTaskListEditing } from "@/hooks/taslkList/useTaskList.ts";
 import {
   useAddNewTaskListMutation,
   useGetTaskListOrderQuery,
@@ -89,7 +88,6 @@ const TaskListsOrder: React.FC = () => {
     isLoading: isTaskListOrderLoading,
     isSuccess: isTaskListOrderQuerySuccess,
   } = useGetTaskListOrderQuery();
-  const { canEdit } = useTaskListEditing(null);
   //TODO: Add loading state
   const [moveTaskList] = useMoveTaskListMutation();
   const handleReorder = (
@@ -152,7 +150,6 @@ const TaskListsOrder: React.FC = () => {
     <DraggableList
       items={draggableItems}
       onReorder={handleReorder}
-      isDisabled={!canEdit}
       aria-label="Side bar task lists"
       renderItem={(item) => (
         <div className="flex flex-row">
@@ -170,7 +167,7 @@ interface TaskListItemProps {
   taskList: TaskList;
 }
 const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
-  const { isEditing, canEdit, setEditing } = useTaskListEditing(taskList.id);
+  const [isEditing, setIsEditing] = useState(false);
   const [input, setInput] = useState(taskList.name);
   const [updateTaskList, { isLoading }] = useUpdateTaskListMutation();
   const [removeTaskList, { isLoading: isLoadingDelete }] =
@@ -190,17 +187,17 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
                 request: { name: input },
               })
                 .then(() => {
-                  setEditing(null);
+                  setIsEditing(false);
                 })
                 .catch((err: unknown) => {
-                  setEditing(null);
+                  setIsEditing(false);
                   setInput(taskList.name);
                   if (err instanceof Error) {
                     logError("Error updating task list", err);
                   }
                 });
             } else {
-              setEditing(null);
+              setIsEditing(false);
             }
           }
         }
@@ -213,9 +210,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
         //some reason that doesn't update properly
         value={input}
         onDoubleClick={() => {
-          if (canEdit) {
-            setEditing(taskList.id);
-          }
+          setIsEditing(true);
         }}
         onChange={(event) => {
           if (isEditing) {
@@ -281,20 +276,20 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
                 request: { name: input },
               })
                 .then(() => {
-                  setEditing(null);
+                  setIsEditing(false);
                 })
                 .catch((err: unknown) => {
-                  setEditing(null);
+                  setIsEditing(false);
                   setInput(taskList.name);
                   if (err instanceof Error) {
                     logError("Error updating task list", err);
                   }
                 });
             } else {
-              setEditing(null);
+              setIsEditing(false);
             }
-          } else if (canEdit) {
-            setEditing(taskList.id);
+          } else {
+            setIsEditing(true);
           }
         }}
       >
