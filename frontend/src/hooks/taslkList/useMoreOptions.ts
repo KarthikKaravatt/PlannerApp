@@ -16,8 +16,6 @@ export const useMoreOptions = (
   const [deleteTask, { isLoading: isDeleteLoading }] = useDeleteTaskMutation();
   const handleConfirmButtonClick = () => {
     if (task.label !== state.inputTaskName) {
-      // dispatch({ type: "MUTATE_LOADING", payload: true });
-
       updateTask({
         taskId: task.id,
         taskUpdate: {
@@ -28,7 +26,6 @@ export const useMoreOptions = (
       })
         .finally(() => {
           dispatch({ type: "MUTATE_EDITING", payload: false });
-          dispatch({ type: "MUTATE_LOADING", payload: false });
         })
         .catch((err: unknown) => {
           dispatch({ type: "MUTATE_INPUT", payload: task.label });
@@ -50,24 +47,18 @@ export const useMoreOptions = (
     );
   };
   const handleRemoveButtonDateClicked = () => {
-    dispatch({ type: "MUTATE_LOADING", payload: false });
     switch (task.kind) {
       case "withDate": {
         updateTask({
           taskUpdate: { dueDate: null, label: task.label },
           listId: state.taskListId,
           taskId: task.id,
-        })
-          .then(() => {
-            dispatch({ type: "MUTATE_LOADING", payload: false });
-          })
-          .catch((err: unknown) => {
-            dispatch({ type: "MUTATE_LOADING", payload: false });
-            if (err instanceof Error) {
-              logError(`Error removing date:${err}`);
-            }
-            logError("Error removing date");
-          });
+        }).catch((err: unknown) => {
+          if (err instanceof Error) {
+            logError(`Error removing date:${err}`);
+          }
+          logError("Error removing date");
+        });
         break;
       }
       case "withoutDate": {
@@ -76,32 +67,19 @@ export const useMoreOptions = (
     }
   };
   const handleAddDateButtonClicked = () => {
-    dispatch({ type: "MUTATE_LOADING", payload: true });
-    switch (task.kind) {
-      case "withDate": {
-        dispatch({ type: "MUTATE_LOADING", payload: false });
-        return;
-      }
-      case "withoutDate": {
-        updateTask({
-          taskUpdate: {
-            dueDate: now(getLocalTimeZone()).toAbsoluteString(),
-            label: task.label,
-          },
-          listId: state.taskListId,
-          taskId: task.id,
-        })
-          .then(() => {
-            dispatch({ type: "MUTATE_LOADING", payload: false });
-          })
-          .catch((err: unknown) => {
-            dispatch({ type: "MUTATE_LOADING", payload: false });
-            if (err instanceof Error) {
-              logError("Error removing date:", err);
-            }
-          });
-        break;
-      }
+    if (task.kind === "withoutDate") {
+      updateTask({
+        taskUpdate: {
+          dueDate: now(getLocalTimeZone()).toAbsoluteString(),
+          label: task.label,
+        },
+        listId: state.taskListId,
+        taskId: task.id,
+      }).catch((err: unknown) => {
+        if (err instanceof Error) {
+          logError("Error removing date:", err);
+        }
+      });
     }
   };
   return {

@@ -8,7 +8,6 @@ export interface TaskComponentState {
 const TaskComponentActions = {
   mutateInput: "MUTATE_INPUT",
   mutateEditing: "MUTATE_EDITING",
-  mutateLoading: "MUTATE_LOADING",
 } as const;
 export type TaskComponentActions =
   (typeof TaskComponentActions)[keyof typeof TaskComponentActions];
@@ -18,19 +17,12 @@ interface MutateInputAction {
   payload: string;
 }
 
-interface MutateLoadingAction {
-  type: "MUTATE_LOADING";
-  payload: boolean;
-}
 interface MutateEditingAction {
   type: "MUTATE_EDITING";
   payload: boolean;
 }
 
-export type TaskComponentAction =
-  | MutateInputAction
-  | MutateLoadingAction
-  | MutateEditingAction;
+export type TaskComponentAction = MutateInputAction | MutateEditingAction;
 
 export interface TaskState {
   editingTaskId: string | null;

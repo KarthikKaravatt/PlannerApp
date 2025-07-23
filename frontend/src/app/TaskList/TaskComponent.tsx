@@ -43,7 +43,7 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
     taskComponentReducer,
     initalTaskComponentState,
   );
-  const [updateTask] = useUpdateTaskMutation();
+  const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const taskRef = useRef<HTMLDivElement>(null);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: This is not a static element
@@ -53,7 +53,6 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
         // don't lose focus when tab is pressed for navigation (within task)
         if (taskRef.current && !taskRef.current.contains(event.relatedTarget)) {
           if (state.isEditing && task.label !== state.inputTaskName) {
-            dispatch({ type: "MUTATE_LOADING", payload: true });
             const updateTaskPayload: TaskUpdate = {
               dueDate: task.kind === "withDate" ? task.dueDate : null,
               label: state.inputTaskName,
@@ -69,17 +68,16 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
               }
             });
           }
-          dispatch({ type: "MUTATE_LOADING", payload: false });
           dispatch({ type: "MUTATE_EDITING", payload: false });
         }
       }}
-      className={`${state.isLoading ? "dark:text-gray-300" : "dark:text-white"} ${state.isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
+      className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
       draggable={state.isEditing}
     >
       <div className="flex flex-row items-center gap-2 pr-2 pl-2">
         <CheckBox task={task} state={state} dispatch={dispatch} />
         <InputField task={task} state={state} dispatch={dispatch} />
-        <DueDateDisplay task={task} state={state} dispatch={dispatch} />
+        <DueDateDisplay task={task} state={state} />
         <MoreOptions task={task} state={state} dispatch={dispatch} />
       </div>
     </div>
@@ -91,23 +89,19 @@ interface CheckBoxProp {
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
-const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
+const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
   const [toggleCompletion, { isLoading }] = useToggleTaskCompetionMutation();
   const handleClick = () => {
-    if (state.isEditing || isLoading || state.isLoading) {
+    if (state.isEditing || isLoading) {
       return;
     }
-    dispatch({ type: "MUTATE_LOADING", payload: true });
-    toggleCompletion({ listId: state.taskListId, taskId: task.id })
-      .then(() => {
-        dispatch({ type: "MUTATE_LOADING", payload: false });
-      })
-      .catch((err: unknown) => {
-        dispatch({ type: "MUTATE_LOADING", payload: false });
+    toggleCompletion({ listId: state.taskListId, taskId: task.id }).catch(
+      (err: unknown) => {
         if (err instanceof Error) {
           logError("Failed to update task completion:", err);
         }
-      });
+      },
+    );
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -117,7 +111,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
     }
   };
 
-  const isInteractive = !(state.isEditing || isLoading) || state.isLoading;
+  const isInteractive = !(state.isEditing || isLoading);
 
   return (
     <div
@@ -166,14 +160,9 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
 interface DueDateProp {
   task: Task;
   state: TaskComponentState;
-  dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
-const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
-  const { isLoading, onDateButtonClicked } = useTaskDueDate(
-    task,
-    state,
-    dispatch,
-  );
+const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
+  const { isLoading, onDateButtonClicked } = useTaskDueDate(task, state);
   if (task.kind === "withoutDate") {
     // biome-ignore lint/complexity/noUselessFragments: Need a way of representing return nothing
     return <></>;
@@ -276,7 +265,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
       </PopOverMenu>
       <Button
         type="button"
-        className={`" ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : state.isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
+        className={`" ${isLoading || isDeleteLoading ? "text-gray-400" : state.isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
         onClick={() => {
           if (state.isEditing) {
             handleConfirmButtonClick();
