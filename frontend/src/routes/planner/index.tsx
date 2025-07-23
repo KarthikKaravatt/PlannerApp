@@ -16,7 +16,7 @@ function Planner() {
   return (
     <div className="h-screen w-full text-blue-950 dark:text-white">
       <div className="relative flex h-full w-full flex-row overflow-x-auto">
-        <div className="sticky left-0  shadow-blue-200 backdrop-blur-xs">
+        <div className="sticky left-0 z-10 shadow-blue-200 backdrop-blur-xs">
           <TaskListSideBar />
         </div>
         <TaskLists className="flex w-320 shrink-0 flex-row md:w-450" />

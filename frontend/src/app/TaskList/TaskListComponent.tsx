@@ -192,9 +192,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
           aria-label="Tasks"
           renderItem={(item, _isDragging) => (
             <div className="flex flex-row">
-              <div className="flex items-center p-1 cursor-move">
-                <MdDragIndicator />
-              </div>
+              <DragIndicator />
               <TaskComponent
                 taskListId={listId}
                 key={item.task.id}
@@ -206,6 +204,14 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
       </div>
     );
   }
+};
+
+const DragIndicator = () => {
+  return (
+    <div className="flex cursor-move items-center p-1">
+      <MdDragIndicator />
+    </div>
+  );
 };
 
 function getFinalList(

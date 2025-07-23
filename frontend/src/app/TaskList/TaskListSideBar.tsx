@@ -160,7 +160,7 @@ const TaskListsOrder: React.FC = () => {
           aria-label="Side bar task lists"
           renderItem={(item) => (
             <div className="flex flex-row">
-              <div className="flex items-center p-1 cursor-move">
+              <div className="flex cursor-move items-center p-1">
                 <MdDragIndicator />
               </div>
               <TaskListItem taskList={item.taskList} />

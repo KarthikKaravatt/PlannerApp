@@ -23,14 +23,14 @@ export const SideBar: React.FC<SideBarProps> = ({
   return (
     <DialogTrigger>
       <Button>
-        <GiHamburgerMenu className={`m-2 text-lg ${textColor}`} />
+        <GiHamburgerMenu className={`${textColor} m-2 text-lg`} />
       </Button>
       <ModalOverlay
         isDismissable={true}
-        className="fixed inset-0 backdrop-blur-xs"
+        className="z-20 fixed inset-0 backdrop-blur-xs"
       >
-        <Modal className=" fixed top-0 bottom-0 left-0 w-fit bg-sky-100 dark:bg-dark-background-c outline-none border-l border-l-[var(--border-color)] shadow-xl ">
-          <Dialog className={`p-1 ${textColor}`}>
+        <Modal className=" fixed top-0 bottom-0 left-0 w-fit border-l border-l-[var(--border-color)] bg-sky-100 shadow-xl outline-none dark:bg-dark-background-c ">
+          <Dialog className={`${textColor} p-1`}>
             <div className="flex flex-row gap-1">
               <Button slot="close">
                 <IoMdClose />
