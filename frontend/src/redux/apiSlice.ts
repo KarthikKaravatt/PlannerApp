@@ -255,9 +255,7 @@ export const apiSlice = createApi({
           }, {});
         }
         logError("Validation error:", result.error);
-        throw new Error(
-          "Failed to validate API response. Data format is incorrect.",
-        );
+        return {};
       },
       responseSchema: z.record(z.uuidv7(), taskSchemea),
       providesTags: ["Tasks"],
@@ -327,12 +325,11 @@ export const apiSlice = createApi({
                   const removeIndex = draftOrder.findIndex(
                     (item) => item.id === tempId,
                   );
-                  if (removeIndex === -1) {
-                    throw new Error("Task to remove not found");
-                  }
                   const oldTaskOrder = draftOrder[removeIndex];
                   if (oldTaskOrder) {
                     oldTaskOrder.id = serverTask.id;
+                  } else {
+                    logError("task not found in list");
                   }
                 },
               ),
