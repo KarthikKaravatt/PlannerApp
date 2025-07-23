@@ -24,7 +24,6 @@ import {
 } from "@/redux/apiSlice";
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
-import { stopSpaceOnInput } from "@/util/hacks";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
 const INPUT_LIMIT = 25;
@@ -150,25 +149,20 @@ const TaskListsOrder: React.FC = () => {
       .filter((item): item is NonNullable<typeof item> => item !== null);
 
   return (
-    <>
-      {/* HACK: Bug in react aria see stopSpaceOnInput for more details */}
-      <div onKeyDownCapture={stopSpaceOnInput}>
-        <DraggableList
-          items={draggableItems}
-          onReorder={handleReorder}
-          isDisabled={!canEdit}
-          aria-label="Side bar task lists"
-          renderItem={(item) => (
-            <div className="flex flex-row">
-              <div className="flex cursor-move items-center p-1">
-                <MdDragIndicator />
-              </div>
-              <TaskListItem taskList={item.taskList} />
-            </div>
-          )}
-        />
-      </div>
-    </>
+    <DraggableList
+      items={draggableItems}
+      onReorder={handleReorder}
+      isDisabled={!canEdit}
+      aria-label="Side bar task lists"
+      renderItem={(item) => (
+        <div className="flex flex-row">
+          <div className="flex cursor-move items-center p-1">
+            <MdDragIndicator />
+          </div>
+          <TaskListItem taskList={item.taskList} />
+        </div>
+      )}
+    />
   );
 };
 
