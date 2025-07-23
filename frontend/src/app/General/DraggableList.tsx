@@ -122,10 +122,6 @@ export function DraggableList<T extends DraggableItem>({
 
         return (
           <li key={item.id} className="relative list-none">
-            {showDropIndicator && dropPosition === "before" && (
-              <div className="absolute -top-0.5 right-0 left-0 z-10 h-0.5 bg-blue-500" />
-            )}
-
             {/* biome-ignore lint/a11y/useSemanticElements: Drag and drop requires div element */}
             <div
               draggable={!isDisabled}
@@ -137,15 +133,11 @@ export function DraggableList<T extends DraggableItem>({
               onKeyDown={(e) => handleKeyDown(e, item, index)}
               tabIndex={isDisabled ? -1 : 0}
               role="button"
-              className={` ${isDragging ? "opacity-60" : ""} ${!isDisabled ? "cursor-move" : ""} focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:outline-none `}
+              className={` ${isDragging && "opacity-60"} ${!isDisabled && "cursor-move"} ${showDropIndicator && dropPosition === "after" && "border-b-2"} ${showDropIndicator && dropPosition === "before" && "border-t-2"} border-gray-400 focus:rounded-xs focus:border-2 dark:border-white`}
               aria-describedby={isDragging ? "dragging-item" : undefined}
             >
               {renderItem(item, isDragging)}
             </div>
-
-            {showDropIndicator && dropPosition === "after" && (
-              <div className="absolute right-0 -bottom-0.5 left-0 z-10 h-0.5 bg-blue-500" />
-            )}
           </li>
         );
       })}
