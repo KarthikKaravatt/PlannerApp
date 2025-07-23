@@ -122,7 +122,6 @@ export function DraggableList<T extends DraggableItem>({
           <li key={item.id} className="relative list-none">
             {/* biome-ignore lint/a11y/useSemanticElements: Drag and drop requires div element */}
             <div
-              draggable={!isDisabled}
               onDragStart={(e) => handleDragStart(e, item)}
               onDragEnd={handleDragEnd}
               onDragOver={(e) => handleDragOver(e, item)}
