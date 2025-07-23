@@ -183,25 +183,23 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     );
 
     return (
-      //HACK: Bug in react aria see stopSpaceOnInput for more details
-      <div className="overflow-y-auto" onKeyDownCapture={stopSpaceOnInput}>
-        <DraggableList
-          items={draggableItems}
-          onReorder={handleReorder}
-          isDisabled={!canEdit || sortOption !== "CUSTOM"}
-          aria-label="Tasks"
-          renderItem={(item, _isDragging) => (
-            <div className="flex flex-row">
-              <DragIndicator />
-              <TaskComponent
-                taskListId={listId}
-                key={item.task.id}
-                task={item.task}
-              />
-            </div>
-          )}
-        />
-      </div>
+      <DraggableList
+        className="overflow-auto"
+        items={draggableItems}
+        onReorder={handleReorder}
+        isDisabled={!canEdit || sortOption !== "CUSTOM"}
+        aria-label="Tasks"
+        renderItem={(item, _isDragging) => (
+          <div className="flex flex-row">
+            <DragIndicator />
+            <TaskComponent
+              taskListId={listId}
+              key={item.task.id}
+              task={item.task}
+            />
+          </div>
+        )}
+      />
     );
   }
 };
