@@ -95,8 +95,9 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
                 Delete task list
               </Heading>
               <p>
-                This will delete this task list and all tasks associsated with
-                it
+                {
+                  "This will delete this task list and all tasks associated with it"
+                }
               </p>
               <div className="flex gap-2">
                 <Button
@@ -127,13 +128,13 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   );
 };
 
-interface ViibleTasksProp {
+interface VibleTasksProp {
   listId: string;
   filterOption: FilterOption;
   sortOption: SortOption;
 }
 
-const VisibleTasks: React.FC<ViibleTasksProp> = ({
+const VisibleTasks: React.FC<VibleTasksProp> = ({
   listId,
   filterOption,
   sortOption,

@@ -28,5 +28,5 @@ export type AppDispatch = typeof store.dispatch;
 export type RootState = ReturnType<typeof store.getState>;
 
 export type AppStartListening = typeof startAppListening;
-export const addAppListner = addListener.withTypes<RootState, AppDispatch>();
-export type AppAddListener = typeof addAppListner;
+export const addAppListener = addListener.withTypes<RootState, AppDispatch>();
+export type AppAddListener = typeof addAppListener;
