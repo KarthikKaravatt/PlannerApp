@@ -86,7 +86,7 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
       </Button>
       <Modal className=" fixed inset-0 flex items-center justify-center text-blue-950 dark:text-white ">
         <Dialog
-          className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 "
+          className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 dark:border-gray-800 dark:bg-dark-background-c "
           role="alertdialog"
         >
           {({ close }) => (
@@ -100,13 +100,15 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
               </p>
               <div className="flex gap-2">
                 <Button
-                  className={"bg-blue-200 p-1 rounded-md"}
+                  className={
+                    "bg-blue-200 dark:bg-dark-background-sub-c p-1 rounded-md"
+                  }
                   onPress={close}
                 >
                   Cancel
                 </Button>
                 <Button
-                  className={"bg-red-200 p-1 rounded-md"}
+                  className={"bg-red-200 dark:bg-red-950 p-1 rounded-md"}
                   onPress={() => {
                     removeTaskList(listId).catch(() => {
                       logError("Error deleting task list");
