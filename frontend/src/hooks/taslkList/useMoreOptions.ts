@@ -6,7 +6,6 @@ import type {
   TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console";
-import { useTask } from "./useTask.ts";
 
 export const useMoreOptions = (
   task: Task,
@@ -15,7 +14,6 @@ export const useMoreOptions = (
 ) => {
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const [deleteTask, { isLoading: isDeleteLoading }] = useDeleteTaskMutation();
-  const { setEditingTask } = useTask(state.taskListId);
   const handleConfirmButtonClick = () => {
     if (task.label !== state.inputTaskName) {
       // dispatch({ type: "MUTATE_LOADING", payload: true });
@@ -29,7 +27,7 @@ export const useMoreOptions = (
         listId: state.taskListId,
       })
         .finally(() => {
-          setEditingTask(null);
+          dispatch({ type: "MUTATE_EDITING", payload: false });
           dispatch({ type: "MUTATE_LOADING", payload: false });
         })
         .catch((err: unknown) => {
@@ -39,7 +37,7 @@ export const useMoreOptions = (
           }
         });
     } else {
-      setEditingTask(null);
+      dispatch({ type: "MUTATE_EDITING", payload: false });
     }
   };
   const handleDeleteButtonClick = () => {

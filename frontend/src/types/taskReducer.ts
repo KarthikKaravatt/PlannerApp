@@ -1,11 +1,13 @@
 export interface TaskComponentState {
   inputTaskName: string;
+  isEditing: boolean;
   isLoading: boolean;
   taskListId: string;
 }
 
 const TaskComponentActions = {
   mutateInput: "MUTATE_INPUT",
+  mutateEditing: "MUTATE_EDITING",
   mutateLoading: "MUTATE_LOADING",
 } as const;
 export type TaskComponentActions =
@@ -16,12 +18,19 @@ interface MutateInputAction {
   payload: string;
 }
 
-interface MutateLoading {
+interface MutateLoadingAction {
   type: "MUTATE_LOADING";
   payload: boolean;
 }
+interface MutateEditingAction {
+  type: "MUTATE_EDITING";
+  payload: boolean;
+}
 
-export type TaskComponentAction = MutateInputAction | MutateLoading;
+export type TaskComponentAction =
+  | MutateInputAction
+  | MutateLoadingAction
+  | MutateEditingAction;
 
 export interface TaskState {
   editingTaskId: string | null;

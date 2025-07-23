@@ -11,7 +11,6 @@ import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
 import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
-import { useTask } from "@/hooks/taslkList/useTask.ts";
 import {
   useGetTaskOrderQuery,
   useGetTasksQuery,
@@ -143,7 +142,6 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
     error: orderError,
   } = useGetTaskOrderQuery(listId);
   const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
-  const { canEdit } = useTask(listId);
   const handleReorder = (
     draggedId: string,
     targetId: string,
@@ -186,7 +184,7 @@ const VisibleTasks: React.FC<ViibleTasksProp> = ({
         className="overflow-auto"
         items={draggableItems}
         onReorder={handleReorder}
-        isDisabled={!canEdit || sortOption !== "CUSTOM"}
+        isDisabled={sortOption !== "CUSTOM"}
         aria-label="Tasks"
         renderItem={(item, _isDragging) => (
           <div className="flex flex-row">

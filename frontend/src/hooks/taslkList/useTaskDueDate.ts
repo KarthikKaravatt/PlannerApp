@@ -6,7 +6,6 @@ import type {
   TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console";
-import { useTask } from "./useTask.ts";
 
 export const useTaskDueDate = (
   task: Task,
@@ -14,10 +13,9 @@ export const useTaskDueDate = (
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>,
 ) => {
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
-  const { isEditing } = useTask(state.taskListId);
   const onDateButtonClicked = (inputDate: ZonedDateTime) => {
     dispatch({ type: "MUTATE_LOADING", payload: true });
-    if (isEditing) {
+    if (state.isEditing) {
       return;
     }
     switch (task.kind) {

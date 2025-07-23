@@ -20,6 +20,9 @@ export const taskComponentReducer = (
             : state.inputTaskName;
       });
     }
+    case "MUTATE_EDITING": {
+      return { ...state, isEditing: action.payload };
+    }
     case "MUTATE_LOADING":
       return { ...state, isLoading: action.payload };
   }

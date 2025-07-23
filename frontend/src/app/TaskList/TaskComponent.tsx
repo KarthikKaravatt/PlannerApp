@@ -12,7 +12,6 @@ import {
 import { CiEdit } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
-import { useTask } from "@/hooks/taslkList/useTask.ts";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
 import {
@@ -37,9 +36,9 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
   const initalTaskComponentState: TaskComponentState = {
     inputTaskName: task.label,
     taskListId,
+    isEditing: false,
     isLoading: false,
   };
-  const { isEditing, setEditingTask, canEdit } = useTask(taskListId, task.id);
   const [state, dispatch] = useReducer(
     taskComponentReducer,
     initalTaskComponentState,
@@ -53,7 +52,7 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
       onBlur={(event) => {
         // don't lose focus when tab is pressed for navigation (within task)
         if (taskRef.current && !taskRef.current.contains(event.relatedTarget)) {
-          if (isEditing && task.label !== state.inputTaskName) {
+          if (state.isEditing && task.label !== state.inputTaskName) {
             dispatch({ type: "MUTATE_LOADING", payload: true });
             const updateTaskPayload: TaskUpdate = {
               dueDate: task.kind === "withDate" ? task.dueDate : null,
@@ -70,12 +69,12 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
               }
             });
           }
-          setEditingTask(null);
           dispatch({ type: "MUTATE_LOADING", payload: false });
+          dispatch({ type: "MUTATE_EDITING", payload: false });
         }
       }}
       className={`${state.isLoading ? "dark:text-gray-300" : "dark:text-white"} ${state.isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
-      draggable={canEdit}
+      draggable={state.isEditing}
     >
       <div className="flex flex-row items-center gap-2 pr-2 pl-2">
         <CheckBox task={task} state={state} dispatch={dispatch} />
@@ -93,12 +92,9 @@ interface CheckBoxProp {
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
-  //TODO:: Use React aria checkbok and make this its own general use custom
-  //component
   const [toggleCompletion, { isLoading }] = useToggleTaskCompetionMutation();
-  const { isEditing } = useTask(state.taskListId, task.id);
   const handleClick = () => {
-    if (isEditing || isLoading || state.isLoading) {
+    if (state.isEditing || isLoading || state.isLoading) {
       return;
     }
     dispatch({ type: "MUTATE_LOADING", payload: true });
@@ -121,7 +117,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
     }
   };
 
-  const isInteractive = !(isEditing || isLoading) || state.isLoading;
+  const isInteractive = !(state.isEditing || isLoading) || state.isLoading;
 
   return (
     <div
@@ -132,7 +128,7 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state, dispatch }) => {
             }
           : undefined
       }
-      className={`${isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
+      className={`${state.isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
       tabIndex={isInteractive ? 0 : -1}
       onKeyDown={
         isInteractive
@@ -153,14 +149,13 @@ interface InputFieldProps {
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
-  const { isEditing, setEditingTask } = useTask(state.taskListId, task.id);
   return (
     <AutoResizeTextArea
-      value={isEditing ? state.inputTaskName : task.label}
-      className={` ${isEditing ? "caret-gray-400" : "caret-transparent"} w-full leading-4.5 outline-1 outline-transparent `}
-      readOnly={!isEditing}
+      value={state.isEditing ? state.inputTaskName : task.label}
+      className={` ${state.isEditing ? "caret-gray-400" : "caret-transparent"} w-full leading-4.5 outline-1 outline-transparent `}
+      readOnly={!state.isEditing}
       onDoubleClick={() => {
-        setEditingTask(task.id);
+        dispatch({ type: "MUTATE_EDITING", payload: true });
       }}
       onChange={(event) => {
         dispatch({ type: "MUTATE_INPUT", payload: event.target.value });
@@ -174,7 +169,6 @@ interface DueDateProp {
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
-  const { isEditing } = useTask(state.taskListId, task.id);
   const { isLoading, onDateButtonClicked } = useTaskDueDate(
     task,
     state,
@@ -190,11 +184,11 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state, dispatch }) => {
   }).format(date.toDate());
   return (
     <div
-      className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} ${isEditing ? "opacity-0" : "opacity-100"} w-10 text-xs `}
+      className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} ${state.isEditing ? "opacity-0" : "opacity-100"} w-10 text-xs `}
     >
       <DialogTrigger>
         <Button
-          isDisabled={isEditing}
+          isDisabled={state.isEditing}
           type="button"
         >{`${date.day.toString()} ${monthAbbr}`}</Button>
         <Popover>
@@ -236,10 +230,6 @@ interface MoreOptionsProp {
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
 }
 const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
-  const { isEditing, canEdit, setEditingTask } = useTask(
-    state.taskListId,
-    task.id,
-  );
   const {
     isLoading,
     isDeleteLoading,
@@ -255,7 +245,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
           flex flex-row items-center
         "
     >
-      <PopOverMenu isDisabled={isEditing || !canEdit}>
+      <PopOverMenu isDisabled={state.isEditing}>
         <Button
           className="rounded-md p-1"
           type="button"
@@ -286,16 +276,16 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
       </PopOverMenu>
       <Button
         type="button"
-        className={`" ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
+        className={`" ${isLoading || isDeleteLoading || state.isLoading ? "text-gray-400" : state.isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
         onClick={() => {
-          if (isEditing) {
+          if (state.isEditing) {
             handleConfirmButtonClick();
           } else {
-            setEditingTask(task.id);
+            dispatch({ type: "MUTATE_EDITING", payload: true });
           }
         }}
       >
-        {isEditing ? <FaCheck /> : <CiEdit />}
+        {state.isEditing ? <FaCheck /> : <CiEdit />}
       </Button>
     </div>
   );
