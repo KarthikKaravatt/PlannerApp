@@ -111,16 +111,16 @@ const TaskListsOrder: React.FC = () => {
       logError("Error changing task list position");
     });
   };
-  if (
-    isTaskListLoading ||
-    isTaskListOrderLoading ||
-    !taskListOrderData ||
-    !taskListData
-  ) {
+  if (isTaskListLoading || isTaskListOrderLoading) {
     return <FaSpinner className="animate-spin" />;
   }
   //TODO: Make improve error handling
-  if (!isTaskListQuerySuccess || !isTaskListOrderQuerySuccess) {
+  if (
+    !isTaskListQuerySuccess ||
+    !isTaskListOrderQuerySuccess ||
+    !taskListData ||
+    !taskListOrderData
+  ) {
     return (
       <div className="flex flex-col items-center justify-center p-2">
         <p>Error loading task list data, press button to retry</p>
