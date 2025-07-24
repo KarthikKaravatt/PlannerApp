@@ -188,7 +188,7 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
               onDateButtonClicked(event);
             }}
             aria-label="Appointment date"
-            className="bg-sky-100 text-xs outline-1 outline-gray-300"
+            className="bg-sky-100 text-xs outline-1 outline-gray-300 dark:bg-dark-background-sub-c dark:text-white dark:outline-none"
           >
             <header className="mx-1 mb-2 flex items-center">
               <Button slot="previous" className="p-0">
@@ -199,11 +199,11 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
                 ▶
               </Button>
             </header>
-            <CalendarGrid className="gird grid-cols-7">
+            <CalendarGrid className={"gird grid-cols-7"}>
               {(date) => (
                 <CalendarCell
                   date={date}
-                  className=" p-0.5 text-center data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-blue-500 data-[outside-month]:hidden data-[pressed]:bg-gray-100 data-[selected]:bg-blue-500 data-[selected]:text-white "
+                  className=" p-2 text-center data-[focus-visible]:outline-offset-2 data-[focus-visible]:outline-blue-500 data-[outside-month]:hidden data-[pressed]:bg-gray-100 data-[selected]:bg-blue-500 data-[selected]:text-white "
                 />
               )}
             </CalendarGrid>
