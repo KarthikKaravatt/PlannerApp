@@ -41,20 +41,20 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
     isSuccess: isListOrderDataSuccess,
     refetch: listDataOroderRefetch,
   } = useGetTaskListOrderQuery();
+  if (isListDataLoading || isListOrderDataLoading) {
+    return <FaSpinner className="absolute mt-50 ml-40 animate-spin" />;
+  }
   if (
-    isListDataLoading ||
-    isListOrderDataLoading ||
+    !isListDataSuccess ||
+    !isListOrderDataSuccess ||
     !listOrderData ||
     !listData
   ) {
-    return <FaSpinner className="animate-spin" />;
-  }
-  if (!isListDataSuccess || !isListOrderDataSuccess) {
     return (
       <div className="flex flex-col items-center justify-center">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className=" rounded-md bg-blue-200 p-1 font-bold "
+          className=" rounded-md bg-blue-200 dark:bg-dark-background-sub-c p-1 font-bold "
           onClick={() => {
             listDataRefetch().catch(() => {
               logError("Error fetching task list data");
