@@ -6,6 +6,9 @@ import {
   DialogTrigger,
   Heading,
   Modal,
+  OverlayArrow,
+  Tooltip,
+  TooltipTrigger,
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
@@ -81,9 +84,14 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   const [removeTaskList] = useRemoveTaskListMutation();
   return (
     <DialogTrigger>
-      <Button className={"justify-end"}>
-        <FaRegTrashCan />
-      </Button>
+      <TooltipTrigger>
+        <Button className={"justify-end"}>
+          <FaRegTrashCan />
+        </Button>
+        <Tooltip className="rounded-md p-1 text-sm dark:bg-blue-50 text-white bg-blue-950">
+          Delete task list
+        </Tooltip>
+      </TooltipTrigger>
       <Modal className=" fixed inset-0 flex items-center justify-center text-blue-950 dark:text-white ">
         <Dialog
           className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 dark:border-gray-800 dark:bg-dark-background-c "
