@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Button,
   Dialog,
@@ -20,17 +21,18 @@ export const SideBar: React.FC<SideBarProps> = ({
   title,
   textColor,
 }) => {
+  const [open, setOpen] = useState(false);
   return (
     <div className="h-screen">
-      <DialogTrigger>
-        <Button>
+      <DialogTrigger onOpenChange={(isOpen) => setOpen(isOpen)}>
+        <Button onClick={() => setOpen(true)}>
           <GiHamburgerMenu className={`${textColor} m-2 text-lg`} />
         </Button>
         <ModalOverlay
           isDismissable={true}
-          className="fixed inset-0 z-20 backdrop-blur-xs"
+          className={`${open ? "backdrop-blur-xs" : ""} fixed inset-0 z-20 transition duration-200 ease-in`}
         >
-          <Modal className=" h-full left-0 w-fit border-l border-l-[var(--border-color)] bg-sky-100 shadow-xl outline-none dark:bg-dark-background-c ">
+          <Modal className="left-0 h-full w-fit border-l border-l-[var(--border-color)] bg-sky-100 shadow-xl transition duration-200 ease-in outline-none data-[entering]:opacity-0 data-[exiting]:opacity-0 dark:bg-dark-background-c ">
             <Dialog className={`${textColor} p-1`}>
               <div className="flex flex-row gap-1">
                 <Button slot="close">

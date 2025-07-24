@@ -3,9 +3,9 @@ export const purge = [];
 export const darkMode = "class";
 export const content = ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"];
 export const theme = {
-	extend: {},
+  extend: {},
 };
 export const variants = {
-	extend: {},
+  extend: {},
 };
 export const plugins = [];
