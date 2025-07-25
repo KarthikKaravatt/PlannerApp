@@ -27,6 +27,7 @@ import type {
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import { PopOverMenu } from "../General/PopOverMenu.tsx";
+import { Tooltip } from "../General/ToolTip.tsx";
 
 export interface TaskProp {
   task: Task;
@@ -229,12 +230,8 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
   } = useMoreOptions(task, state, dispatch);
 
   return (
-    <div
-      className="
-          flex flex-row items-center
-        "
-    >
-      <PopOverMenu isDisabled={state.isEditing}>
+    <div className=" flex flex-row items-center ">
+      <PopOverMenu hoverMessage="More options" isDisabled={state.isEditing}>
         <Button
           className="rounded-md p-1"
           type="button"
@@ -263,19 +260,21 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
           Delete
         </Button>
       </PopOverMenu>
-      <Button
-        type="button"
-        className={`" ${isLoading || isDeleteLoading ? "text-gray-400" : state.isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
-        onClick={() => {
-          if (state.isEditing) {
-            handleConfirmButtonClick();
-          } else {
-            dispatch({ type: "MUTATE_EDITING", payload: true });
-          }
-        }}
-      >
-        {state.isEditing ? <FaCheck /> : <CiEdit />}
-      </Button>
+      <Tooltip message={state.isEditing ? "Confirm edit" : "Edit task"}>
+        <Button
+          type="button"
+          className={`" ${isLoading || isDeleteLoading ? "text-gray-400" : state.isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
+          onClick={() => {
+            if (state.isEditing) {
+              handleConfirmButtonClick();
+            } else {
+              dispatch({ type: "MUTATE_EDITING", payload: true });
+            }
+          }}
+        >
+          {state.isEditing ? <FaCheck /> : <CiEdit />}
+        </Button>
+      </Tooltip>
     </div>
   );
 };
