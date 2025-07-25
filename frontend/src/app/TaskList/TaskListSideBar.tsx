@@ -24,6 +24,7 @@ import {
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
+import { Tooltip } from "../General/ToolTip.tsx";
 
 const INPUT_LIMIT = 25;
 
@@ -229,9 +230,11 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
         }}
       />
       <DialogTrigger>
-        <Button>
-          <TbTrash />
-        </Button>
+        <Tooltip message="Delete task list">
+          <Button>
+            <TbTrash />
+          </Button>
+        </Tooltip>
         <Popover>
           <Dialog
             className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 dark:border-gray-800 dark:bg-dark-background-c dark:text-white "
@@ -275,35 +278,37 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
           </Dialog>
         </Popover>
       </DialogTrigger>
-      <Button
-        isDisabled={isLoading || isLoadingDelete}
-        onClick={() => {
-          if (isEditing) {
-            if (taskList.name !== input) {
-              updateTaskList({
-                listId: taskList.id,
-                request: { name: input },
-              })
-                .then(() => {
-                  setIsEditing(false);
+      <Tooltip message={isEditing ? "Confirm edit" : "Edit task list"}>
+        <Button
+          isDisabled={isLoading || isLoadingDelete}
+          onClick={() => {
+            if (isEditing) {
+              if (taskList.name !== input) {
+                updateTaskList({
+                  listId: taskList.id,
+                  request: { name: input },
                 })
-                .catch((err: unknown) => {
-                  setIsEditing(false);
-                  setInput(taskList.name);
-                  if (err instanceof Error) {
-                    logError("Error updating task list", err);
-                  }
-                });
+                  .then(() => {
+                    setIsEditing(false);
+                  })
+                  .catch((err: unknown) => {
+                    setIsEditing(false);
+                    setInput(taskList.name);
+                    if (err instanceof Error) {
+                      logError("Error updating task list", err);
+                    }
+                  });
+              } else {
+                setIsEditing(false);
+              }
             } else {
-              setIsEditing(false);
+              setIsEditing(true);
             }
-          } else {
-            setIsEditing(true);
-          }
-        }}
-      >
-        {isEditing ? <FaCheck className="text-green-700" /> : <CiEdit />}
-      </Button>
+          }}
+        >
+          {isEditing ? <FaCheck className="text-green-700" /> : <CiEdit />}
+        </Button>
+      </Tooltip>
     </div>
   );
 };
