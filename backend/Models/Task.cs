@@ -1,6 +1,7 @@
-using Microsoft.VisualBasic;
 
-namespace backend;
+using System.ComponentModel.DataAnnotations;
+
+namespace backend.Models;
 
 public class TaskComparer : IComparer<Task>
 {
@@ -14,14 +15,14 @@ public class TaskComparer : IComparer<Task>
 }
 public class Task()
 {
-    public string Label { get; set; }
+    [StringLength(256)] public string Label { get; set; } = "";
     public bool Completed { get; set; }
     public DateTimeOffset? DueDate { get; set; }
     public uint OrderIndex { get; set; }
     public Guid Id { get; init; }
     
     public Guid TaskListId { get; set; }
-
+    public ICollection<Tag> Tags = new List<Tag>();
     public Task(string label, bool completed, DateTimeOffset? dueDate, uint orderIndex, Guid id, Guid taskListId) : this()
     {
         Label = label;

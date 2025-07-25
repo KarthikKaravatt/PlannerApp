@@ -1,5 +1,6 @@
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using Task = backend.Models.Task;
 
 namespace backend.Endpoints;
 

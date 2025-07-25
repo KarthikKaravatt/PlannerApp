@@ -1,10 +1,6 @@
-using System.Text.Json.Serialization;
 using backend;
 using backend.Endpoints;
-using backend.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Task = backend.Task;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +20,7 @@ var app = builder.Build();
 app.UseCors();
 app.MapTaskListEndpoints();
 app.MapTaskEndpoints();
+app.MapTagEndpoints();
 app.Run();
 
 
