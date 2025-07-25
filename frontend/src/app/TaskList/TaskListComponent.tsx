@@ -6,7 +6,6 @@ import {
   DialogTrigger,
   Heading,
   Modal,
-  OverlayArrow,
   Tooltip,
   TooltipTrigger,
 } from "react-aria-components";
@@ -88,7 +87,7 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
         <Button className={"justify-end"}>
           <FaRegTrashCan />
         </Button>
-        <Tooltip className="rounded-md p-1 text-sm dark:bg-blue-50 text-white bg-blue-950">
+        <Tooltip className="data-[exiting]:opacity-0 data-[entering]:opacity-0 transition duration-100 ease-in rounded-md p-1 text-sm dark:bg-blue-50 text-white bg-blue-950">
           Delete task list
         </Tooltip>
       </TooltipTrigger>
