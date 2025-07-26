@@ -96,13 +96,14 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
     if (state.isEditing || isLoading) {
       return;
     }
-    toggleCompletion({ listId: state.taskListId, taskId: task.id }).catch(
-      (err: unknown) => {
-        if (err instanceof Error) {
-          logError("Failed to update task completion:", err);
-        }
-      },
-    );
+    toggleCompletion({
+      listId: state.taskListId,
+      task: { ...task }
+    }).catch((err: unknown) => {
+      if (err instanceof Error) {
+        logError("Failed to update task completion:", err);
+      }
+    });
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -119,8 +120,8 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
       onClick={
         isInteractive
           ? () => {
-              handleClick();
-            }
+            handleClick();
+          }
           : undefined
       }
       className={`${state.isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
@@ -128,8 +129,8 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
       onKeyDown={
         isInteractive
           ? (event) => {
-              handleKeyDown(event);
-            }
+            handleKeyDown(event);
+          }
           : undefined
       }
       role="checkbox"

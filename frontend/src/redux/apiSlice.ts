@@ -301,14 +301,14 @@ export const apiSlice = createApi({
         return {};
       },
       responseSchema: z.record(z.uuidv7(), taskSchemea),
-      providesTags: ["IncompleteTasks"],
+      providesTags: ["CompleteTasks"],
     }),
     getCompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
         url: `${listId}/tasks/complete/order`,
       }),
       responseSchema: z.array(taskOrderSchema),
-      providesTags: ["IncompleteTasks"],
+      providesTags: ["CompleteTasksOrder"],
     }),
     addNewTask: builder.mutation<
       TaskResponse,
@@ -426,64 +426,72 @@ export const apiSlice = createApi({
         });
       },
     }),
-    toggleTaskCompetion: builder.mutation<
-      void,
-      { listId: string; taskId: string }
-    >({
-      query: ({ taskId, listId }) => ({
-        url: `/${listId}/tasks/${taskId}/toggle-completion`,
-        method: "PATCH",
-      }),
-      async onQueryStarted({ taskId, listId }, { dispatch, queryFulfilled }) {
-        let task: Task | undefined;
-        let completedCount = -1;
-        let incompleteCount = -1;
-        const patchResult = dispatch(
-          apiSlice.util.updateQueryData(
-            "getIncompleteTasks",
-            listId,
-            (draftTasks) => {
-              const tasks = Object.values(draftTasks);
-              completedCount = tasks.filter((t) => t.completed).length;
-              incompleteCount = tasks.length - completedCount;
-              task = draftTasks[taskId];
-              if (task) {
-                draftTasks[taskId] = { ...task, completed: !task.completed };
-              }
-            },
-          ),
-        );
-        const orderPatchResult = dispatch(
-          apiSlice.util.updateQueryData(
-            "getIncompleteTaskOrder",
-            listId,
-            (draftOrder) => {
-              if (task && completedCount !== -1 && incompleteCount !== -1) {
-                const taskIndex = draftOrder.findIndex((t) => t.id);
-                if (taskIndex !== -1) {
-                  if (task.completed) {
-                    draftOrder[taskIndex] = {
-                      orderIndex: incompleteCount,
-                      id: task.id,
-                    };
-                  } else {
-                    draftOrder[taskIndex] = {
-                      orderIndex: completedCount,
-                      id: task.id,
-                    };
-                  }
+    toggleTaskCompetion: builder.mutation<void, { listId: string; task: Task }>(
+      {
+        query: ({ task, listId }) => ({
+          url: `/${listId}/tasks/${task.id}/toggle-completion`,
+          method: "PATCH",
+        }),
+        async onQueryStarted({ task, listId }, { dispatch, queryFulfilled }) {
+          const incompltedTaskPatchResult = dispatch(
+            apiSlice.util.updateQueryData(
+              "getIncompleteTasks",
+              listId,
+              (draftTasks) => {
+                if (!task.completed) {
+                  delete draftTasks[task.id]
                 }
+                else {
+                  draftTasks[task.id] = { ...task, completed: true }
+                }
+              },
+            ),
+          );
+          const incompltedTaskOrderPatchResult = dispatch(apiSlice.util.updateQueryData("getIncompleteTaskOrder", listId, (draftOrder) => {
+            if (!task.completed) {
+              const deleteIndex = draftOrder.findIndex((t) => t.id === task.id)
+              if (deleteIndex !== -1) {
+                draftOrder.splice(deleteIndex, 1)
+              } else {
+                draftOrder.push({ id: task.id, orderIndex: draftOrder.length })
               }
-            },
-          ),
-        );
-        await queryFulfilled.catch(() => {
-          patchResult.undo();
-          orderPatchResult.undo();
-          logError("error completing task");
-        });
+            }
+          }))
+          const compltedTaskPatchResult = dispatch(
+            apiSlice.util.updateQueryData(
+              "getCompleteTasks",
+              listId,
+              (draftTasks) => {
+                if (task.completed) {
+                  delete draftTasks[task.id]
+                }
+                else {
+                  draftTasks[task.id] = { ...task, completed: false }
+                }
+              },
+            ),
+          );
+          const compltedTaskOrderPatchResult = dispatch(apiSlice.util.updateQueryData("getCompleteTaskOrder", listId, (draftOrder) => {
+            if (task.completed) {
+              const deleteIndex = draftOrder.findIndex((t) => t.id === task.id)
+              if (deleteIndex !== -1) {
+                draftOrder.splice(deleteIndex, 1)
+              }
+            }
+            else {
+              draftOrder.push({ id: task.id, orderIndex: draftOrder.length })
+            }
+          }))
+          await queryFulfilled.catch(() => {
+            incompltedTaskPatchResult.undo();
+            incompltedTaskOrderPatchResult.undo();
+            compltedTaskPatchResult.undo();
+            compltedTaskOrderPatchResult.undo();
+            logError("error completing task");
+          });
+        },
       },
-    }),
+    ),
     updateTask: builder.mutation<
       void,
       { listId: string; taskId: string; taskUpdate: TaskUpdate }
