@@ -30,7 +30,14 @@ const apiUrl = `${import.meta.env.VITE_BACKEND_APP_API_URL}/taskLists`;
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: apiUrl }),
-  tagTypes: ["Tasks", "TaskOrder", "TaskList", "TaskListOrder"],
+  tagTypes: [
+    "IncompleteTasks",
+    "IncompleteTasksOrder",
+    "CompleteTasks",
+    "CompleteTasksOrder",
+    "TaskList",
+    "TaskListOrder",
+  ],
   endpoints: (builder) => ({
     getTaskLists: builder.query<Record<string, TaskList>, void>({
       query: () => ({
@@ -232,7 +239,7 @@ export const apiSlice = createApi({
       },
     }),
     getIncompleteTasks: builder.query<Record<string, Task>, string>({
-      query: (id) => `/${id}/tasks`,
+      query: (id) => `/${id}/tasks/incomplete`,
       rawResponseSchema: z.array(taskResponseSchema),
       transformResponse: (response: Task[]) => {
         const transformedTaskSchema = z
@@ -258,14 +265,50 @@ export const apiSlice = createApi({
         return {};
       },
       responseSchema: z.record(z.uuidv7(), taskSchemea),
-      providesTags: ["Tasks"],
+      providesTags: ["IncompleteTasks"],
     }),
     getIncompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
-        url: `${listId}/tasks/order`,
+        url: `${listId}/tasks/incomplete/order`,
       }),
       responseSchema: z.array(taskOrderSchema),
-      providesTags: ["TaskOrder"],
+      providesTags: ["IncompleteTasks"],
+    }),
+    getCompleteTasks: builder.query<Record<string, Task>, string>({
+      query: (id) => `/${id}/tasks/complete`,
+      rawResponseSchema: z.array(taskResponseSchema),
+      transformResponse: (response: Task[]) => {
+        const transformedTaskSchema = z
+          .array(taskResponseSchema)
+          .transform((data) => {
+            return data.map((t) => {
+              if ("dueDate" in t) {
+                return { ...t, kind: "withDate" } as Task;
+              }
+              return { ...t, kind: "withoutDate" } as Task;
+            });
+          });
+
+        const result = transformedTaskSchema.safeParse(response);
+
+        if (result.success) {
+          return result.data.reduce<Record<string, Task>>((acc, task) => {
+            acc[task.id] = task;
+            return acc;
+          }, {});
+        }
+        logError("Validation error:", result.error);
+        return {};
+      },
+      responseSchema: z.record(z.uuidv7(), taskSchemea),
+      providesTags: ["IncompleteTasks"],
+    }),
+    getCompleteTaskOrder: builder.query<TaskOrder[], string>({
+      query: (listId) => ({
+        url: `${listId}/tasks/complete/order`,
+      }),
+      responseSchema: z.array(taskOrderSchema),
+      providesTags: ["IncompleteTasks"],
     }),
     addNewTask: builder.mutation<
       TaskResponse,
@@ -392,20 +435,51 @@ export const apiSlice = createApi({
         method: "PATCH",
       }),
       async onQueryStarted({ taskId, listId }, { dispatch, queryFulfilled }) {
+        let task: Task | undefined;
+        let completedCount = -1;
+        let incompleteCount = -1;
         const patchResult = dispatch(
           apiSlice.util.updateQueryData(
             "getIncompleteTasks",
             listId,
             (draftTasks) => {
-              const task = draftTasks[taskId];
+              const tasks = Object.values(draftTasks);
+              completedCount = tasks.filter((t) => t.completed).length;
+              incompleteCount = tasks.length - completedCount;
+              task = draftTasks[taskId];
               if (task) {
                 draftTasks[taskId] = { ...task, completed: !task.completed };
               }
             },
           ),
         );
+        const orderPatchResult = dispatch(
+          apiSlice.util.updateQueryData(
+            "getIncompleteTaskOrder",
+            listId,
+            (draftOrder) => {
+              if (task && completedCount !== -1 && incompleteCount !== -1) {
+                const taskIndex = draftOrder.findIndex((t) => t.id);
+                if (taskIndex !== -1) {
+                  if (task.completed) {
+                    draftOrder[taskIndex] = {
+                      orderIndex: incompleteCount,
+                      id: task.id,
+                    };
+                  } else {
+                    draftOrder[taskIndex] = {
+                      orderIndex: completedCount,
+                      id: task.id,
+                    };
+                  }
+                }
+              }
+            },
+          ),
+        );
         await queryFulfilled.catch(() => {
           patchResult.undo();
+          orderPatchResult.undo();
           logError("error completing task");
         });
       },
@@ -551,6 +625,8 @@ export const apiSlice = createApi({
   }),
 });
 export const {
+  useGetCompleteTaskOrderQuery,
+  useLazyGetCompleteTaskOrderQuery,
   useGetIncompleteTasksQuery,
   useAddNewTaskMutation,
   useDeleteTaskMutation,

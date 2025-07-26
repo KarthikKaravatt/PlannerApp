@@ -17,11 +17,29 @@ public static class TaskEndpoints
                 .Select(task => new TaskPayLoad(task.Id,task.Label, task.Completed, task.DueDate)).ToListAsync();
             return Results.Ok(tasks);
         });
+        //get all tasks
+        tasksApi.MapGet("/complete", async (PlannerDbContext db, Guid listId) =>
+        {
+            var tasks = await db.Tasks
+                .Where(t => t.TaskListId == listId && t.Completed == true)
+                .Select(task => new TaskPayLoad(task.Id,task.Label, task.Completed, task.DueDate)).ToListAsync();
+            return Results.Ok(tasks);
+        });
         //Get the Order of the tasks(incomplete)
         tasksApi.MapGet("/incomplete/order", async (PlannerDbContext db, Guid listId) =>
         {
             var taskListOrder = await db.Tasks
                 .Where(task => task.TaskListId == listId && task.Completed == false)
+                .Select(task => new { task.Id, task.OrderIndex })
+                .OrderBy(t=> t.OrderIndex)
+                .ToListAsync();
+            return Results.Ok(taskListOrder);
+        });
+        //Get the Order of the complete tasks
+        tasksApi.MapGet("/complete/order", async (PlannerDbContext db, Guid listId) =>
+        {
+            var taskListOrder = await db.Tasks
+                .Where(task => task.TaskListId == listId && task.Completed == true)
                 .Select(task => new { task.Id, task.OrderIndex })
                 .OrderBy(t=> t.OrderIndex)
                 .ToListAsync();
@@ -38,10 +56,24 @@ public static class TaskEndpoints
         });
 
         //complete a task
-        tasksApi.MapPatch("/{id:guid}/toggle-completion", async (PlannerDbContext db, Guid id) =>
+        tasksApi.MapPatch("/{id:guid}/toggle-completion", async (PlannerDbContext db, Guid id, Guid listId) =>
         {
             var task = await db.Tasks.FindAsync(id);
+            var tasks = db.Tasks.Where(t => t.TaskListId == listId);
             if (task is null) return Results.NotFound();
+
+            if (task.Completed)
+            {
+                var newIndex = (uint) await tasks
+                    .Where(t => !t.Completed).CountAsync() - 1;
+                task.OrderIndex = newIndex;
+            }
+            else
+            { 
+                var newIndex = (uint) await tasks
+                    .Where(t => t.Completed).CountAsync() - 1;
+                task.OrderIndex = newIndex;
+            }
             task.Completed = !task.Completed;
             await db.SaveChangesAsync();
             return Results.Ok();
