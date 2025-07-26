@@ -62,21 +62,15 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
   };
   return (
     <div className=" flex w-full items-stretch justify-between gap-1 text-blue-950 dark:text-white ">
-      <Button
-        type="button"
-        className=" flex flex-1 flex-col items-center justify-center rounded-md border border-gray-300 text-center shadow-lg dark:border-none dark:bg-dark-background-sub-c "
-        onClick={onFilterButtonClick}
-      >
+      <OptionsButton isLoading={isLoading} onClick={onFilterButtonClick}>
         {filterState[0] + filterState.slice(1).toLocaleLowerCase()}
-      </Button>
-      <Button
-        type="button"
-        className={` ${isLoading ? "text-gray-300" : ""} flex flex-1 flex-col items-center justify-center rounded-md border border-gray-300 text-center shadow-lg dark:border-none dark:bg-dark-background-sub-c `}
-        onClick={onClearButtonClick}
-      >
+      </OptionsButton>
+      <OptionsButton isLoading={isLoading} onClick={onClearButtonClick}>
         Clear
-      </Button>
-      <div className=" flex flex-1 flex-col items-center justify-center rounded-md border border-gray-300 shadow-lg dark:border-none dark:bg-dark-background-sub-c">
+      </OptionsButton>
+      <div
+        className={`${isLoading ? "opacity-50" : "opacity-100"} flex flex-1 flex-col items-center justify-center rounded-md border border-gray-300 shadow-lg transition duration-150 ease-in hover:scale-110 dark:border-none dark:bg-dark-background-sub-c`}
+      >
         <Select
           defaultSelectedKey={sortOrder}
           aria-label="Select sort option"
@@ -108,5 +102,25 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
         </Select>
       </div>
     </div>
+  );
+};
+interface OptionsButtonProps {
+  isLoading: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}
+const OptionsButton = ({
+  isLoading,
+  children,
+  onClick,
+}: OptionsButtonProps) => {
+  return (
+    <Button
+      isDisabled={isLoading}
+      className={`${isLoading ? "opacity-50" : "opacity-100"} flex flex-1 flex-col items-center justify-center rounded-md border border-gray-300 text-center shadow-lg transition duration-150 ease-in hover:scale-105 dark:border-none dark:bg-dark-background-sub-c`}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
   );
 };
