@@ -231,7 +231,7 @@ export const apiSlice = createApi({
         });
       },
     }),
-    getTasks: builder.query<Record<string, Task>, string>({
+    getIncompleteTasks: builder.query<Record<string, Task>, string>({
       query: (id) => `/${id}/tasks`,
       rawResponseSchema: z.array(taskResponseSchema),
       transformResponse: (response: Task[]) => {
@@ -260,7 +260,7 @@ export const apiSlice = createApi({
       responseSchema: z.record(z.uuidv7(), taskSchemea),
       providesTags: ["Tasks"],
     }),
-    getTaskOrder: builder.query<TaskOrder[], string>({
+    getIncompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
         url: `${listId}/tasks/order`,
       }),
@@ -282,13 +282,17 @@ export const apiSlice = createApi({
         const { listId, request } = payload;
         const newTask: Task = { ...request, id: tempId, kind: "withoutDate" };
         const updateTasks = dispatch(
-          apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
-            draftTasks[tempId] = newTask;
-          }),
+          apiSlice.util.updateQueryData(
+            "getIncompleteTasks",
+            listId,
+            (draftTasks) => {
+              draftTasks[tempId] = newTask;
+            },
+          ),
         );
         const updateOrder = dispatch(
           apiSlice.util.updateQueryData(
-            "getTaskOrder",
+            "getIncompleteTaskOrder",
             listId,
             (draftOrder) => {
               const orderIndex = draftOrder.length;
@@ -307,7 +311,7 @@ export const apiSlice = createApi({
             })();
             dispatch(
               apiSlice.util.updateQueryData(
-                "getTasks",
+                "getIncompleteTasks",
                 listId,
                 (draftTasks) => {
                   if (Object.hasOwn(draftTasks, tempId)) {
@@ -319,7 +323,7 @@ export const apiSlice = createApi({
             );
             dispatch(
               apiSlice.util.updateQueryData(
-                "getTaskOrder",
+                "getIncompleteTaskOrder",
                 listId,
                 (draftOrder) => {
                   const removeIndex = draftOrder.findIndex(
@@ -348,7 +352,7 @@ export const apiSlice = createApi({
       async onQueryStarted(ids, { dispatch, queryFulfilled }) {
         const taskPatchResult = dispatch(
           apiSlice.util.updateQueryData(
-            "getTasks",
+            "getIncompleteTasks",
             ids.listId,
             (draftTasks) => {
               if (Object.hasOwn(draftTasks, ids.taskId)) {
@@ -362,7 +366,7 @@ export const apiSlice = createApi({
         );
         const taskOrderPatchResult = dispatch(
           apiSlice.util.updateQueryData(
-            "getTaskOrder",
+            "getIncompleteTaskOrder",
             ids.listId,
             (draftTaskOrder) => {
               const taskOrderIndex = draftTaskOrder.findIndex(
@@ -389,12 +393,16 @@ export const apiSlice = createApi({
       }),
       async onQueryStarted({ taskId, listId }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
-          apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
-            const task = draftTasks[taskId];
-            if (task) {
-              draftTasks[taskId] = { ...task, completed: !task.completed };
-            }
-          }),
+          apiSlice.util.updateQueryData(
+            "getIncompleteTasks",
+            listId,
+            (draftTasks) => {
+              const task = draftTasks[taskId];
+              if (task) {
+                draftTasks[taskId] = { ...task, completed: !task.completed };
+              }
+            },
+          ),
         );
         await queryFulfilled.catch(() => {
           patchResult.undo();
@@ -416,27 +424,31 @@ export const apiSlice = createApi({
       async onQueryStarted(taskData, { dispatch, queryFulfilled }) {
         const { taskUpdate, taskId, listId } = taskData;
         const patchResult = dispatch(
-          apiSlice.util.updateQueryData("getTasks", listId, (draftTasks) => {
-            const oldTask = draftTasks[taskId];
-            if (oldTask) {
-              if (taskUpdate.dueDate === null) {
-                draftTasks[taskId] = {
-                  id: taskId,
-                  completed: oldTask.completed,
-                  label: taskUpdate.label,
-                  kind: "withoutDate",
-                };
-              } else {
-                draftTasks[taskId] = {
-                  id: taskId,
-                  completed: oldTask.completed,
-                  label: taskUpdate.label,
-                  kind: "withDate",
-                  dueDate: taskUpdate.dueDate,
-                };
+          apiSlice.util.updateQueryData(
+            "getIncompleteTasks",
+            listId,
+            (draftTasks) => {
+              const oldTask = draftTasks[taskId];
+              if (oldTask) {
+                if (taskUpdate.dueDate === null) {
+                  draftTasks[taskId] = {
+                    id: taskId,
+                    completed: oldTask.completed,
+                    label: taskUpdate.label,
+                    kind: "withoutDate",
+                  };
+                } else {
+                  draftTasks[taskId] = {
+                    id: taskId,
+                    completed: oldTask.completed,
+                    label: taskUpdate.label,
+                    kind: "withDate",
+                    dueDate: taskUpdate.dueDate,
+                  };
+                }
               }
-            }
-          }),
+            },
+          ),
         );
         await queryFulfilled.catch(() => {
           logError("Updating task failed rolling back");
@@ -458,7 +470,7 @@ export const apiSlice = createApi({
       async onQueryStarted(payload, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           apiSlice.util.updateQueryData(
-            "getTaskOrder",
+            "getIncompleteTaskOrder",
             payload.listId,
             (draft) => {
               draft.sort((a, b) => a.orderIndex - b.orderIndex);
@@ -504,21 +516,25 @@ export const apiSlice = createApi({
       async onQueryStarted(listId, { dispatch, queryFulfilled }) {
         const deletedTasks = new Map<string, string>();
         const taskPatchResult = dispatch(
-          apiSlice.util.updateQueryData("getTasks", listId, (draft) => {
-            for (const key in draft) {
-              if (Object.hasOwn(draft, key)) {
-                const task = draft[key];
-                if (task?.completed) {
-                  deletedTasks.set(key, "");
-                  delete draft[key];
+          apiSlice.util.updateQueryData(
+            "getIncompleteTasks",
+            listId,
+            (draft) => {
+              for (const key in draft) {
+                if (Object.hasOwn(draft, key)) {
+                  const task = draft[key];
+                  if (task?.completed) {
+                    deletedTasks.set(key, "");
+                    delete draft[key];
+                  }
                 }
               }
-            }
-          }),
+            },
+          ),
         );
         const taskOrderPatchResult = dispatch(
           apiSlice.util.updateQueryData(
-            "getTaskOrder",
+            "getIncompleteTaskOrder",
             listId,
             (darftTaskOrder) => {
               return darftTaskOrder.filter((t) => !deletedTasks.has(t.id));
@@ -535,13 +551,13 @@ export const apiSlice = createApi({
   }),
 });
 export const {
-  useGetTasksQuery,
+  useGetIncompleteTasksQuery,
   useAddNewTaskMutation,
   useDeleteTaskMutation,
   useUpdateTaskMutation,
   useClearCompletedTasksMutation,
   useMoveTaskOrderMutation,
-  useGetTaskOrderQuery,
+  useGetIncompleteTaskOrderQuery,
   useGetTaskListsQuery,
   useAddNewTaskListMutation,
   useRemoveTaskListMutation,

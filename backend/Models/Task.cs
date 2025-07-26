@@ -1,5 +1,6 @@
 
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Models;
 
@@ -19,7 +20,9 @@ public class Task()
     public bool Completed { get; set; }
     public DateTimeOffset? DueDate { get; set; }
     public uint OrderIndex { get; set; }
+    
     public Guid Id { get; init; }
+    
     
     public Guid TaskListId { get; set; }
     public ICollection<Tag> Tags = new List<Tag>();

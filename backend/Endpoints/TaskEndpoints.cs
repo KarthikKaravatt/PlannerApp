@@ -9,13 +9,23 @@ public static class TaskEndpoints
     public static void MapTaskEndpoints(this WebApplication app)
     {
         var tasksApi = app.MapGroup("/api/taskLists/{listId:guid}/tasks");
-        // Get all tasks
-        tasksApi.MapGet("/", async (PlannerDbContext db, Guid listId) =>
+        // Get all tasks (incomplete)
+        tasksApi.MapGet("/incomplete", async (PlannerDbContext db, Guid listId) =>
         {
             var tasks = await db.Tasks
-                .Where(t => t.TaskListId == listId)
+                .Where(t => t.TaskListId == listId && t.Completed == false)
                 .Select(task => new TaskPayLoad(task.Id,task.Label, task.Completed, task.DueDate)).ToListAsync();
             return Results.Ok(tasks);
+        });
+        //Get the Order of the tasks(incomplete)
+        tasksApi.MapGet("/incomplete/order", async (PlannerDbContext db, Guid listId) =>
+        {
+            var taskListOrder = await db.Tasks
+                .Where(task => task.TaskListId == listId && task.Completed == false)
+                .Select(task => new { task.Id, task.OrderIndex })
+                .OrderBy(t=> t.OrderIndex)
+                .ToListAsync();
+            return Results.Ok(taskListOrder);
         });
         // Add a task
         tasksApi.MapPost("/", async (PlannerDbContext db, TaskRequest request, Guid listId) =>
@@ -26,16 +36,7 @@ public static class TaskEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/tasks/{task.Id}", task);
         });
-        //Get the Order of the tasks
-        tasksApi.MapGet("/order", async (PlannerDbContext db, Guid listId) =>
-        {
-            var taskListOrder = await db.Tasks
-                .Where(task => task.TaskListId == listId)
-                .Select(task => new { task.Id, task.OrderIndex })
-                .OrderBy(t=> t.OrderIndex)
-                .ToListAsync();
-            return Results.Ok(taskListOrder);
-        });
+
         //complete a task
         tasksApi.MapPatch("/{id:guid}/toggle-completion", async (PlannerDbContext db, Guid id) =>
         {

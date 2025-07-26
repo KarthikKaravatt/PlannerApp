@@ -10,4 +10,5 @@ public class PlannerDbContext:DbContext
     public DbSet<TaskList> TaskLists { get; set; }
     public DbSet<Task> Tasks { get; set; }
     public DbSet<Tag> Tags { get; set; }
+
 }

@@ -10,7 +10,6 @@ public class TaskList
     public required string Name { get; set; }
     public required uint OrderIndex { get; set; }
     public ICollection<Task> Tasks { get; init; } = new List<Task>();
-
     public TaskList(string name, ICollection<Task> tasks, uint orderIndex, Guid id)
     {
         Name = name;

@@ -14,8 +14,8 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
 
 import {
-  useGetTaskOrderQuery,
-  useGetTasksQuery,
+  useGetIncompleteTaskOrderQuery,
+  useGetIncompleteTasksQuery,
   useMoveTaskOrderMutation,
   useRemoveTaskListMutation,
 } from "@/redux/apiSlice.ts";
@@ -180,14 +180,14 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
     isSuccess,
     isError,
     error,
-  } = useGetTasksQuery(listId);
+  } = useGetIncompleteTasksQuery(listId);
   const {
     data: order,
     isLoading: isOrderLoading,
     isSuccess: isOrderSuccess,
     isError: isOrderError,
     error: orderError,
-  } = useGetTaskOrderQuery(listId);
+  } = useGetIncompleteTaskOrderQuery(listId);
   const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
   const handleReorder = (
     draggedId: string,
@@ -235,11 +235,7 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
           renderItem={(item, _isDragging) => (
             <div className="flex flex-row">
               <DragIndicator />
-              <Suspense
-                fallback={
-                  <div className="h-8 w-full animate-pulse bg-gray-200" />
-                }
-              >
+              <Suspense fallback={<FaSpinner className="animate-spin" />}>
                 <TaskComponent
                   taskListId={listId}
                   key={(item as unknown as DraggableTaskItem).task.id}
