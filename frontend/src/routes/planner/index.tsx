@@ -28,7 +28,7 @@ function Planner() {
     <div className="h-screen w-full text-blue-950 dark:text-white">
       <div className="relative flex h-full w-full flex-row overflow-x-auto">
         <div className="sticky left-0 z-10 shadow-blue-200 backdrop-blur-xs">
-          <Suspense fallback={<div>Loading sidebar...</div>}>
+          <Suspense fallback={<FaSpinner className="animate-spin" />}>
             <TaskListSideBar />
           </Suspense>
         </div>
@@ -71,7 +71,7 @@ const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
       <div className="flex flex-col items-center justify-center">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className=" rounded-md bg-blue-200 dark:bg-dark-background-sub-c p-1 font-bold "
+          className=" rounded-md bg-blue-200 p-1 font-bold dark:bg-dark-background-sub-c "
           onClick={() => {
             listDataRefetch().catch(() => {
               logError("Error fetching task list data");

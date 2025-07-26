@@ -83,7 +83,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
       />
       <TaskListInput taskListId={listId} />
       <Suspense
-        fallback={<div className="h-64 w-full bg-gray-200 animate-pulse" />}
+        fallback={<div className="h-64 w-full animate-pulse bg-gray-200" />}
       >
         <VisibleTasks
           listId={listId}
@@ -227,9 +227,7 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
     }));
 
     return (
-      <Suspense
-        fallback={<div className="h-full w-full bg-gray-200 animate-pulse" />}
-      >
+      <Suspense fallback={<FaSpinner className="animate-spin" />}>
         <DraggableList
           className="overflow-auto"
           items={draggableItems}
@@ -241,7 +239,7 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
               <DragIndicator />
               <Suspense
                 fallback={
-                  <div className="h-8 w-full bg-gray-200 animate-pulse" />
+                  <div className="h-8 w-full animate-pulse bg-gray-200" />
                 }
               >
                 <TaskComponent
