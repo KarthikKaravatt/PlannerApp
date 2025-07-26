@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-  component: App,
+  component: () => (
+    <div className="flex items-center justify-center h-screen">
+      <p>Welcome to PlannerApp</p>
+    </div>
+  ),
 });
-
-function App() {
-  return <p>LOL</p>;
-}
