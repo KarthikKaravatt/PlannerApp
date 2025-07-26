@@ -23,8 +23,8 @@ import {
 } from "@/redux/apiSlice";
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
-import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 import { Tooltip } from "../General/ToolTip.tsx";
+import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
 const INPUT_LIMIT = 25;
 
