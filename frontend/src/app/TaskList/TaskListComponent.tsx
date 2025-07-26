@@ -4,6 +4,8 @@ import {
   Button,
   Dialog,
   DialogTrigger,
+  Disclosure,
+  DisclosurePanel,
   Heading,
   Modal,
 } from "react-aria-components";
@@ -55,7 +57,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
     return selection;
   });
   return (
-    <div className="p-2 flex flex-col gap-1 h-full w-1/4 shrink-0">
+    <div className="flex h-full w-1/4 shrink-0 flex-col gap-1 p-2">
       <div className="flex">
         <p className=" w-full pl-1 text-left font-bold text-blue-950 dark:text-white ">
           {listName}
@@ -75,7 +77,20 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
         sortOption={sortOption}
         filterOption={filterOption}
       />
+      <CompletedTasks />
     </div>
+  );
+};
+const CompletedTasks = () => {
+  return (
+    <Disclosure>
+      <Heading>
+        <Button slot="trigger">Completed Tasks</Button>
+      </Heading>
+      <DisclosurePanel>
+        <p>Test</p>
+      </DisclosurePanel>
+    </Disclosure>
   );
 };
 const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
@@ -83,7 +98,7 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   return (
     <DialogTrigger>
       <Tooltip message="Delete task list">
-        <Button className={"justify-end"}>
+        <Button className="justify-end p-1 transition duration-150 ease-in hover:scale-110">
           <FaRegTrashCan />
         </Button>
       </Tooltip>
