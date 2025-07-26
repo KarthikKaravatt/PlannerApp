@@ -82,9 +82,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
         setSortState={setSortOption}
       />
       <TaskListInput taskListId={listId} />
-      <Suspense
-        fallback={<div className="h-64 w-full animate-pulse bg-gray-200" />}
-      >
+      <Suspense fallback={<FaSpinner className="animate-spin" />}>
         <VisibleTasks
           listId={listId}
           sortOption={sortOption}
