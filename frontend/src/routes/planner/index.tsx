@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Button } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa6";
-import { TaskListComponent } from "@/app/TaskList/TaskListComponent";
-import { TaskListSideBar } from "@/app/TaskList/TaskListSideBar";
 import {
   useGetTaskListOrderQuery,
   useGetTaskListsQuery,
@@ -12,14 +10,33 @@ export const Route = createFileRoute("/planner/")({
   component: Planner,
 });
 
+import { lazy, Suspense } from "react";
+
+const TaskListComponent = lazy(() =>
+  import("@/app/TaskList/TaskListComponent").then((module) => ({
+    default: module.TaskListComponent,
+  })),
+);
+const TaskListSideBar = lazy(() =>
+  import("@/app/TaskList/TaskListSideBar").then((module) => ({
+    default: module.TaskListSideBar,
+  })),
+);
+
 function Planner() {
   return (
     <div className="h-screen w-full text-blue-950 dark:text-white">
       <div className="relative flex h-full w-full flex-row overflow-x-auto">
         <div className="sticky left-0 z-10 shadow-blue-200 backdrop-blur-xs">
-          <TaskListSideBar />
+          <Suspense fallback={<div>Loading sidebar...</div>}>
+            <TaskListSideBar />
+          </Suspense>
         </div>
-        <TaskLists className="flex w-320 shrink-0 flex-row md:w-450" />
+        <Suspense
+          fallback={<FaSpinner className="absolute mt-50 ml-40 animate-spin" />}
+        >
+          <TaskLists className="flex w-320 shrink-0 flex-row md:w-450" />
+        </Suspense>
       </div>
     </div>
   );
