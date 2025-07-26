@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import {
   Button,
   Dialog,
@@ -12,7 +12,7 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
-import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
+
 import {
   useGetTaskOrderQuery,
   useGetTasksQuery,
@@ -23,9 +23,19 @@ import type { Task, TaskOrder } from "@/schemas/task";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { Tooltip } from "../General/ToolTip.tsx";
-import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
+
+const DraggableList = lazy(() =>
+  import("@/app/General/DraggableList").then((module) => ({
+    default: module.DraggableList,
+  })),
+);
+const TaskComponent = lazy(() =>
+  import("./TaskComponent.tsx").then((module) => ({
+    default: module.TaskComponent,
+  })),
+);
 
 interface TaskListComponentProps {
   listName: string;
@@ -72,11 +82,15 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
         setSortState={setSortOption}
       />
       <TaskListInput taskListId={listId} />
-      <VisibleTasks
-        listId={listId}
-        sortOption={sortOption}
-        filterOption={filterOption}
-      />
+      <Suspense
+        fallback={<div className="h-64 w-full bg-gray-200 animate-pulse" />}
+      >
+        <VisibleTasks
+          listId={listId}
+          sortOption={sortOption}
+          filterOption={filterOption}
+        />
+      </Suspense>
       <CompletedTasks />
     </div>
   );
@@ -146,6 +160,11 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   );
 };
 
+interface DraggableTaskItem {
+  id: string;
+  task: Task;
+}
+
 interface VibleTasksProp {
   listId: string;
   filterOption: FilterOption;
@@ -202,31 +221,39 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
   }
   if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, filterOption, sortOption);
-    const draggableItems: (DraggableItem & { task: Task })[] = finalList.map(
-      (task) => ({
-        id: task.id,
-        task,
-      }),
-    );
+    const draggableItems = finalList.map((task) => ({
+      id: task.id,
+      task: task,
+    }));
 
     return (
-      <DraggableList
-        className="overflow-auto"
-        items={draggableItems}
-        onReorder={handleReorder}
-        isDisabled={sortOption !== "CUSTOM"}
-        aria-label="Tasks"
-        renderItem={(item, _isDragging) => (
-          <div className="flex flex-row">
-            <DragIndicator />
-            <TaskComponent
-              taskListId={listId}
-              key={item.task.id}
-              task={item.task}
-            />
-          </div>
-        )}
-      />
+      <Suspense
+        fallback={<div className="h-full w-full bg-gray-200 animate-pulse" />}
+      >
+        <DraggableList
+          className="overflow-auto"
+          items={draggableItems}
+          onReorder={handleReorder}
+          isDisabled={sortOption !== "CUSTOM"}
+          aria-label="Tasks"
+          renderItem={(item, _isDragging) => (
+            <div className="flex flex-row">
+              <DragIndicator />
+              <Suspense
+                fallback={
+                  <div className="h-8 w-full bg-gray-200 animate-pulse" />
+                }
+              >
+                <TaskComponent
+                  taskListId={listId}
+                  key={(item as unknown as DraggableTaskItem).task.id}
+                  task={(item as unknown as DraggableTaskItem).task}
+                />
+              </Suspense>
+            </div>
+          )}
+        />
+      </Suspense>
     );
   }
 };
