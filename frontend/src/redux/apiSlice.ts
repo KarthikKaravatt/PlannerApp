@@ -393,21 +393,20 @@ export const apiSlice = createApi({
         method: "DELETE",
       }),
       async onQueryStarted(ids, { dispatch, queryFulfilled }) {
-        const taskPatchResult = dispatch(
+        //TODO: mabye check if the task is complted or not at each step to avoid
+        //iterations
+        const incompleteTasksPatchResult = dispatch(
           apiSlice.util.updateQueryData(
             "getIncompleteTasks",
             ids.listId,
             (draftTasks) => {
               if (Object.hasOwn(draftTasks, ids.taskId)) {
-                const deleted = delete draftTasks[ids.taskId];
-                if (!deleted) {
-                  logError("Error delting task");
-                }
+                delete draftTasks[ids.taskId];
               }
             },
           ),
         );
-        const taskOrderPatchResult = dispatch(
+        const incompleteTasksOrderPatchResult = dispatch(
           apiSlice.util.updateQueryData(
             "getIncompleteTaskOrder",
             ids.listId,
@@ -415,14 +414,43 @@ export const apiSlice = createApi({
               const taskOrderIndex = draftTaskOrder.findIndex(
                 (t) => t.id === ids.taskId,
               );
-              draftTaskOrder.splice(taskOrderIndex, 1);
+              if (taskOrderIndex !== -1) {
+                draftTaskOrder.splice(taskOrderIndex, 1);
+              }
+            },
+          ),
+        );
+        const completeTasksPatchResult = dispatch(
+          apiSlice.util.updateQueryData(
+            "getCompleteTasks",
+            ids.listId,
+            (draftTasks) => {
+              if (Object.hasOwn(draftTasks, ids.taskId)) {
+                delete draftTasks[ids.taskId];
+              }
+            },
+          ),
+        );
+        const completeTasksOrderPatchResult = dispatch(
+          apiSlice.util.updateQueryData(
+            "getCompleteTaskOrder",
+            ids.listId,
+            (draftTaskOrder) => {
+              const taskOrderIndex = draftTaskOrder.findIndex(
+                (t) => t.id === ids.taskId,
+              );
+              if (taskOrderIndex !== -1) {
+                draftTaskOrder.splice(taskOrderIndex, 1);
+              }
             },
           ),
         );
         await queryFulfilled.catch(() => {
           logError("Error deleting task");
-          taskPatchResult.undo();
-          taskOrderPatchResult.undo();
+          incompleteTasksPatchResult.undo();
+          incompleteTasksOrderPatchResult.undo();
+          completeTasksPatchResult.undo();
+          completeTasksOrderPatchResult.undo();
         });
       },
     }),
