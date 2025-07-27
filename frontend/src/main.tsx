@@ -6,16 +6,17 @@ import { scan } from "react-scan";
 import { routeTree } from "./routeTree.gen.ts";
 
 import "./styles.css";
-import { enableMapSet } from "immer";
 import { Provider } from "react-redux";
 import { store } from "./app/store.ts";
 import { ThemeProvider } from "./contexts/themeContext.tsx";
 import { reportWebVitals } from "./reportWebVitals.ts";
 
-enableMapSet();
-scan({
-  enabled: import.meta.env.DEV,
-});
+if (import.meta.env.DEV) {
+  scan({
+    enabled: true
+  });
+
+}
 
 const router = createRouter({
   routeTree,
