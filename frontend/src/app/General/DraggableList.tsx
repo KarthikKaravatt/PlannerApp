@@ -2,7 +2,6 @@ import { type ReactNode, useState } from "react";
 
 export interface DraggableItem {
   id: string;
-  [key: string]: unknown;
 }
 
 interface DraggableListProps<T extends DraggableItem> {
