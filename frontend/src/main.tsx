@@ -13,9 +13,8 @@ import { reportWebVitals } from "./reportWebVitals.ts";
 
 if (import.meta.env.DEV) {
   scan({
-    enabled: true
+    enabled: true,
   });
-
 }
 
 const router = createRouter({
