@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Dialog,
@@ -12,30 +12,22 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
-
+import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import {
+  useGetCompleteTaskOrderQuery,
+  useGetCompleteTasksQuery,
   useGetIncompleteTaskOrderQuery,
   useGetIncompleteTasksQuery,
   useMoveTaskOrderMutation,
-  useRemoveTaskListMutation,
-} from "@/redux/apiSlice.ts";
+} from "@/redux/taskApiSlice.ts";
+import { useRemoveTaskListMutation } from "@/redux/taskListApiSlice.ts";
 import type { Task, TaskOrder } from "@/schemas/task";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { Tooltip } from "../General/ToolTip.tsx";
+import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
-
-const DraggableList = lazy(() =>
-  import("@/app/General/DraggableList").then((module) => ({
-    default: module.DraggableList,
-  })),
-);
-const TaskComponent = lazy(() =>
-  import("./TaskComponent.tsx").then((module) => ({
-    default: module.TaskComponent,
-  })),
-);
 
 interface TaskListComponentProps {
   listName: string;
@@ -82,25 +74,54 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
         setSortState={setSortOption}
       />
       <TaskListInput taskListId={listId} />
-      <Suspense fallback={<FaSpinner className="animate-spin" />}>
-        <VisibleTasks
-          listId={listId}
-          sortOption={sortOption}
-          filterOption={filterOption}
-        />
-      </Suspense>
-      <CompletedTasks />
+      <VisibleTasks
+        listId={listId}
+        sortOption={sortOption}
+        filterOption={filterOption}
+      />
+      <CompletedTasks listId={listId} />
     </div>
   );
 };
-const CompletedTasks = () => {
+
+interface CompltedTasksProps {
+  listId: string;
+}
+
+const CompletedTasks = ({ listId }: CompltedTasksProps) => {
+  const {
+    data: taskOrderData,
+    isLoading: isOrderLoading,
+    isSuccess: isOrderSuccess,
+  } = useGetCompleteTaskOrderQuery(listId);
+  const {
+    data: tasksData,
+    isLoading: isTasksLoading,
+    isSuccess: isTasksSuccess,
+  } = useGetCompleteTasksQuery(listId);
+  const isLoading =
+    isOrderLoading || isTasksLoading || !(taskOrderData && tasksData);
+  const isSuccess = isOrderSuccess || isTasksSuccess;
+  if (isLoading) {
+    return <FaSpinner className="animate-spin" />;
+  }
+  if (!isSuccess) {
+    return <p>Error loading completed tasks</p>;
+  }
   return (
     <Disclosure>
       <Heading>
         <Button slot="trigger">Completed Tasks</Button>
       </Heading>
       <DisclosurePanel>
-        <p>Test</p>
+        {taskOrderData.map((t) => {
+          const task = tasksData[t.id];
+          if (task) {
+            return (
+              <TaskComponent key={task.id} task={task} taskListId={listId} />
+            );
+          }
+        })}
       </DisclosurePanel>
     </Disclosure>
   );
@@ -158,11 +179,6 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   );
 };
 
-interface DraggableTaskItem {
-  id: string;
-  task: Task;
-}
-
 interface VibleTasksProp {
   listId: string;
   filterOption: FilterOption;
@@ -218,34 +234,36 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
     return <p>Error: Failed to fetch tasks or task order</p>;
   }
   if (isSuccess && isOrderSuccess && tasks && order) {
-    const finalList = getFinalList(tasks, order, filterOption, sortOption);
-    const draggableItems = finalList.map((task) => ({
+    const finalList = getFinalList(tasks, order, sortOption);
+    const draggableItems: DraggableItem[] = finalList.map((task) => ({
       id: task.id,
-      task: task,
     }));
 
     return (
-      <Suspense fallback={<FaSpinner className="animate-spin" />}>
-        <DraggableList
-          className="overflow-auto"
-          items={draggableItems}
-          onReorder={handleReorder}
-          isDisabled={sortOption !== "CUSTOM"}
-          aria-label="Tasks"
-          renderItem={(item, _isDragging) => (
-            <div className="flex flex-row">
-              <DragIndicator />
-              <Suspense fallback={<FaSpinner className="animate-spin" />}>
-                <TaskComponent
-                  taskListId={listId}
-                  key={(item as unknown as DraggableTaskItem).task.id}
-                  task={(item as unknown as DraggableTaskItem).task}
-                />
-              </Suspense>
-            </div>
-          )}
-        />
-      </Suspense>
+      <DraggableList
+        className="overflow-auto"
+        items={draggableItems}
+        onReorder={handleReorder}
+        isDisabled={sortOption !== "CUSTOM"}
+        aria-label="Tasks"
+        renderItem={(item, _isDragging) => (
+          <div className="flex flex-row">
+            <DragIndicator />
+            {(() => {
+              const task = tasks[item.id];
+              if (task) {
+                return (
+                  <TaskComponent
+                    taskListId={listId}
+                    key={item.id}
+                    task={task}
+                  />
+                );
+              }
+            })()}
+          </div>
+        )}
+      />
     );
   }
 };
@@ -261,7 +279,6 @@ const DragIndicator = () => {
 function getFinalList(
   data: Record<string, Task>,
   order: TaskOrder[],
-  filterState: FilterOption,
   sortState: SortOption,
 ): Task[] {
   const tasksArray = Object.values(data).filter((t) => t !== undefined);
@@ -302,15 +319,5 @@ function getFinalList(
       }
     }
   })();
-  switch (filterState) {
-    case "ALL": {
-      return sortedList;
-    }
-    case "INCOMPLETE": {
-      return sortedList.filter((t) => !t.completed);
-    }
-    case "COMPLETE": {
-      return sortedList.filter((t) => t.completed);
-    }
-  }
+  return sortedList.filter((t) => !t.completed);
 }

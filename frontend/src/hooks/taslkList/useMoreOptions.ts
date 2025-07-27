@@ -1,5 +1,8 @@
 import { getLocalTimeZone, now } from "@internationalized/date";
-import { useDeleteTaskMutation, useUpdateTaskMutation } from "@/redux/apiSlice";
+import {
+  useDeleteTaskMutation,
+  useUpdateTaskMutation,
+} from "@/redux/taskApiSlice";
 import type { Task } from "@/schemas/task";
 import type {
   TaskComponentAction,

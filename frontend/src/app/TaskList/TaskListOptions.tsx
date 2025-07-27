@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "react-aria-components";
 import { RiArrowDropDownLine } from "react-icons/ri";
-import { useClearCompletedTasksMutation } from "@/redux/apiSlice";
+import { useClearCompletedTasksMutation } from "@/redux/taskApiSlice";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console";
 

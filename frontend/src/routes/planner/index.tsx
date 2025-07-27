@@ -4,7 +4,7 @@ import { FaSpinner } from "react-icons/fa6";
 import {
   useGetTaskListOrderQuery,
   useGetTaskListsQuery,
-} from "@/redux/apiSlice";
+} from "@/redux/taskListApiSlice";
 import { logError } from "@/util/console";
 export const Route = createFileRoute("/planner/")({
   component: Planner,

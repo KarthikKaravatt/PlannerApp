@@ -20,7 +20,7 @@ import {
   useMoveTaskListMutation,
   useRemoveTaskListMutation,
   useUpdateTaskListMutation,
-} from "@/redux/apiSlice";
+} from "@/redux/taskListApiSlice.ts";
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
 import { Tooltip } from "../General/ToolTip.tsx";

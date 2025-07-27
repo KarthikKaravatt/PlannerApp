@@ -1,5 +1,5 @@
 import type { ZonedDateTime } from "@internationalized/date";
-import { useUpdateTaskMutation } from "@/redux/apiSlice";
+import { useUpdateTaskMutation } from "@/redux/taskApiSlice";
 import type { Task } from "@/schemas/task";
 import type { TaskComponentState } from "@/types/taskReducer";
 import { logError } from "@/util/console";

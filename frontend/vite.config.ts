@@ -2,10 +2,12 @@ import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
-import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+
 const ReactCompilerConfig = {
   /* ... */
 };
+
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
@@ -14,25 +16,25 @@ export default defineConfig({
         advancedChunks: {
           groups: [
             {
-              name: 'react-vendor',
-              test: /\/node_modules\/(react|react-dom)\//
+              name: "react-vendor",
+              test: /\/node_modules\/(react|react-dom)\//,
             },
             {
-              name: 'router-vendor',
-              test: /\/node_modules\/@tanstack\//
+              name: "router-vendor",
+              test: /\/node_modules\/@tanstack\//,
             },
             {
-              name: 'redux-vendor',
-              test: /\/node_modules\/(redux|@reduxjs|immer)\//
-            }
-          ]
-        }
-      }
-    }
+              name: "redux-vendor",
+              test: /\/node_modules\/(redux|@reduxjs|immer)\//,
+            },
+          ],
+        },
+      },
+    },
   },
   plugins: [
     tanstackRouter({
-      target: 'react',
+      target: "react",
       autoCodeSplitting: true,
     }),
     viteReact({
