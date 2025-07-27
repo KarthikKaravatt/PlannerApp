@@ -467,49 +467,68 @@ export const apiSlice = createApi({
               listId,
               (draftTasks) => {
                 if (!task.completed) {
-                  delete draftTasks[task.id]
-                }
-                else {
-                  draftTasks[task.id] = { ...task, completed: true }
+                  delete draftTasks[task.id];
+                } else {
+                  draftTasks[task.id] = { ...task, completed: false };
                 }
               },
             ),
           );
-          const incompltedTaskOrderPatchResult = dispatch(apiSlice.util.updateQueryData("getIncompleteTaskOrder", listId, (draftOrder) => {
-            if (!task.completed) {
-              const deleteIndex = draftOrder.findIndex((t) => t.id === task.id)
-              if (deleteIndex !== -1) {
-                draftOrder.splice(deleteIndex, 1)
-              } else {
-                draftOrder.push({ id: task.id, orderIndex: draftOrder.length })
-              }
-            }
-          }))
+          const incompltedTaskOrderPatchResult = dispatch(
+            apiSlice.util.updateQueryData(
+              "getIncompleteTaskOrder",
+              listId,
+              (draftOrder) => {
+                if (!task.completed) {
+                  const deleteIndex = draftOrder.findIndex(
+                    (t) => t.id === task.id,
+                  );
+                  if (deleteIndex !== -1) {
+                    draftOrder.splice(deleteIndex, 1);
+                  }
+                } else {
+                  draftOrder.push({
+                    id: task.id,
+                    orderIndex: draftOrder.length,
+                  });
+                }
+              },
+            ),
+          );
           const compltedTaskPatchResult = dispatch(
             apiSlice.util.updateQueryData(
               "getCompleteTasks",
               listId,
               (draftTasks) => {
                 if (task.completed) {
-                  delete draftTasks[task.id]
-                }
-                else {
-                  draftTasks[task.id] = { ...task, completed: false }
+                  delete draftTasks[task.id];
+                } else {
+                  draftTasks[task.id] = { ...task, completed: true };
                 }
               },
             ),
           );
-          const compltedTaskOrderPatchResult = dispatch(apiSlice.util.updateQueryData("getCompleteTaskOrder", listId, (draftOrder) => {
-            if (task.completed) {
-              const deleteIndex = draftOrder.findIndex((t) => t.id === task.id)
-              if (deleteIndex !== -1) {
-                draftOrder.splice(deleteIndex, 1)
-              }
-            }
-            else {
-              draftOrder.push({ id: task.id, orderIndex: draftOrder.length })
-            }
-          }))
+          const compltedTaskOrderPatchResult = dispatch(
+            apiSlice.util.updateQueryData(
+              "getCompleteTaskOrder",
+              listId,
+              (draftOrder) => {
+                if (task.completed) {
+                  const deleteIndex = draftOrder.findIndex(
+                    (t) => t.id === task.id,
+                  );
+                  if (deleteIndex !== -1) {
+                    draftOrder.splice(deleteIndex, 1);
+                  }
+                } else {
+                  draftOrder.push({
+                    id: task.id,
+                    orderIndex: draftOrder.length,
+                  });
+                }
+              },
+            ),
+          );
           await queryFulfilled.catch(() => {
             incompltedTaskPatchResult.undo();
             incompltedTaskOrderPatchResult.undo();
@@ -624,30 +643,20 @@ export const apiSlice = createApi({
         method: "DELETE",
       }),
       async onQueryStarted(listId, { dispatch, queryFulfilled }) {
-        const deletedTasks = new Map<string, string>();
         const taskPatchResult = dispatch(
-          apiSlice.util.updateQueryData(
-            "getIncompleteTasks",
-            listId,
-            (draft) => {
-              for (const key in draft) {
-                if (Object.hasOwn(draft, key)) {
-                  const task = draft[key];
-                  if (task?.completed) {
-                    deletedTasks.set(key, "");
-                    delete draft[key];
-                  }
-                }
-              }
-            },
-          ),
+          apiSlice.util.updateQueryData("getCompleteTasks", listId, (draft) => {
+            for (const key of Object.keys(draft)) {
+              delete draft[key];
+            }
+          }),
         );
         const taskOrderPatchResult = dispatch(
           apiSlice.util.updateQueryData(
-            "getIncompleteTaskOrder",
+            "getCompleteTaskOrder",
             listId,
             (darftTaskOrder) => {
-              return darftTaskOrder.filter((t) => !deletedTasks.has(t.id));
+              //empty array
+              darftTaskOrder.length = 0;
             },
           ),
         );
@@ -662,6 +671,7 @@ export const apiSlice = createApi({
 });
 export const {
   useGetCompleteTaskOrderQuery,
+  useGetCompleteTasksQuery,
   useLazyGetCompleteTaskOrderQuery,
   useGetIncompleteTasksQuery,
   useAddNewTaskMutation,
