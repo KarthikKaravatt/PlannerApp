@@ -5,6 +5,8 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import ignore from "rollup-plugin-ignore";
+import { unstableRolldownAdapter } from 'vite-bundle-analyzer'
+import { analyzer } from 'vite-bundle-analyzer'
 
 
 
@@ -53,7 +55,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    ignore(['zod/locales']),
+    // unstableRolldownAdapter(analyzer()),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
