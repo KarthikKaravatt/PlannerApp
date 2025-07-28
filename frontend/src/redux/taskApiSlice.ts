@@ -1,5 +1,5 @@
 import { v7 as uuidv7 } from "uuid";
-import z from "zod";
+import { z } from "zod";
 import {
   type Task,
   type TaskOrder,
