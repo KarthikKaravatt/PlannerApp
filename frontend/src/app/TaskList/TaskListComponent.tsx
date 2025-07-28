@@ -252,7 +252,7 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
         isDisabled={sortOption !== "CUSTOM"}
         aria-label="Tasks"
         renderItem={(item, _isDragging) => (
-          <div className="flex flex-row">
+          <div className="flex flex-row items-center">
             <DragIndicator />
             {(() => {
               const task = tasks[item.id];

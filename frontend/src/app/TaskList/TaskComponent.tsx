@@ -72,7 +72,7 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
           dispatch({ type: "MUTATE_EDITING", payload: false });
         }
       }}
-      className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 shadow dark:border-b-white dark:bg-dark-background-c`}
+      className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 dark:border-b-white dark:bg-dark-background-c`}
       draggable={!state.isEditing}
     >
       <div className="flex flex-row items-center gap-2 pr-2 pl-2">
@@ -120,8 +120,8 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
       onClick={
         isInteractive
           ? () => {
-              handleClick();
-            }
+            handleClick();
+          }
           : undefined
       }
       className={`${state.isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
@@ -129,8 +129,8 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
       onKeyDown={
         isInteractive
           ? (event) => {
-              handleKeyDown(event);
-            }
+            handleKeyDown(event);
+          }
           : undefined
       }
       role="checkbox"
