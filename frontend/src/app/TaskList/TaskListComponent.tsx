@@ -270,7 +270,7 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
 
 const DragIndicator = () => {
   return (
-    <div className="flex cursor-move items-center p-1">
+    <div className="flex cursor-move items-center p-1" draggable={true}>
       <MdDragIndicator />
     </div>
   );
