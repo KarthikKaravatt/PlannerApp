@@ -160,8 +160,8 @@ const TaskListsOrder: React.FC = () => {
       onReorder={handleReorder}
       aria-label="Side bar task lists"
       renderItem={(item) => (
-        <div className="flex flex-row">
-          <div className="flex cursor-move items-center p-1">
+        <div className="flex flex-row items-center">
+          <div className="flex cursor-move items-center p-1" draggable={true}>
             <MdDragIndicator />
           </div>
           <TaskListItem taskList={item.taskList} />
