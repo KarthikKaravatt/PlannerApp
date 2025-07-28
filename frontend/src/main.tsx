@@ -1,7 +1,6 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDom from "react-dom/client";
-import { scan } from "react-scan";
 
 import { routeTree } from "./routeTree.gen.ts";
 
@@ -12,7 +11,8 @@ import { ThemeProvider } from "./contexts/themeContext.tsx";
 import { reportWebVitals } from "./reportWebVitals.ts";
 
 if (import.meta.env.DEV) {
-  scan({
+  const reactScan = await import("react-scan")
+  reactScan.scan({
     enabled: true,
   });
 }
