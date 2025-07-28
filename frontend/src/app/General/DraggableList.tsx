@@ -129,7 +129,7 @@ export function DraggableList<T extends DraggableItem>({
               onKeyDown={(e) => handleKeyDown(e, item, index)}
               tabIndex={isDisabled ? -1 : 0}
               role="button"
-              className={` ${isDragging && "opacity-60"} ${!isDisabled && "cursor-move"} ${showDropIndicator && dropPosition === "after" && "border-b-2"} ${showDropIndicator && dropPosition === "before" && "border-t-2"} border-gray-400 focus:rounded-xs focus:outline-2 outline-gray-300 dark:outline-white dark:border-white`}
+              className={` ${isDragging && "opacity-60"} ${!isDisabled && "cursor-move"} ${showDropIndicator && dropPosition === "after" && "border-b-2"} ${showDropIndicator && dropPosition === "before" && "border-t-2"} border-gray-400 outline-gray-300 focus:rounded-xs focus:outline dark:border-white dark:outline-white`}
               aria-describedby={isDragging ? "dragging-item" : undefined}
             >
               {renderItem(item, isDragging)}
