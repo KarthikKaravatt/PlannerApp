@@ -273,6 +273,8 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({
   }
 };
 
+// HACK: Have to do this otherwise it doesn't get memoized by the compiler for
+// some reason
 const DragIndicator = () => {
   return (
     <div className="flex cursor-move items-center p-1" draggable={true}>
