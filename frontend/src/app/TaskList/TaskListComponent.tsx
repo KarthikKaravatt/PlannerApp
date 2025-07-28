@@ -11,7 +11,7 @@ import {
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { MdDragIndicator } from "react-icons/md";
+import { MdDragIndicator, MdOutlineArrowForwardIos } from "react-icons/md";
 import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import {
   useGetCompleteTaskOrderQuery,
@@ -109,9 +109,14 @@ const CompletedTasks = ({ listId }: CompltedTasksProps) => {
     return <p>Error loading completed tasks</p>;
   }
   return (
-    <Disclosure>
+    <Disclosure className={"group"}>
       <Heading>
-        <Button slot="trigger">Completed Tasks</Button>
+        <Button
+          slot="trigger"
+          className="transition-transform duration-200 ease-in group-data-[expanded]:rotate-90"
+        >
+          <MdOutlineArrowForwardIos />
+        </Button>
       </Heading>
       <DisclosurePanel>
         {taskOrderData.map((t) => {

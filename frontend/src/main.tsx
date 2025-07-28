@@ -11,7 +11,7 @@ import { ThemeProvider } from "./contexts/themeContext.tsx";
 import { reportWebVitals } from "./reportWebVitals.ts";
 
 if (import.meta.env.DEV) {
-  const reactScan = await import("react-scan")
+  const reactScan = await import("react-scan");
   reactScan.scan({
     enabled: true,
   });
