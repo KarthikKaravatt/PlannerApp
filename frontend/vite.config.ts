@@ -1,13 +1,12 @@
+import babel from 'vite-plugin-babel';
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import ignore from "rollup-plugin-ignore";
 
 
-const ReactCompilerConfig = {
-  /* ... */
-};
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,34 +19,48 @@ export default defineConfig({
               name: 'react-vendor',
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
             },
-
             {
               name: 'router-vendor',
               test: /[\\/]node_modules[\\/]@tanstack[\\/]/,
             },
-
             {
-              name: 'ui-vendor',
-              test: /[\\/]node_modules[\\/](@react-aria|@react-stately|react-aria-components|@internationalized|clsx|react-icons)[\\/]/,
+              name: 'react-aria-vendor',
+              test: /[\\/]node_modules[\\/](@react-aria)[\\/]/,
             },
-
             {
-              name: 'data-vendor',
-              test: /[\\/]node_modules[\\/](@reduxjs\/toolkit|immer|react-redux|zod|uuid)[\\/]/,
+              name: 'react-aria-components-vendor',
+              test: /[\\/]node_modules[\\/](react-aria-components)[\\/]/,
             },
+            {
+              name: "react-aria-utilities-vendor",
+              test: /[\\/]node_modules[\\/](@react-stately|@internationalized|clsx|)[\\/]/,
+            },
+            {
+              name: "react-icons-vendor",
+              test: /[\\/]node_modules[\\/](react-icons)[\\/]/,
+            },
+            {
+              name: "redux-vendor",
+              test: /[\\/]node_modules[\\/](@reduxjs\/toolkit|immer|react-redux)[\\/]/,
+            },
+            {
+              name: "utilities-vendor",
+              test: /[\\/]node_modules[\\/](zod|uuid)[\\/]/,
+            }
           ],
         },
       },
     },
   },
   plugins: [
+    ignore(['zod/locales']),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
     }),
     viteReact({
       babel: {
-        plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+        plugins: ["babel-plugin-react-compiler"],
       },
     }),
     tailwindcss(),
