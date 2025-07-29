@@ -21,7 +21,7 @@ export const CustomDisclosure = ({
     <Disclosure {...props} className={"group"}>
       <Heading>
         <Button slot="trigger">
-          <div className="flex flex-row items-center p-1 gap-1">
+          <div className="flex flex-row items-center gap-1 p-1">
             <div className="transition-transform duration-200 ease-in group-data-[expanded]:rotate-90">
               <MdOutlineArrowForwardIos />
             </div>
@@ -29,7 +29,9 @@ export const CustomDisclosure = ({
           </div>
         </Button>
       </Heading>
-      <DisclosurePanel>{children}</DisclosurePanel>
+      <DisclosurePanel className=" -translate-y-2 transform opacity-0 transition-all duration-100 ease-in-out group-data-[expanded]:translate-y-0 group-data-[expanded]:opacity-100 ">
+        {children}
+      </DisclosurePanel>
     </Disclosure>
   );
 };
