@@ -365,10 +365,62 @@ const taskApiSlice = apiSlice.injectEndpoints({
         });
       },
     }),
-    moveTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
+    moveCompleteTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
         return {
-          url: `${moveTasks.listId}/tasks/move/${moveTasks.id1}`,
+          url: `${moveTasks.listId}/tasks/complete/move/${moveTasks.id1}`,
+          method: "PATCH",
+          body: {
+            targetTaskId: moveTasks.id2,
+            pos: moveTasks.pos,
+          },
+        };
+      },
+      async onQueryStarted(payload, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          taskApiSlice.util.updateQueryData(
+            "getCompleteTaskOrder",
+            payload.listId,
+            (draft) => {
+              draft.sort((a, b) => a.orderIndex - b.orderIndex);
+              const movedTaskIndex = draft.findIndex(
+                (t) => t.id === payload.id1,
+              );
+              const [movedTask] = draft.splice(movedTaskIndex, 1);
+              const anchorTaskIndex = draft.findIndex(
+                (t) => t.id === payload.id2,
+              );
+              if (movedTask) {
+                switch (payload.pos) {
+                  case "Before": {
+                    draft.splice(anchorTaskIndex, 0, movedTask);
+                    break;
+                  }
+                  case "After": {
+                    draft.splice(anchorTaskIndex + 1, 0, movedTask);
+                    break;
+                  }
+                }
+              } else {
+                logError("Moved task is not in the state");
+              }
+              // re-index
+              for (const [index, task] of draft.entries()) {
+                task.orderIndex = index;
+              }
+            },
+          ),
+        );
+        await queryFulfilled.catch(() => {
+          logError("Error moving tasks");
+          patchResult.undo();
+        });
+      },
+    }),
+    moveIncompleteTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
+      query: (moveTasks) => {
+        return {
+          url: `${moveTasks.listId}/tasks/incomplete/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
             targetTaskId: moveTasks.id2,
@@ -463,7 +515,8 @@ export const {
   useDeleteTaskMutation,
   useUpdateTaskMutation,
   useClearCompletedTasksMutation,
-  useMoveTaskOrderMutation,
+  useMoveCompleteTaskOrderMutation,
+  useMoveIncompleteTaskOrderMutation,
   useGetIncompleteTaskOrderQuery,
   useToggleTaskCompetionMutation,
 } = taskApiSlice;

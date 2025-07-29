@@ -109,7 +109,7 @@ public static class TaskEndpoints
         
 
         // Move a tasks position
-        tasksApi.MapPatch("/move/{movedTaskId:guid}/",
+        tasksApi.MapPatch("/incomplete/move/{movedTaskId:guid}/",
             async (PlannerDbContext db,Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
             {
                 // moving a task to its current position will nothing
@@ -132,6 +132,61 @@ public static class TaskEndpoints
                 var taskLinkedList = new LinkedList<Task>(
                      await db.Tasks
                         .Where(task => task.TaskListId == listId)
+                        .Where(task=> task.Completed == false)
+                        .OrderBy(task => task.OrderIndex)
+                        .ToListAsync()
+                );
+                taskLinkedList.Remove(movedTask);
+                var posTaskNode = taskLinkedList.Find(targetTask);
+                if (posTaskNode is null)
+                {
+                    return Results.NotFound();
+                }
+
+                switch (request.Pos)
+                {
+                    case "After":
+                        taskLinkedList.AddAfter(posTaskNode, movedTask);
+                        break;
+                    case "Before":
+                        taskLinkedList.AddBefore(posTaskNode, movedTask);
+                        break;
+                }
+
+                uint count = 0;
+                foreach (var t in taskLinkedList)
+                {
+                    t.OrderIndex = count;
+                    count++;
+                }
+
+                await db.SaveChangesAsync();
+                return Results.Ok();
+            });
+        tasksApi.MapPatch("/complete/move/{movedTaskId:guid}/",
+            async (PlannerDbContext db,Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
+            {
+                // moving a task to its current position will nothing
+                if (movedTaskId == request.TargetTaskId)
+                {
+                    return Results.Ok();
+                }
+
+                if (request.Pos is not ("Before" or "After"))
+                {
+                    return Results.BadRequest("Invalid positional arguments");
+                }
+
+                var movedTask = await db.Tasks.FindAsync(movedTaskId);
+                var targetTask = await db.Tasks.FindAsync(request.TargetTaskId);
+                if (movedTask is null || targetTask is null)
+                {
+                    return Results.NotFound();
+                }
+                var taskLinkedList = new LinkedList<Task>(
+                     await db.Tasks
+                        .Where(task => task.TaskListId == listId)
+                        .Where(task=> task.Completed == true)
                         .OrderBy(task => task.OrderIndex)
                         .ToListAsync()
                 );
@@ -163,4 +218,5 @@ public static class TaskEndpoints
                 return Results.Ok();
             });
     }
+    
 }

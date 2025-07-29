@@ -194,7 +194,7 @@ const VisibleTasks: React.FC<VibleTasksProp> = ({ listId, sortOption }) => {
         title="Incomplete"
         tasks={finalList}
         listId={listId}
-        defaultOpen={true}
+        isIncompleteTasks={true}
         sortOption={sortOption}
       />
     );

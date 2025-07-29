@@ -1,5 +1,8 @@
 import { MdDragIndicator } from "react-icons/md";
-import { useMoveTaskOrderMutation } from "@/redux/taskApiSlice.ts";
+import {
+  useMoveCompleteTaskOrderMutation,
+  useMoveIncompleteTaskOrderMutation,
+} from "@/redux/taskApiSlice.ts";
 import type { Task } from "@/schemas/task";
 import type { SortOption } from "@/types/taskList.ts";
 import { logError } from "@/util/console.ts";
@@ -11,10 +14,11 @@ export const TaskDisclosure: React.FC<{
   title: string;
   listId: string;
   tasks: Task[];
-  defaultOpen?: boolean;
+  isIncompleteTasks?: boolean;
   sortOption: SortOption;
-}> = ({ title, tasks, listId, defaultOpen = false, sortOption }) => {
-  const [moveTask] = useMoveTaskOrderMutation();
+}> = ({ title, tasks, listId, isIncompleteTasks = false, sortOption }) => {
+  const [moveTaskIncomplete] = useMoveIncompleteTaskOrderMutation();
+  const [moveTaskCompelte] = useMoveCompleteTaskOrderMutation();
   const handleReorder = (
     draggedId: string,
     targetId: string,
@@ -23,19 +27,32 @@ export const TaskDisclosure: React.FC<{
     if (!(sortOption === "CUSTOM")) {
       return;
     }
-    moveTask({
-      id1: draggedId,
-      id2: targetId,
-      pos: position === "before" ? "Before" : "After",
-      listId: listId,
-    }).catch((err: unknown) => {
-      if (err instanceof Error) {
-        logError("Error moving task", err);
-      }
-    });
+    if (isIncompleteTasks) {
+      moveTaskIncomplete({
+        id1: draggedId,
+        id2: targetId,
+        pos: position === "before" ? "Before" : "After",
+        listId: listId,
+      }).catch((err: unknown) => {
+        if (err instanceof Error) {
+          logError("Error moving task", err);
+        }
+      });
+    } else {
+      moveTaskCompelte({
+        id1: draggedId,
+        id2: targetId,
+        pos: position === "before" ? "Before" : "After",
+        listId: listId,
+      }).catch((err: unknown) => {
+        if (err instanceof Error) {
+          logError("Error moving task", err);
+        }
+      });
+    }
   };
   return (
-    <CustomDisclosure defaultExpanded={defaultOpen} title={title}>
+    <CustomDisclosure defaultExpanded={isIncompleteTasks} title={title}>
       <DraggableList
         items={tasks}
         onReorder={handleReorder}
