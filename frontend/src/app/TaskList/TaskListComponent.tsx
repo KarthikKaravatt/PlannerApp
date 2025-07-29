@@ -24,14 +24,12 @@ import { TaskDisclosure } from "./TaskDisclosure.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
 
-interface TaskListComponentProps {
-  listName: string;
-  listId: string;
-}
-
-export const TaskListComponent: React.FC<TaskListComponentProps> = ({
+export const TaskListComponent = ({
   listName,
   listId,
+}: {
+  listName: string;
+  listId: string;
 }) => {
   const [filterOption, setFilterOption] = useState<FilterOption>(() => {
     const filterOptionCached = localStorage.getItem(
@@ -166,12 +164,13 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   );
 };
 
-interface VibleTasksProp {
+const VisibleTasks = ({
+  listId,
+  sortOption,
+}: {
   listId: string;
   sortOption: SortOption;
-}
-
-const VisibleTasks: React.FC<VibleTasksProp> = ({ listId, sortOption }) => {
+}) => {
   const {
     data: tasks,
     isLoading,
