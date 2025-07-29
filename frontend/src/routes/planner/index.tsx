@@ -42,10 +42,7 @@ function Planner() {
   );
 }
 
-interface TaskListsProps {
-  className?: string;
-}
-const TaskLists: React.FC<TaskListsProps> = ({ className }) => {
+const TaskLists = ({ className }: { className: string }) => {
   const {
     data: listData,
     isLoading: isListDataLoading,
