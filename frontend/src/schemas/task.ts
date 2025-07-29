@@ -1,5 +1,6 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { z } from "zod";
+import type { DraggableItem } from "@/app/General/DraggableList";
 
 const baseTaskSchema = z.object({
   id: z.uuidv7(),
@@ -46,4 +47,4 @@ export type TaskOrder = z.infer<typeof taskOrderSchema>;
 
 export type TaskResponse = z.infer<typeof taskResponseSchema>;
 
-export type Task = z.infer<typeof taskSchemea>;
+export type Task = z.infer<typeof taskSchemea> & DraggableItem;
