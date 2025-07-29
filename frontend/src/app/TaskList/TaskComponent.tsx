@@ -29,11 +29,13 @@ import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
 import { PopOverMenu } from "../General/PopOverMenu.tsx";
 
-export interface TaskProp {
+export const TaskComponent = ({
+  task,
+  taskListId,
+}: {
   task: Task;
   taskListId: string;
-}
-export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
+}) => {
   const initalTaskComponentState: TaskComponentState = {
     inputTaskName: task.label,
     taskListId,
@@ -76,7 +78,7 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
       draggable={!state.isEditing}
     >
       <div className="flex flex-row items-center gap-2 pr-2 pl-2">
-        <CheckBox task={task} state={state} dispatch={dispatch} />
+        <CheckBox task={task} state={state} />
         <InputField task={task} state={state} dispatch={dispatch} />
         <DueDateDisplay task={task} state={state} />
         <MoreOptions task={task} state={state} dispatch={dispatch} />
@@ -85,12 +87,13 @@ export const TaskComponent: React.FC<TaskProp> = ({ task, taskListId }) => {
   );
 };
 
-interface CheckBoxProp {
+const CheckBox = ({
+  task,
+  state,
+}: {
   task: Task;
   state: TaskComponentState;
-  dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-}
-const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
+}) => {
   const [toggleCompletion, { isLoading }] = useToggleTaskCompetionMutation();
   const handleClick = () => {
     if (state.isEditing || isLoading) {
@@ -139,12 +142,15 @@ const CheckBox: React.FC<CheckBoxProp> = ({ task, state }) => {
     />
   );
 };
-interface InputFieldProps {
+const InputField = ({
+  task,
+  state,
+  dispatch,
+}: {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-}
-const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
+}) => {
   return (
     <AutoResizeTextArea
       value={state.isEditing ? state.inputTaskName : task.label}
@@ -159,11 +165,13 @@ const InputField: React.FC<InputFieldProps> = ({ task, state, dispatch }) => {
     />
   );
 };
-interface DueDateProp {
+const DueDateDisplay = ({
+  task,
+  state,
+}: {
   task: Task;
   state: TaskComponentState;
-}
-const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
+}) => {
   const { isLoading, onDateButtonClicked } = useTaskDueDate(task, state);
   if (task.kind === "withoutDate") {
     // biome-ignore lint/complexity/noUselessFragments: Need a way of representing return nothing
@@ -215,12 +223,15 @@ const DueDateDisplay: React.FC<DueDateProp> = ({ task, state }) => {
     </div>
   );
 };
-interface MoreOptionsProp {
+const MoreOptions = ({
+  task,
+  state,
+  dispatch,
+}: {
   task: Task;
   state: TaskComponentState;
   dispatch: React.ActionDispatch<[action: TaskComponentAction]>;
-}
-const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
+}) => {
   const {
     isLoading,
     isDeleteLoading,
