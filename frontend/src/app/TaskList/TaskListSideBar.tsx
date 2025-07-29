@@ -23,7 +23,7 @@ import {
 } from "@/redux/taskListApiSlice.ts";
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
-import { Tooltip } from "../General/ToolTip.tsx";
+import { CustomTooltip } from "../General/CustomToolTip.tsx";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
 const INPUT_LIMIT = 25;
@@ -231,11 +231,11 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
         }}
       />
       <DialogTrigger>
-        <Tooltip message="Delete task list">
+        <CustomTooltip message="Delete task list">
           <Button>
             <TbTrash />
           </Button>
-        </Tooltip>
+        </CustomTooltip>
         <Popover>
           <Dialog
             className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 dark:border-gray-800 dark:bg-dark-background-c dark:text-white "
@@ -279,7 +279,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
           </Dialog>
         </Popover>
       </DialogTrigger>
-      <Tooltip message={isEditing ? "Confirm edit" : "Edit task list"}>
+      <CustomTooltip message={isEditing ? "Confirm edit" : "Edit task list"}>
         <Button
           isDisabled={isLoading || isLoadingDelete}
           onClick={() => {
@@ -309,7 +309,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
         >
           {isEditing ? <FaCheck className="text-green-700" /> : <CiEdit />}
         </Button>
-      </Tooltip>
+      </CustomTooltip>
     </div>
   );
 };

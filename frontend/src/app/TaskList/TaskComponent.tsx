@@ -27,7 +27,7 @@ import type {
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import { PopOverMenu } from "../General/PopOverMenu.tsx";
-import { Tooltip } from "../General/ToolTip.tsx";
+import { CustomTooltip } from "../General/CustomToolTip.tsx";
 
 export interface TaskProp {
   task: Task;
@@ -261,7 +261,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
           Delete
         </Button>
       </PopOverMenu>
-      <Tooltip message={state.isEditing ? "Confirm edit" : "Edit task"}>
+      <CustomTooltip message={state.isEditing ? "Confirm edit" : "Edit task"}>
         <Button
           type="button"
           className={`" ${isLoading || isDeleteLoading ? "text-gray-400" : state.isEditing ? "text-green-700 dark:text-green-400" : ""} "`}
@@ -275,7 +275,7 @@ const MoreOptions: React.FC<MoreOptionsProp> = ({ task, state, dispatch }) => {
         >
           {state.isEditing ? <FaCheck /> : <CiEdit />}
         </Button>
-      </Tooltip>
+      </CustomTooltip>
     </div>
   );
 };

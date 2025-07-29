@@ -24,10 +24,11 @@ import { useRemoveTaskListMutation } from "@/redux/taskListApiSlice.ts";
 import type { Task, TaskOrder } from "@/schemas/task";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
-import { Tooltip } from "../General/ToolTip.tsx";
+import { CustomTooltip } from "../General/CustomToolTip.tsx";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
+import { CustomDisclosure } from "../General/Disclosure.tsx";
 
 interface TaskListComponentProps {
   listName: string;
@@ -109,37 +110,27 @@ const CompletedTasks = ({ listId }: CompltedTasksProps) => {
     return <p>Error loading completed tasks</p>;
   }
   return (
-    <Disclosure className={"group"}>
-      <Heading>
-        <Button
-          slot="trigger"
-          className="transition-transform duration-200 ease-in group-data-[expanded]:rotate-90"
-        >
-          <MdOutlineArrowForwardIos />
-        </Button>
-      </Heading>
-      <DisclosurePanel>
-        {taskOrderData.map((t) => {
-          const task = tasksData[t.id];
-          if (task) {
-            return (
-              <TaskComponent key={task.id} task={task} taskListId={listId} />
-            );
-          }
-        })}
-      </DisclosurePanel>
-    </Disclosure>
+    <CustomDisclosure title="Completed">
+      {taskOrderData.map((t) => {
+        const task = tasksData[t.id];
+        if (task) {
+          return (
+            <TaskComponent key={task.id} task={task} taskListId={listId} />
+          );
+        }
+      })}
+    </CustomDisclosure>
   );
 };
 const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
   const [removeTaskList] = useRemoveTaskListMutation();
   return (
     <DialogTrigger>
-      <Tooltip message="Delete task list">
+      <CustomTooltip message="Delete task list">
         <Button className="justify-end p-1 transition duration-150 ease-in hover:scale-110">
           <FaRegTrashCan />
         </Button>
-      </Tooltip>
+      </CustomTooltip>
       <Modal className=" fixed inset-0 flex items-center justify-center text-blue-950 dark:text-white ">
         <Dialog
           className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 dark:border-gray-800 dark:bg-dark-background-c "
