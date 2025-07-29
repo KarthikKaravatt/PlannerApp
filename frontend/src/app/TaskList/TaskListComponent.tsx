@@ -4,14 +4,12 @@ import {
   Button,
   Dialog,
   DialogTrigger,
-  Disclosure,
-  DisclosurePanel,
   Heading,
   Modal,
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { MdDragIndicator, MdOutlineArrowForwardIos } from "react-icons/md";
+import { MdDragIndicator } from "react-icons/md";
 import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import {
   useGetCompleteTaskOrderQuery,
