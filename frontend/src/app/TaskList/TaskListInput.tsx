@@ -6,11 +6,7 @@ import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 
 const MAX_TASK_LENGTH = 256;
 
-interface TaskListInputProps {
-  taskListId: string;
-}
-
-export const TaskListInput: React.FC<TaskListInputProps> = ({ taskListId }) => {
+export const TaskListInput = ({ taskListId }: { taskListId: string }) => {
   const [inputTask, setInputTask] = useState<string>("");
   const [addNewTask, { isLoading }] = useAddNewTaskMutation();
   const onInputChanged = (event: ChangeEvent<HTMLTextAreaElement>) => {
