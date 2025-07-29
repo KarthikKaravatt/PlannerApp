@@ -21,7 +21,7 @@ export const CustomDisclosure = ({
     <Disclosure {...props} className={"group"}>
       <Heading>
         <Button slot="trigger">
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center p-1 gap-1">
             <div className="transition-transform duration-200 ease-in group-data-[expanded]:rotate-90">
               <MdOutlineArrowForwardIos />
             </div>
