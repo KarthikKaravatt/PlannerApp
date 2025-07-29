@@ -9,22 +9,18 @@ import {
 } from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { MdDragIndicator } from "react-icons/md";
-import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import {
   useGetCompleteTaskOrderQuery,
   useGetCompleteTasksQuery,
   useGetIncompleteTaskOrderQuery,
   useGetIncompleteTasksQuery,
-  useMoveTaskOrderMutation,
 } from "@/redux/taskApiSlice.ts";
 import { useRemoveTaskListMutation } from "@/redux/taskListApiSlice.ts";
 import type { Task, TaskOrder } from "@/schemas/task";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
-import { CustomDisclosure } from "../General/Disclosure.tsx";
-import { TaskComponent } from "./TaskComponent.tsx";
+import { TaskDisclosure } from "./TaskDisclosure.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
 
@@ -73,11 +69,7 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
         setSortState={setSortOption}
       />
       <TaskListInput taskListId={listId} />
-      <VisibleTasks
-        listId={listId}
-        sortOption={sortOption}
-        filterOption={filterOption}
-      />
+      <VisibleTasks listId={listId} sortOption={sortOption} />
       <CompletedTasks listId={listId} />
     </div>
   );
@@ -107,17 +99,14 @@ const CompletedTasks = ({ listId }: CompltedTasksProps) => {
   if (!isSuccess) {
     return <p>Error loading completed tasks</p>;
   }
+  const finalList = getFinalList(tasksData, taskOrderData, "CUSTOM");
   return (
-    <CustomDisclosure title="Completed">
-      {taskOrderData.map((t) => {
-        const task = tasksData[t.id];
-        if (task) {
-          return (
-            <TaskComponent key={task.id} task={task} taskListId={listId} />
-          );
-        }
-      })}
-    </CustomDisclosure>
+    <TaskDisclosure
+      title="Completed"
+      tasks={finalList}
+      listId={listId}
+      sortOption="CUSTOM"
+    />
   );
 };
 const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
@@ -175,101 +164,41 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
 
 interface VibleTasksProp {
   listId: string;
-  filterOption: FilterOption;
   sortOption: SortOption;
 }
 
-const VisibleTasks: React.FC<VibleTasksProp> = ({
-  listId,
-  filterOption,
-  sortOption,
-}) => {
+const VisibleTasks: React.FC<VibleTasksProp> = ({ listId, sortOption }) => {
   const {
     data: tasks,
     isLoading,
     isSuccess,
     isError,
-    error,
   } = useGetIncompleteTasksQuery(listId);
   const {
     data: order,
     isLoading: isOrderLoading,
     isSuccess: isOrderSuccess,
     isError: isOrderError,
-    error: orderError,
   } = useGetIncompleteTaskOrderQuery(listId);
-  const [moveTask /*{ isLoading: isMovingTask }*/] = useMoveTaskOrderMutation();
-  const handleReorder = (
-    draggedId: string,
-    targetId: string,
-    position: "before" | "after",
-  ) => {
-    if (!(sortOption === "CUSTOM" && filterOption === "ALL")) {
-      return;
-    }
-
-    moveTask({
-      id1: draggedId,
-      id2: targetId,
-      pos: position === "before" ? "Before" : "After",
-      listId: listId,
-    }).catch((err: unknown) => {
-      if (err instanceof Error) {
-        logError("Error moving task", err);
-      }
-    });
-  };
   if (isLoading || isOrderLoading) {
     return <FaSpinner className="text-blue950 animate-spin dark:text-white" />;
   }
   if (isError || isOrderError) {
-    logError("Error fetching tasks", error as Error);
-    logError("Error fetching tasks order", orderError as Error);
+    logError("Error fetching tasks");
     return <p>Error: Failed to fetch tasks or task order</p>;
   }
   if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, sortOption);
-    const draggableItems: DraggableItem[] = finalList.map((task) => ({
-      id: task.id,
-    }));
-
     return (
-      <DraggableList
-        className="overflow-auto"
-        items={draggableItems}
-        onReorder={handleReorder}
-        isDisabled={sortOption !== "CUSTOM"}
-        aria-label="Tasks"
-        renderItem={(item, _isDragging) => (
-          <div className="flex flex-row items-center">
-            <DragIndicator />
-            {(() => {
-              const task = tasks[item.id];
-              if (task) {
-                return (
-                  <TaskComponent
-                    taskListId={listId}
-                    key={item.id}
-                    task={task}
-                  />
-                );
-              }
-            })()}
-          </div>
-        )}
+      <TaskDisclosure
+        title="Incomplete"
+        tasks={finalList}
+        listId={listId}
+        defaultOpen={true}
+        sortOption={sortOption}
       />
     );
   }
-};
-
-// HACK: Have to do this otherwise it doesn't get memoized by the compiler for
-// some reason
-const DragIndicator = () => {
-  return (
-    <div className="flex cursor-move items-center p-1" draggable={true}>
-      <MdDragIndicator />
-    </div>
-  );
 };
 
 function getFinalList(
@@ -315,5 +244,5 @@ function getFinalList(
       }
     }
   })();
-  return sortedList.filter((t) => !t.completed);
+  return sortedList;
 }
