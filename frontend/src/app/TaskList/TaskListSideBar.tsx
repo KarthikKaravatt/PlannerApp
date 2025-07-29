@@ -28,7 +28,7 @@ import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
 const INPUT_LIMIT = 25;
 
-export const TaskListSideBar: React.FC = () => {
+export const TaskListSideBar = () => {
   //TODO: add a loading state
   const [addTaskList] = useAddNewTaskListMutation();
   const [newListName, setNewListName] = useState("");
@@ -83,7 +83,7 @@ export const TaskListSideBar: React.FC = () => {
   );
 };
 
-const TaskListsOrder: React.FC = () => {
+const TaskListsOrder = () => {
   const {
     data: taskListData,
     isLoading: isTaskListLoading,
@@ -171,10 +171,7 @@ const TaskListsOrder: React.FC = () => {
   );
 };
 
-interface TaskListItemProps {
-  taskList: TaskList;
-}
-const TaskListItem: React.FC<TaskListItemProps> = ({ taskList }) => {
+const TaskListItem = ({ taskList }: { taskList: TaskList }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [input, setInput] = useState(taskList.name);
   const [updateTaskList, { isLoading }] = useUpdateTaskListMutation();
