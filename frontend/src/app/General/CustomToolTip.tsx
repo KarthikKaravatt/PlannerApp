@@ -5,7 +5,10 @@ interface ToolTipProps {
   message: string;
 }
 
-export const CustomTooltip: React.FC<ToolTipProps> = ({ children, message }) => {
+export const CustomTooltip: React.FC<ToolTipProps> = ({
+  children,
+  message,
+}) => {
   return (
     <TooltipTrigger>
       {children}

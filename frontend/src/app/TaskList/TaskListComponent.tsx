@@ -23,10 +23,10 @@ import type { Task, TaskOrder } from "@/schemas/task";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
+import { CustomDisclosure } from "../General/Disclosure.tsx";
 import { TaskComponent } from "./TaskComponent.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 import { TaskListOptions } from "./TaskListOptions.tsx";
-import { CustomDisclosure } from "../General/Disclosure.tsx";
 
 interface TaskListComponentProps {
   listName: string;
