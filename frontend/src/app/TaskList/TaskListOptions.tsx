@@ -11,19 +11,18 @@ import { useClearCompletedTasksMutation } from "@/redux/taskApiSlice";
 import type { FilterOption, SortOption } from "@/types/taskList";
 import { logError } from "@/util/console";
 
-export interface TaskListOptionsProp {
-  taskListId: string;
-  filterState: FilterOption;
-  setFilterState: React.Dispatch<React.SetStateAction<FilterOption>>;
-  sortOrder: SortOption;
-  setSortState: React.Dispatch<React.SetStateAction<SortOption>>;
-}
-export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
+export const TaskListOptions = ({
   taskListId,
   filterState,
   setFilterState,
   sortOrder,
   setSortState,
+}: {
+  taskListId: string;
+  filterState: FilterOption;
+  setFilterState: React.Dispatch<React.SetStateAction<FilterOption>>;
+  sortOrder: SortOption;
+  setSortState: React.Dispatch<React.SetStateAction<SortOption>>;
 }) => {
   const [clearTasks, { isLoading }] = useClearCompletedTasksMutation();
   const onFilterButtonClick = () => {
@@ -104,16 +103,15 @@ export const TaskListOptions: React.FC<TaskListOptionsProp> = ({
     </div>
   );
 };
-interface OptionsButtonProps {
-  isLoading: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}
 const OptionsButton = ({
   isLoading,
   children,
   onClick,
-}: OptionsButtonProps) => {
+}: {
+  isLoading: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) => {
   return (
     <Button
       isDisabled={isLoading}
