@@ -21,7 +21,7 @@ export const PopOverMenu: React.FC<PopOverMenuProps> = ({
           <BsThreeDots />
         </Button>
       </CustomTooltip>
-      <Popover>
+      <Popover className="shadow-lg transition duration-100 ease-in data-[entering]:opacity-0 data-[exiting]:opacity-0">
         <Dialog className="flex flex-col gap-y-0.5 rounded-md border-1 border-gray-300 bg-sky-100 p-0.5 text-sm text-blue-950 dark:border-white dark:bg-dark-background-c dark:text-white">
           {children}
         </Dialog>

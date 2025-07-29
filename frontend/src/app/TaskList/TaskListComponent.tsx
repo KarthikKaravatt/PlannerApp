@@ -67,7 +67,7 @@ export const TaskListComponent = ({
         setSortState={setSortOption}
       />
       <TaskListInput taskListId={listId} />
-      <div className="overflow-auto">
+      <div className="shadow-lg overflow-auto">
         <VisibleTasks listId={listId} sortOption={sortOption} />
         <CompletedTasks listId={listId} sortOption={sortOption} />
       </div>
