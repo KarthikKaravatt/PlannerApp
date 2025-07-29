@@ -69,17 +69,21 @@ export const TaskListComponent: React.FC<TaskListComponentProps> = ({
         setSortState={setSortOption}
       />
       <TaskListInput taskListId={listId} />
-      <VisibleTasks listId={listId} sortOption={sortOption} />
-      <CompletedTasks listId={listId} />
+      <div className="overflow-auto">
+        <VisibleTasks listId={listId} sortOption={sortOption} />
+        <CompletedTasks listId={listId} sortOption={sortOption} />
+      </div>
     </div>
   );
 };
 
-interface CompltedTasksProps {
+const CompletedTasks = ({
+  listId,
+  sortOption,
+}: {
   listId: string;
-}
-
-const CompletedTasks = ({ listId }: CompltedTasksProps) => {
+  sortOption: SortOption;
+}) => {
   const {
     data: taskOrderData,
     isLoading: isOrderLoading,
@@ -99,13 +103,13 @@ const CompletedTasks = ({ listId }: CompltedTasksProps) => {
   if (!isSuccess) {
     return <p>Error loading completed tasks</p>;
   }
-  const finalList = getFinalList(tasksData, taskOrderData, "CUSTOM");
+  const finalList = getFinalList(tasksData, taskOrderData, sortOption);
   return (
     <TaskDisclosure
       title="Completed"
       tasks={finalList}
       listId={listId}
-      sortOption="CUSTOM"
+      sortOption={sortOption}
     />
   );
 };
