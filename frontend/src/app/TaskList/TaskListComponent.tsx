@@ -121,42 +121,36 @@ const TaskListDeleteListDiaLog: React.FC<{ listId: string }> = ({ listId }) => {
       </CustomTooltip>
       <Modal className=" group fixed inset-0 flex items-center justify-center text-blue-950 backdrop-blur-xs transition duration-150 ease-in data-[entering]:backdrop-blur-none data-[exiting]:backdrop-blur-none dark:text-white">
         <Dialog
-          className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 transition-opacity duration-150 ease-in group-data-[entering]:opacity-0 group-data-[exiting]:opacity-0 dark:border-gray-800 dark:bg-dark-background-c"
+          className=" w-3/4 rounded-md border-2 border-red-600 bg-blue-100 p-2 transition-opacity duration-150 ease-in group-data-[entering]:opacity-0  group-data-[exiting]:opacity-0 dark:bg-dark-background-c"
           role="alertdialog"
         >
-          {({ close }) => (
-            <>
-              <Heading className="text-lg font-bold text-red-500" slot="title">
-                Delete task list
-              </Heading>
-              <p>
-                {
-                  "This will delete this task list and all tasks associated with it"
-                }
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  className={
-                    "bg-blue-200 dark:bg-dark-background-sub-c p-1 rounded-md"
-                  }
-                  onPress={close}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className={"bg-red-200 dark:bg-red-950 p-1 rounded-md"}
-                  onPress={() => {
-                    removeTaskList(listId).catch(() => {
-                      logError("Error deleting task list");
-                    });
-                    close();
-                  }}
-                >
-                  Delete
-                </Button>
-              </div>
-            </>
-          )}
+          <Heading className="text-lg font-bold text-red-500" slot="title">
+            Delete task list
+          </Heading>
+          <p>
+            {"This will delete this task list and all tasks associated with it"}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              slot={"close"}
+              className={
+                "bg-blue-200 dark:bg-dark-background-sub-c p-1 rounded-md"
+              }
+            >
+              Cancel
+            </Button>
+            <Button
+              slot={"close"}
+              className={"bg-red-200 dark:bg-red-950 p-1 rounded-md"}
+              onPress={() => {
+                removeTaskList(listId).catch(() => {
+                  logError("Error deleting task list");
+                });
+              }}
+            >
+              Delete
+            </Button>
+          </div>
         </Dialog>
       </Modal>
     </DialogTrigger>
