@@ -38,7 +38,7 @@ export const TaskListInput = ({ taskListId }: { taskListId: string }) => {
       />
       <Button
         isDisabled={isLoading}
-        className=" w-1/3 rounded-lg bg-blue-200 dark:bg-white dark:text-black "
+        className={` ${!isLoading ? "bg-blue-200 dark:bg-white" : "bg-gray-300"} w-1/3 rounded-lg dark:text-black `}
         type="button"
         onClick={onAddButtonClick}
       >
