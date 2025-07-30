@@ -21,16 +21,15 @@ export const SideBar: React.FC<SideBarProps> = ({
   title,
   textColor,
 }) => {
-  const [open, setOpen] = useState(false);
   return (
     <div className="h-screen">
-      <DialogTrigger onOpenChange={(isOpen) => setOpen(isOpen)}>
-        <Button onClick={() => setOpen(true)}>
+      <DialogTrigger>
+        <Button>
           <GiHamburgerMenu className={`${textColor} m-2 text-lg`} />
         </Button>
         <ModalOverlay
           isDismissable={true}
-          className={`${open ? "backdrop-blur-xs" : ""} fixed inset-0 z-20 transition duration-200 ease-in`}
+          className="fixed inset-0 z-20 backdrop-blur-xs transition duration-200 ease-in data-[entering]:backdrop-blur-none data-[exiting]:backdrop-blur-none"
         >
           <Modal className="left-0 h-full w-fit border-l border-l-[var(--border-color)] bg-sky-100 shadow-xl transition duration-200 ease-in outline-none data-[entering]:opacity-0 data-[exiting]:opacity-0 dark:bg-dark-background-c ">
             <Dialog className={`${textColor} p-1`}>
