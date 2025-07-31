@@ -37,7 +37,10 @@ export const CustomDialog = ({
           <TriggerIcon />
         </Button>
       )}
-      <ModalOverlay className="group fixed inset-0 z-20 flex items-center justify-center text-blue-950 backdrop-blur-xs transition duration-150 ease-in data-[entering]:backdrop-blur-none data-[exiting]:backdrop-blur-none dark:text-white">
+      <ModalOverlay
+        isDismissable
+        className="group fixed inset-0 z-20 flex items-center justify-center text-blue-950 backdrop-blur-xs transition duration-150 ease-in data-[entering]:backdrop-blur-none data-[exiting]:backdrop-blur-none dark:text-white"
+      >
         <Modal>
           <Dialog
             role="alertdialog"
