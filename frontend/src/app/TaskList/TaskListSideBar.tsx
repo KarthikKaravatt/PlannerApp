@@ -1,15 +1,8 @@
 import { useRef, useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  Heading,
-  Popover,
-} from "react-aria-components";
+import { Button } from "react-aria-components";
 import { CiEdit } from "react-icons/ci";
-import { FaCheck, FaSpinner } from "react-icons/fa6";
+import { FaCheck, FaRegTrashCan, FaSpinner } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
-import { TbTrash } from "react-icons/tb";
 import { AutoResizeTextArea } from "@/app/General/AutoResizeTextArea";
 import { type DraggableItem, DraggableList } from "@/app/General/DraggableList";
 import { SideBar } from "@/app/General/SideBar";
@@ -23,6 +16,7 @@ import {
 } from "@/redux/taskListApiSlice.ts";
 import type { TaskList } from "@/schemas/taskList";
 import { logError } from "@/util/console";
+import { CustomDialog } from "../General/CustomDialog.tsx";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
 import { ThemeSwitcher } from "../ThemeSwitcher.tsx";
 
@@ -175,8 +169,7 @@ const TaskListItem = ({ taskList }: { taskList: TaskList }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [input, setInput] = useState(taskList.name);
   const [updateTaskList, { isLoading }] = useUpdateTaskListMutation();
-  const [removeTaskList, { isLoading: isLoadingDelete }] =
-    useRemoveTaskListMutation();
+  const [removeTaskList] = useRemoveTaskListMutation();
   const listRef = useRef<HTMLDivElement>(null);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Not static
@@ -227,58 +220,16 @@ const TaskListItem = ({ taskList }: { taskList: TaskList }) => {
           }
         }}
       />
-      <DialogTrigger>
-        <CustomTooltip message="Delete task list">
-          <Button>
-            <TbTrash />
-          </Button>
-        </CustomTooltip>
-        <Popover>
-          <Dialog
-            className=" w-3/4 rounded-xl border-2 border-gray-300 bg-blue-100 p-2 dark:border-gray-800 dark:bg-dark-background-c dark:text-white "
-            role="alertdialog"
-          >
-            {({ close }) => (
-              <>
-                <Heading
-                  className="text-lg font-bold text-red-500"
-                  slot="title"
-                >
-                  Delete task list
-                </Heading>
-                <p>
-                  This will delete this task list and all tasks associsated with
-                  it
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    className={
-                      "bg-blue-200 dark:bg-dark-background-sub-c p-1 rounded-md"
-                    }
-                    onPress={close}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className={"bg-red-200 dark:bg-red-950 p-1 rounded-md"}
-                    onPress={() => {
-                      removeTaskList(taskList.id).catch(() => {
-                        logError("Error deleting task list");
-                      });
-                      close();
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </>
-            )}
-          </Dialog>
-        </Popover>
-      </DialogTrigger>
+      <CustomDialog
+        toolTipMessage="Delete task list"
+        dialogMessage="The task list and all its tasks will be deleted"
+        heading="Delete Task List"
+        triggerIcon={FaRegTrashCan}
+        onPressAllow={() => removeTaskList(taskList.id)}
+      />
       <CustomTooltip message={isEditing ? "Confirm edit" : "Edit task list"}>
         <Button
-          isDisabled={isLoading || isLoadingDelete}
+          isDisabled={isLoading}
           onClick={() => {
             if (isEditing) {
               if (taskList.name !== input) {
