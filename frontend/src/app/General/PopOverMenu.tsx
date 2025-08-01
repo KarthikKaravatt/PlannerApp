@@ -1,24 +1,26 @@
 import type React from "react";
 import { Button, Dialog, DialogTrigger, Popover } from "react-aria-components";
-import { BsThreeDots } from "react-icons/bs";
+import type { IconType } from "react-icons";
 import { CustomTooltip } from "./CustomToolTip.tsx";
 
 interface PopOverMenuProps {
   children: React.ReactNode;
-  hoverMessage?: string;
+  hoverMessage: string;
   isDisabled?: boolean;
+  menuIcon: IconType;
 }
 
 export const PopOverMenu: React.FC<PopOverMenuProps> = ({
   hoverMessage,
   children,
+  menuIcon: MenuIcon,
   isDisabled,
 }) => {
   return (
     <DialogTrigger>
-      <CustomTooltip message={hoverMessage ?? ""}>
+      <CustomTooltip message={hoverMessage}>
         <Button isDisabled={isDisabled ?? false}>
-          <BsThreeDots />
+          <MenuIcon />
         </Button>
       </CustomTooltip>
       <Popover className="shadow-lg transition duration-100 ease-in data-[entering]:opacity-0 data-[exiting]:opacity-0">
