@@ -21,10 +21,7 @@ public static class TagEndpoints
         tagApi.MapDelete("/{tagId:guid}", async (PlannerDbContext db, Guid tagId) =>
         {
             var tag = await db.Tags.FindAsync(tagId);
-            if (tag is null)
-            {
-                return Results.NotFound();
-            }
+            if (tag is null) return Results.NotFound();
             db.Tags.Remove(tag);
             await db.SaveChangesAsync();
             return Results.Ok();
@@ -33,20 +30,11 @@ public static class TagEndpoints
         tagApi.MapPatch("/{tagId:guid}", async (PlannerDbContext db, Guid tagId, TagRequest request) =>
         {
             var tag = await db.Tags.FindAsync(tagId);
-            if (tag is null)
-            {
-                return Results.NotFound();
-            }
+            if (tag is null) return Results.NotFound();
             // check before doing db update (tags is indexed)
-            if (!tag.Name.Equals(request.Name))
-            {
-                tag.Name = request.Name;
-            }
+            if (!tag.Name.Equals(request.Name)) tag.Name = request.Name;
 
-            if (!tag.Colour.Equals(request.Colour))
-            {
-                tag.Colour = request.Colour;
-            }
+            if (!tag.Colour.Equals(request.Colour)) tag.Colour = request.Colour;
             await db.SaveChangesAsync();
             return Results.Ok();
         });

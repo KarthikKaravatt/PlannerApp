@@ -14,7 +14,7 @@ public static class TaskEndpoints
         {
             var tasks = await db.Tasks
                 .Where(t => t.TaskListId == listId && t.Completed == false)
-                .Select(task => new TaskPayLoad(task.Id,task.Label, task.Completed, task.DueDate)).ToListAsync();
+                .Select(task => new TaskPayLoad(task.Id, task.Label, task.Completed, task.DueDate)).ToListAsync();
             return Results.Ok(tasks);
         });
         //get all tasks
@@ -22,7 +22,7 @@ public static class TaskEndpoints
         {
             var tasks = await db.Tasks
                 .Where(t => t.TaskListId == listId && t.Completed == true)
-                .Select(task => new TaskPayLoad(task.Id,task.Label, task.Completed, task.DueDate)).ToListAsync();
+                .Select(task => new TaskPayLoad(task.Id, task.Label, task.Completed, task.DueDate)).ToListAsync();
             return Results.Ok(tasks);
         });
         //Get the Order of the tasks(incomplete)
@@ -31,7 +31,7 @@ public static class TaskEndpoints
             var taskListOrder = await db.Tasks
                 .Where(task => task.TaskListId == listId && task.Completed == false)
                 .Select(task => new { task.Id, task.OrderIndex })
-                .OrderBy(t=> t.OrderIndex)
+                .OrderBy(t => t.OrderIndex)
                 .ToListAsync();
             return Results.Ok(taskListOrder);
         });
@@ -41,7 +41,7 @@ public static class TaskEndpoints
             var taskListOrder = await db.Tasks
                 .Where(task => task.TaskListId == listId && task.Completed == true)
                 .Select(task => new { task.Id, task.OrderIndex })
-                .OrderBy(t=> t.OrderIndex)
+                .OrderBy(t => t.OrderIndex)
                 .ToListAsync();
             return Results.Ok(taskListOrder);
         });
@@ -49,7 +49,7 @@ public static class TaskEndpoints
         tasksApi.MapPost("/", async (PlannerDbContext db, TaskRequest request, Guid listId) =>
         {
             var orderIndex = (uint)await db.Tasks.Where(t => t.TaskListId == listId).CountAsync();
-            var task = new Task(request.Label, request.Completed, request.DueDate, orderIndex,listId );
+            var task = new Task(request.Label, request.Completed, request.DueDate, orderIndex, listId);
             await db.AddAsync(task);
             await db.SaveChangesAsync();
             return Results.Created($"/api/tasks/{task.Id}", task);
@@ -64,16 +64,17 @@ public static class TaskEndpoints
 
             if (task.Completed)
             {
-                var newIndex = (uint) await tasks
+                var newIndex = (uint)await tasks
                     .Where(t => !t.Completed).CountAsync() - 1;
                 task.OrderIndex = newIndex;
             }
             else
-            { 
-                var newIndex = (uint) await tasks
+            {
+                var newIndex = (uint)await tasks
                     .Where(t => t.Completed).CountAsync() - 1;
                 task.OrderIndex = newIndex;
             }
+
             task.Completed = !task.Completed;
             await db.SaveChangesAsync();
             return Results.Ok();
@@ -94,10 +95,8 @@ public static class TaskEndpoints
         {
             var task = await db.Tasks.FindAsync(id);
             Console.WriteLine(id);
-            if (task is null)
-            {
-                return Results.NotFound();
-            }
+            if (task is null) return Results.NotFound();
+
             db.Remove(task);
             await db.Tasks
                 .Where(t => t.OrderIndex > task.OrderIndex && t.TaskListId == listId)
@@ -106,42 +105,31 @@ public static class TaskEndpoints
             await db.SaveChangesAsync();
             return Results.Ok();
         });
-        
+
 
         // Move a tasks position
         tasksApi.MapPatch("/incomplete/move/{movedTaskId:guid}/",
-            async (PlannerDbContext db,Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
+            async (PlannerDbContext db, Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
             {
                 // moving a task to its current position will nothing
-                if (movedTaskId == request.TargetTaskId)
-                {
-                    return Results.Ok();
-                }
+                if (movedTaskId == request.TargetTaskId) return Results.Ok();
 
-                if (request.Pos is not ("Before" or "After"))
-                {
-                    return Results.BadRequest("Invalid positional arguments");
-                }
+                if (request.Pos is not ("Before" or "After")) return Results.BadRequest("Invalid positional arguments");
 
                 var movedTask = await db.Tasks.FindAsync(movedTaskId);
                 var targetTask = await db.Tasks.FindAsync(request.TargetTaskId);
-                if (movedTask is null || targetTask is null)
-                {
-                    return Results.NotFound();
-                }
+                if (movedTask is null || targetTask is null) return Results.NotFound();
+
                 var taskLinkedList = new LinkedList<Task>(
-                     await db.Tasks
+                    await db.Tasks
                         .Where(task => task.TaskListId == listId)
-                        .Where(task=> task.Completed == false)
+                        .Where(task => task.Completed == false)
                         .OrderBy(task => task.OrderIndex)
                         .ToListAsync()
                 );
                 taskLinkedList.Remove(movedTask);
                 var posTaskNode = taskLinkedList.Find(targetTask);
-                if (posTaskNode is null)
-                {
-                    return Results.NotFound();
-                }
+                if (posTaskNode is null) return Results.NotFound();
 
                 switch (request.Pos)
                 {
@@ -164,38 +152,27 @@ public static class TaskEndpoints
                 return Results.Ok();
             });
         tasksApi.MapPatch("/complete/move/{movedTaskId:guid}/",
-            async (PlannerDbContext db,Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
+            async (PlannerDbContext db, Guid listId, Guid movedTaskId, MoveTaskRequest request) =>
             {
                 // moving a task to its current position will nothing
-                if (movedTaskId == request.TargetTaskId)
-                {
-                    return Results.Ok();
-                }
+                if (movedTaskId == request.TargetTaskId) return Results.Ok();
 
-                if (request.Pos is not ("Before" or "After"))
-                {
-                    return Results.BadRequest("Invalid positional arguments");
-                }
+                if (request.Pos is not ("Before" or "After")) return Results.BadRequest("Invalid positional arguments");
 
                 var movedTask = await db.Tasks.FindAsync(movedTaskId);
                 var targetTask = await db.Tasks.FindAsync(request.TargetTaskId);
-                if (movedTask is null || targetTask is null)
-                {
-                    return Results.NotFound();
-                }
+                if (movedTask is null || targetTask is null) return Results.NotFound();
+
                 var taskLinkedList = new LinkedList<Task>(
-                     await db.Tasks
+                    await db.Tasks
                         .Where(task => task.TaskListId == listId)
-                        .Where(task=> task.Completed == true)
+                        .Where(task => task.Completed == true)
                         .OrderBy(task => task.OrderIndex)
                         .ToListAsync()
                 );
                 taskLinkedList.Remove(movedTask);
                 var posTaskNode = taskLinkedList.Find(targetTask);
-                if (posTaskNode is null)
-                {
-                    return Results.NotFound();
-                }
+                if (posTaskNode is null) return Results.NotFound();
 
                 switch (request.Pos)
                 {
@@ -216,7 +193,11 @@ public static class TaskEndpoints
 
                 await db.SaveChangesAsync();
                 return Results.Ok();
-            });
+            }); ;
+        tasksApi.MapGet("/tags/", async (PlannerDbContext db, Guid taskId) =>
+        {
+            var task = await db.Tasks.FindAsync(taskId);
+            return task is not null ? Results.Ok(task.Tags.ToList()) : Results.Ok(Results.Empty);
+        });
     }
-    
 }
