@@ -1,3 +1,12 @@
+import {
+  Button,
+  Keyboard,
+  Menu,
+  MenuItem,
+  MenuTrigger,
+  Popover,
+} from "react-aria-components";
+import { BiDotsVertical } from "react-icons/bi";
 import { MdDragIndicator } from "react-icons/md";
 import {
   useMoveCompleteTaskOrderMutation,
@@ -10,7 +19,7 @@ import { CustomDisclosure } from "../General/Disclosure.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
 import { TaskComponent } from "./TaskComponent.tsx";
 
-export const TaskDisclosure: React.FC<{
+export const TasksDisclosure: React.FC<{
   title: string;
   listId: string;
   tasks: Task[];
@@ -52,13 +61,38 @@ export const TaskDisclosure: React.FC<{
     }
   };
   return (
-    <CustomDisclosure defaultExpanded={isIncompleteTasks} title={title}>
+    <CustomDisclosure
+      headingItems={
+        <MenuTrigger>
+          <Button>
+            <BiDotsVertical />
+          </Button>
+          <Popover>
+            <Menu className={"bg-dark-background-sub-c text-white p-3"}>
+              <MenuItem>
+                <Button>LOL</Button>
+                <Keyboard />
+              </MenuItem>
+              <MenuItem>
+                <Button>LOL</Button>
+                <Keyboard />
+              </MenuItem>
+            </Menu>
+          </Popover>
+        </MenuTrigger>
+      }
+      defaultExpanded={isIncompleteTasks}
+      title={title}
+    >
       <DraggableList
         items={tasks}
         onReorder={handleReorder}
         isDisabled={sortOption !== "CUSTOM"}
         renderItem={(item, _isDragging) => (
-          <div className="flex flex-row items-center">
+          <div
+            draggable={sortOption === "CUSTOM"}
+            className="flex flex-row items-center"
+          >
             <MdDragIndicator />
             <TaskComponent task={item} taskListId={listId} />
           </div>
