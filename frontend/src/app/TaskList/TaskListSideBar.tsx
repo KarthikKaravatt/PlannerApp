@@ -120,7 +120,7 @@ const TaskListsOrder = () => {
       <div className="flex flex-col items-center justify-center p-2">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className=" rounded-md bg-blue-200 p-1 font-bold "
+          className=" dark:bg-dark-background-sub-c text-blue-950 dark:text-white rounded-md bg-blue-200 p-1 font-bold "
           onClick={() => {
             refetch().catch(() => {
               logError("Error fetching task list data");
