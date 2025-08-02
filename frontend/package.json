@@ -6,7 +6,7 @@
     "dev": "vite --port 3000",
     "build": "vite build && tsc",
     "biome": "bunx biome check",
-    "analyze": "vite build --mode analyze",
+    "analyze": "bunx vite-bundle-analyzer",
     "serve": "vite preview",
     "test": "vitest run"
   },
