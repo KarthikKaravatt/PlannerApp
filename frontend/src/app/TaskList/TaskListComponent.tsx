@@ -35,7 +35,7 @@ export const TaskListComponent = ({
   });
   const [removeTaskList] = useRemoveTaskListMutation();
   return (
-    <div className="flex h-full w-1/4 shrink-0 flex-col gap-1 p-2">
+    <div className="flex h-full w-1/4 shrink-0 flex-col gap-1 p-2 shadow-lg">
       <div className="flex">
         <p className=" w-full pl-1 text-left font-bold text-blue-950 dark:text-white ">
           {listName}
@@ -49,7 +49,7 @@ export const TaskListComponent = ({
         />
       </div>
       <TaskListInput taskListId={listId} />
-      <div className="overflow-auto shadow-lg dark:shadow-black">
+      <div className="overflow-auto pt-1 shadow-lg dark:shadow-black">
         <IncompleteTasks listId={listId} sortOption={sortOption} />
         <CompletedTasks listId={listId} sortOption={sortOption} />
       </div>
