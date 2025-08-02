@@ -59,14 +59,14 @@ export function CustomMenuButton<T extends object>({
       ) : (
         <MenuButton />
       )}
-      <Popover className="shadow-lg transition duration-100 ease-in data-[entering]:opacity-0 data-[exiting]:opacity-0">
+      <CustomMenuPopOver>
         <Menu
           className="flex flex-col items-center gap-y-0.5 rounded-md border-1 border-gray-300 bg-sky-100 text-sm text-blue-950 dark:border-none dark:border-white dark:bg-dark-background-sub-c dark:text-white"
           {...props}
         >
           {children}
         </Menu>
-      </Popover>
+      </CustomMenuPopOver>
     </MenuTrigger>
   );
 }
@@ -104,3 +104,15 @@ export function CustomMenuItem(
     </MenuItem>
   );
 }
+
+export const CustomMenuPopOver = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return (
+    <Popover className="shadow-lg transition duration-100 ease-in data-[entering]:opacity-0 data-[exiting]:opacity-0">
+      {children}
+    </Popover>
+  );
+};
