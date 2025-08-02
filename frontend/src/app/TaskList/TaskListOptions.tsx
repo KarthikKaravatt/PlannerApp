@@ -8,41 +8,19 @@ import {
 } from "react-aria-components";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { useClearCompletedTasksMutation } from "@/redux/taskApiSlice";
-import type { FilterOption, SortOption } from "@/types/taskList";
+import type { SortOption } from "@/types/taskList";
 import { logError } from "@/util/console";
 
 export const TaskListOptions = ({
   taskListId,
-  filterState,
-  setFilterState,
   sortOrder,
   setSortState,
 }: {
   taskListId: string;
-  filterState: FilterOption;
-  setFilterState: React.Dispatch<React.SetStateAction<FilterOption>>;
   sortOrder: SortOption;
   setSortState: React.Dispatch<React.SetStateAction<SortOption>>;
 }) => {
   const [clearTasks, { isLoading }] = useClearCompletedTasksMutation();
-  const onFilterButtonClick = () => {
-    const filterOptions: FilterOption[] = ["ALL", "INCOMPLETE", "COMPLETE"];
-    setFilterState((prev) => {
-      const currentIndex = filterOptions.indexOf(prev);
-      const nextIndex = (currentIndex + 1) % filterOptions.length;
-      const nextOption = filterOptions[nextIndex];
-      if (nextOption) {
-        localStorage.setItem(
-          `${taskListId}:FILTER_OPTION`,
-          nextOption.toString(),
-        );
-        return nextOption;
-      } else {
-        localStorage.setItem(`${taskListId}:FILTER_OPTION`, "ALL");
-        return "ALL";
-      }
-    });
-  };
 
   const onClearButtonClick = () => {
     clearTasks(taskListId).catch((err: unknown) => {
@@ -61,9 +39,6 @@ export const TaskListOptions = ({
   };
   return (
     <div className=" flex w-full items-stretch justify-between gap-1 text-blue-950 dark:text-white ">
-      <OptionsButton isLoading={isLoading} onClick={onFilterButtonClick}>
-        {filterState[0] + filterState.slice(1).toLocaleLowerCase()}
-      </OptionsButton>
       <OptionsButton isLoading={isLoading} onClick={onClearButtonClick}>
         Clear
       </OptionsButton>
