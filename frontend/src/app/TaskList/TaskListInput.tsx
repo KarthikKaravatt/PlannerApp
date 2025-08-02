@@ -29,7 +29,7 @@ export const TaskListInput = ({ taskListId }: { taskListId: string }) => {
     setInputTask("");
   };
   return (
-    <div className=" flex w-full border-b-1 border-gray-400 p-1 dark:border-blue-100">
+    <div className=" flex w-full border-b-1 border-gray-400 p-1 shadow-md dark:border-blue-100 dark:shadow-lg dark:shadow-black">
       <AutoResizeTextArea
         className=" w-2/3 pl-1 text-blue-950 outline-1 outline-transparent dark:text-white dark:placeholder-gray-300 "
         placeholder="Enter new task"
