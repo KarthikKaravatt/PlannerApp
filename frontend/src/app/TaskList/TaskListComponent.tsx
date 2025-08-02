@@ -146,7 +146,7 @@ const TaskDisclosureWithOptions = ({
   return (
     <div className="flex place-content-between">
       <TasksDisclosure
-        title="Incomplete"
+        title={isIncompleteTasks ? "IncompleteTasks" : "CompletedTasks"}
         tasks={finalList}
         listId={listId}
         isIncompleteTasks={isIncompleteTasks}
