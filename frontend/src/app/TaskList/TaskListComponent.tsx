@@ -1,12 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { useState } from "react";
-import {
-  Button,
-  Dialog,
-  DialogTrigger,
-  Heading,
-  Modal,
-} from "react-aria-components";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import {
@@ -17,13 +10,11 @@ import {
 } from "@/redux/taskApiSlice.ts";
 import { useRemoveTaskListMutation } from "@/redux/taskListApiSlice.ts";
 import type { Task, TaskOrder } from "@/schemas/task";
-import type { FilterOption, SortOption } from "@/types/taskList";
+import type { SortOption } from "@/types/taskList";
 import { logError } from "@/util/console.ts";
-import { CustomTooltip } from "../General/CustomToolTip.tsx";
-import { TaskDisclosure } from "./TaskDisclosure.tsx";
-import { TaskListInput } from "./TaskListInput.tsx";
-import { TaskListOptions } from "./TaskListOptions.tsx";
 import { CustomDialog } from "../General/CustomDialog.tsx";
+import { TasksDisclosure } from "./TaskDisclosure.tsx";
+import { TaskListInput } from "./TaskListInput.tsx";
 
 export const TaskListComponent = ({
   listName,
@@ -32,17 +23,7 @@ export const TaskListComponent = ({
   listName: string;
   listId: string;
 }) => {
-  const [filterOption, setFilterOption] = useState<FilterOption>(() => {
-    const filterOptionCached = localStorage.getItem(
-      `${listId}:FILTER_OPTION`,
-    ) as FilterOption | null;
-    if (filterOptionCached) {
-      return filterOptionCached;
-    }
-    localStorage.setItem(`${listId}:FILTER_OPTION`, "ALL");
-    return "ALL";
-  });
-  const [sortOption, setSortOption] = useState<SortOption>(() => {
+  const [sortOption, _setSortOption] = useState<SortOption>(() => {
     const selection = localStorage.getItem(
       `${listId}:SORT_OPTION`,
     ) as SortOption | null;
@@ -66,17 +47,10 @@ export const TaskListComponent = ({
           triggerIcon={FaRegTrashCan}
           onPressAllow={() => removeTaskList(listId)}
         />
-        {/* <TaskListDeleteListDiaLog listId={listId} /> */}
       </div>
-      <TaskListOptions
-        taskListId={listId}
-        setFilterState={setFilterOption}
-        sortOrder={sortOption}
-        setSortState={setSortOption}
-      />
       <TaskListInput taskListId={listId} />
       <div className="overflow-auto shadow-lg dark:shadow-black">
-        <VisibleTasks listId={listId} sortOption={sortOption} />
+        <IncompleteTasks listId={listId} sortOption={sortOption} />
         <CompletedTasks listId={listId} sortOption={sortOption} />
       </div>
     </div>
@@ -111,15 +85,15 @@ const CompletedTasks = ({
   }
   const finalList = getFinalList(tasksData, taskOrderData, sortOption);
   return (
-    <TaskDisclosure
-      title="Completed"
-      tasks={finalList}
+    <TaskDisclosureWithOptions
+      finalList={finalList}
       listId={listId}
+      isIncompleteTasks={false}
       sortOption={sortOption}
     />
   );
 };
-const VisibleTasks = ({
+const IncompleteTasks = ({
   listId,
   sortOption,
 }: {
@@ -148,15 +122,38 @@ const VisibleTasks = ({
   if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, sortOption);
     return (
-      <TaskDisclosure
-        title="Incomplete"
-        tasks={finalList}
+      <TaskDisclosureWithOptions
+        finalList={finalList}
         listId={listId}
         isIncompleteTasks={true}
         sortOption={sortOption}
       />
     );
   }
+};
+
+const TaskDisclosureWithOptions = ({
+  finalList,
+  listId,
+  isIncompleteTasks,
+  sortOption,
+}: {
+  finalList: Task[];
+  listId: string;
+  isIncompleteTasks: boolean;
+  sortOption: SortOption;
+}) => {
+  return (
+    <div className="flex place-content-between">
+      <TasksDisclosure
+        title="Incomplete"
+        tasks={finalList}
+        listId={listId}
+        isIncompleteTasks={isIncompleteTasks}
+        sortOption={sortOption}
+      />
+    </div>
+  );
 };
 
 function getFinalList(

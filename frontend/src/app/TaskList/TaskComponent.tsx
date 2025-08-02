@@ -9,6 +9,7 @@ import {
   Heading,
   Popover,
 } from "react-aria-components";
+import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
@@ -26,8 +27,8 @@ import type {
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
+import { CustomMenuButton, CustomMenuItem } from "../General/CustomMenu.tsx";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
-import { PopOverMenu } from "../General/PopOverMenu.tsx";
 
 export const TaskComponent = ({
   task,
@@ -47,6 +48,7 @@ export const TaskComponent = ({
     initalTaskComponentState,
   );
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
+  // const [getTags, {isTagsLoading}] = useGetTag
   const taskRef = useRef<HTMLDivElement>(null);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: This is not a static element
@@ -77,11 +79,13 @@ export const TaskComponent = ({
       className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 dark:border-b-white dark:bg-dark-background-c`}
       draggable={!state.isEditing}
     >
-      <div className="flex flex-row items-center gap-2 pr-2 pl-2">
-        <CheckBox task={task} state={state} />
-        <InputField task={task} state={state} dispatch={dispatch} />
-        <DueDateDisplay task={task} state={state} />
-        <MoreOptions task={task} state={state} dispatch={dispatch} />
+      <div>
+        <div className="flex flex-row items-center gap-2 pr-2 pl-2">
+          <CheckBox task={task} state={state} />
+          <InputField task={task} state={state} dispatch={dispatch} />
+          <DueDateDisplay task={task} state={state} />
+          <MoreOptions task={task} state={state} dispatch={dispatch} />
+        </div>
       </div>
     </div>
   );
@@ -119,6 +123,7 @@ const CheckBox = ({
   const isInteractive = !(state.isEditing || isLoading);
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: This is a custom component
     <div
       onClick={
         isInteractive
@@ -242,36 +247,18 @@ const MoreOptions = ({
   } = useMoreOptions(task, state, dispatch);
 
   return (
-    <div className=" flex flex-row items-center ">
-      <PopOverMenu hoverMessage="More options" isDisabled={state.isEditing}>
-        <Button
-          className="rounded-md p-1"
-          type="button"
-          onClick={() => {
-            handleAddDateButtonClicked();
-          }}
-        >
+    <div className=" flex flex-row items-center gap-1">
+      <CustomMenuButton hoverMessage={"More options"} icon={BsThreeDots}>
+        <CustomMenuItem onAction={handleAddDateButtonClicked}>
           Add Date
-        </Button>
-        <Button
-          className="rounded-md p-1"
-          type="button"
-          onClick={() => {
-            handleRemoveButtonDateClicked();
-          }}
-        >
+        </CustomMenuItem>
+        <CustomMenuItem onAction={handleRemoveButtonDateClicked}>
           Remove Date
-        </Button>
-        <Button
-          className="rounded-md p-1"
-          onClick={() => {
-            handleDeleteButtonClick();
-          }}
-          type="button"
-        >
-          Delete
-        </Button>
-      </PopOverMenu>
+        </CustomMenuItem>
+        <CustomMenuItem onAction={handleDeleteButtonClick}>
+          Delete Task
+        </CustomMenuItem>
+      </CustomMenuButton>
       <CustomTooltip message={state.isEditing ? "Confirm edit" : "Edit task"}>
         <Button
           type="button"

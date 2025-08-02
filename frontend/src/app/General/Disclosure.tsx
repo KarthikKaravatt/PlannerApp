@@ -10,23 +10,24 @@ import { MdOutlineArrowForwardIos } from "react-icons/md";
 interface CustomDisclosureProps extends Omit<DisclosureProps, "children"> {
   title?: string;
   children?: React.ReactNode;
+  headingItems?: React.ReactNode;
 }
 
 export const CustomDisclosure = ({
   title,
   children,
+  headingItems,
   ...props
 }: CustomDisclosureProps) => {
   return (
-    <Disclosure {...props} className="group">
-      <Heading>
-        <Button slot="trigger" className="w-full text-left">
-          <div className="flex flex-row items-center gap-1 p-1">
-            <div className="transition-transform duration-300 ease-in-out group-data-[expanded]:rotate-90">
-              <MdOutlineArrowForwardIos />
-            </div>
-            {title}
+    <Disclosure {...props} className="group w-full">
+      <Heading className="">
+        <Button slot="trigger" className="flex w-full items-center gap-1">
+          <div className="transition-transform duration-300 ease-in-out group-data-[expanded]:rotate-90">
+            <MdOutlineArrowForwardIos />
           </div>
+          {title}
+          <div className="ml-auto p-2">{headingItems}</div>
         </Button>
       </Heading>
       <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out group-data-[expanded]:grid-rows-[1fr]">

@@ -7,7 +7,7 @@ import {
   ModalOverlay,
 } from "react-aria-components";
 import type { IconType } from "react-icons/lib";
-import { CustomTooltip } from "./CustomToolTip";
+import { CustomTooltip } from "./CustomToolTip.tsx";
 
 export const CustomDialog = ({
   toolTipMessage,
