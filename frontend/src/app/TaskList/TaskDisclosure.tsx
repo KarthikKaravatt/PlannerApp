@@ -12,6 +12,7 @@ import {
   CustomMenu,
   CustomMenuButton,
   CustomMenuItem,
+  CustomMenuPopOver,
 } from "../General/CustomMenu.tsx";
 import { CustomDisclosure } from "../General/Disclosure.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
@@ -67,13 +68,13 @@ export const TasksDisclosure: React.FC<{
         >
           <SubmenuTrigger>
             <CustomMenuItem>SortOption</CustomMenuItem>
-            <Popover>
+            <CustomMenuPopOver>
               <CustomMenu>
                 <CustomMenuItem>Custom</CustomMenuItem>
                 <CustomMenuItem>Name</CustomMenuItem>
                 <CustomMenuItem>Date</CustomMenuItem>
               </CustomMenu>
-            </Popover>
+            </CustomMenuPopOver>
           </SubmenuTrigger>
         </CustomMenuButton>
       }
