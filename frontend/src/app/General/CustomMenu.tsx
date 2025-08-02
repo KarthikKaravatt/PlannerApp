@@ -1,7 +1,5 @@
 import {
   Button,
-  Dialog,
-  DialogTrigger,
   Menu,
   MenuItem,
   type MenuItemProps,
@@ -15,34 +13,24 @@ import type { IconType } from "react-icons";
 import { MdOutlineArrowForwardIos } from "react-icons/md";
 import { CustomTooltip } from "./CustomToolTip.tsx";
 
-interface PopOverMenuProps {
+interface StyledMenuProps<T> extends MenuProps<T> {
   children: React.ReactNode;
-  hoverMessage: string;
-  isDisabled?: boolean;
-  menuIcon: IconType;
 }
 
-export const CustomMenu: React.FC<PopOverMenuProps> = ({
-  hoverMessage,
+export function CustomMenu<T extends object>({
   children,
-  menuIcon: MenuIcon,
-  isDisabled,
-}) => {
+  ...props
+}: StyledMenuProps<T>) {
   return (
-    <DialogTrigger>
-      <CustomTooltip message={hoverMessage}>
-        <Button isDisabled={isDisabled ?? false}>
-          <MenuIcon />
-        </Button>
-      </CustomTooltip>
-      <Popover className="shadow-lg transition duration-100 ease-in data-[entering]:opacity-0 data-[exiting]:opacity-0">
-        <Dialog className="flex flex-col gap-y-0.5 rounded-md border-1 border-gray-300 bg-sky-100 p-0.5 text-sm text-blue-950 dark:border-none dark:border-white dark:bg-dark-background-sub-c dark:text-white">
-          {children}
-        </Dialog>
-      </Popover>
-    </DialogTrigger>
+    <Menu
+      className="flex flex-col items-center gap-y-0.5 rounded-md border-1 border-gray-300 bg-sky-100 text-sm text-blue-950 dark:border-none dark:border-white dark:bg-dark-background-sub-c dark:text-white"
+      {...props}
+    >
+      {children}
+    </Menu>
   );
-};
+}
+
 interface CustomMenuButtonProps<T>
   extends MenuProps<T>,
     Omit<MenuTriggerProps, "children"> {
@@ -100,13 +88,17 @@ export function CustomMenuItem(
 
   return (
     <MenuItem
-      className="h-full w-full flex-row rounded-sm p-1 text-center hover:bg-blue-950 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors duration-100 ease-in"
+      className="h-full w-full flex-row rounded-sm p-1 text-center transition-colors duration-100 ease-in hover:bg-blue-950 hover:text-white dark:hover:bg-white dark:hover:text-black"
       {...menuItemProps}
     >
       {(renderProps: MenuItemRenderProps) => (
         <>
-          {props.children}
-          {renderProps.hasSubmenu && <MdOutlineArrowForwardIos />}
+          <div className="flex flex-row items-center gap-1">
+            {props.children}
+            {renderProps.hasSubmenu && (
+              <MdOutlineArrowForwardIos className="ml-auto" />
+            )}
+          </div>
         </>
       )}
     </MenuItem>

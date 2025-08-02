@@ -1,11 +1,4 @@
-import {
-  Button,
-  Keyboard,
-  Menu,
-  MenuItem,
-  MenuTrigger,
-  Popover,
-} from "react-aria-components";
+import { Popover, SubmenuTrigger } from "react-aria-components";
 import { BiDotsVertical } from "react-icons/bi";
 import { MdDragIndicator } from "react-icons/md";
 import {
@@ -15,6 +8,11 @@ import {
 import type { Task } from "@/schemas/task";
 import type { SortOption } from "@/types/taskList.ts";
 import { logError } from "@/util/console.ts";
+import {
+  CustomMenu,
+  CustomMenuButton,
+  CustomMenuItem,
+} from "../General/CustomMenu.tsx";
 import { CustomDisclosure } from "../General/Disclosure.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
 import { TaskComponent } from "./TaskComponent.tsx";
@@ -63,23 +61,21 @@ export const TasksDisclosure: React.FC<{
   return (
     <CustomDisclosure
       headingItems={
-        <MenuTrigger>
-          <Button>
-            <BiDotsVertical />
-          </Button>
-          <Popover>
-            <Menu className={"bg-dark-background-sub-c text-white p-3"}>
-              <MenuItem>
-                <Button>LOL</Button>
-                <Keyboard />
-              </MenuItem>
-              <MenuItem>
-                <Button>LOL</Button>
-                <Keyboard />
-              </MenuItem>
-            </Menu>
-          </Popover>
-        </MenuTrigger>
+        <CustomMenuButton
+          icon={BiDotsVertical}
+          hoverMessage="Task list options"
+        >
+          <SubmenuTrigger>
+            <CustomMenuItem>SortOption</CustomMenuItem>
+            <Popover>
+              <CustomMenu>
+                <CustomMenuItem>Custom</CustomMenuItem>
+                <CustomMenuItem>Name</CustomMenuItem>
+                <CustomMenuItem>Date</CustomMenuItem>
+              </CustomMenu>
+            </Popover>
+          </SubmenuTrigger>
+        </CustomMenuButton>
       }
       defaultExpanded={isIncompleteTasks}
       title={title}
