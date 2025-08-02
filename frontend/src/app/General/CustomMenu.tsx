@@ -100,7 +100,7 @@ export function CustomMenuItem(
 
   return (
     <MenuItem
-      className="h-full w-full flex-row rounded-sm p-1 text-center hover:bg-blue-950 hover:text-white dark:hover:bg-white dark:hover:text-black"
+      className="h-full w-full flex-row rounded-sm p-1 text-center hover:bg-blue-950 hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors duration-100 ease-in"
       {...menuItemProps}
     >
       {(renderProps: MenuItemRenderProps) => (
