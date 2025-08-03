@@ -1,9 +1,32 @@
 @import "tailwindcss";
+@plugin "tailwindcss-react-aria-components";
 @custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
   --color-dark-background-c: oklch(0.14 0 0);
   --color-dark-background-sub-c: oklch(0.27 0 0);
+}
+
+/* Custom scrollbar styles for Chrome/Webkit */
+::-webkit-scrollbar {
+  width: 4px; /* Very thin vertical scrollbar */
+  height: 4px; /* Very thin horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Invisible track */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.3); /* Light gray thumb */
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.5); /* Slightly darker on hover */
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent; /* Hide corner where scrollbars meet */
 }
 
 body {
