@@ -33,7 +33,7 @@ export function CustomMenu<T extends object>({
 
 interface CustomMenuButtonProps<T>
   extends MenuProps<T>,
-    Omit<MenuTriggerProps, "children"> {
+  Omit<MenuTriggerProps, "children"> {
   label?: string;
   icon?: IconType;
   hoverMessage?: string;
@@ -88,7 +88,7 @@ export function CustomMenuItem(
 
   return (
     <MenuItem
-      className="h-full w-full flex-row rounded-sm p-1 text-center transition-colors duration-100 ease-in hover:bg-blue-950 hover:text-white dark:hover:bg-white dark:hover:text-black"
+      className="flex h-full w-full gap-1 rounded-sm p-1 transition-colors duration-100 ease-in hover:bg-blue-950 hover:text-white dark:hover:bg-white dark:hover:text-black selection-single:selected:before:content-['✓']"
       {...menuItemProps}
     >
       {(renderProps: MenuItemRenderProps) => (
