@@ -1,12 +1,8 @@
-import babel from 'vite-plugin-babel';
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import ignore from "rollup-plugin-ignore";
-import { unstableRolldownAdapter } from 'vite-bundle-analyzer'
-import { analyzer } from 'vite-bundle-analyzer'
 
 
 
