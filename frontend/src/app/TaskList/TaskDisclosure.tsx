@@ -33,94 +33,135 @@ export const TasksDisclosure: React.FC<{
   sortOption,
   setSortOption,
 }) => {
-  const [moveTaskIncomplete] = useMoveIncompleteTaskOrderMutation();
-  const [moveTaskCompelte] = useMoveCompleteTaskOrderMutation();
-  const handleReorder = (
-    draggedId: string,
-    targetId: string,
-    position: "before" | "after",
-  ) => {
-    if (!(sortOption === "CUSTOM")) {
-      return;
-    }
-    if (isIncompleteTasks) {
-      moveTaskIncomplete({
-        id1: draggedId,
-        id2: targetId,
-        pos: position === "before" ? "Before" : "After",
-        listId: listId,
-      }).catch((err: unknown) => {
-        if (err instanceof Error) {
-          logError("Error moving task", err);
-        }
-      });
-    } else {
-      moveTaskCompelte({
-        id1: draggedId,
-        id2: targetId,
-        pos: position === "before" ? "Before" : "After",
-        listId: listId,
-      }).catch((err: unknown) => {
-        if (err instanceof Error) {
-          logError("Error moving task", err);
-        }
-      });
-    }
-  };
-  return (
-    <CustomDisclosure
-      headingItems={
-        <CustomMenuButton
-          icon={BiDotsVertical}
-          hoverMessage="Task list options"
-        >
-          <SubmenuTrigger>
-            <CustomMenuItem>SortOption</CustomMenuItem>
-            <CustomMenuPopOver>
-              <CustomMenu
-                selectionMode="single"
-                selectedKeys={[sortOption.toString().toLowerCase()]}
-              >
-                <CustomMenuItem
-                  id={"custom"}
-                  onAction={() => setSortOption("CUSTOM")}
-                >
-                  Custom
-                </CustomMenuItem>
-                <CustomMenuItem
-                  id={"name"}
-                  onAction={() => setSortOption("NAME")}
-                >
-                  Name
-                </CustomMenuItem>
-                <CustomMenuItem
-                  id={"date"}
-                  onAction={() => setSortOption("DATE")}
-                >
-                  Date
-                </CustomMenuItem>
-              </CustomMenu>
-            </CustomMenuPopOver>
-          </SubmenuTrigger>
-        </CustomMenuButton>
+    const [moveTaskIncomplete] = useMoveIncompleteTaskOrderMutation();
+    const [moveTaskCompelte] = useMoveCompleteTaskOrderMutation();
+    const handleReorder = (
+      draggedId: string,
+      targetId: string,
+      position: "before" | "after",
+    ) => {
+      if (!(sortOption === "CUSTOM")) {
+        return;
       }
-      defaultExpanded={isIncompleteTasks}
-      title={title}
-    >
-      <DraggableList
-        items={tasks}
-        onReorder={handleReorder}
-        isDisabled={sortOption !== "CUSTOM"}
-        renderItem={(item, _isDragging) => (
-          <div
-            draggable={sortOption === "CUSTOM"}
-            className="flex flex-row items-center"
+      if (isIncompleteTasks) {
+        moveTaskIncomplete({
+          id1: draggedId,
+          id2: targetId,
+          pos: position === "before" ? "Before" : "After",
+          listId: listId,
+        }).catch((err: unknown) => {
+          if (err instanceof Error) {
+            logError("Error moving task", err);
+          }
+        });
+      } else {
+        moveTaskCompelte({
+          id1: draggedId,
+          id2: targetId,
+          pos: position === "before" ? "Before" : "After",
+          listId: listId,
+        }).catch((err: unknown) => {
+          if (err instanceof Error) {
+            logError("Error moving task", err);
+          }
+        });
+      }
+    };
+    return (
+      <CustomDisclosure
+        headingItems={
+          <CustomMenuButton
+            icon={BiDotsVertical}
+            hoverMessage="Task list options"
           >
-            <MdDragIndicator />
-            <TaskComponent task={item} taskListId={listId} />
-          </div>
-        )}
-      />
-    </CustomDisclosure>
-  );
-};
+            <SubmenuTrigger>
+              <CustomMenuItem>SortOption</CustomMenuItem>
+              <CustomMenuPopOver>
+                <CustomMenu
+                  selectionMode="single"
+                  selectedKeys={[sortOption.toString().toLowerCase()]}
+                >
+                  <CustomMenuItem
+                    id={"custom"}
+                    onAction={() =>
+                      handleSortOptionChange(
+                        listId,
+                        isIncompleteTasks,
+                        "CUSTOM",
+                        setSortOption,
+                      )
+                    }
+                  >
+                    Custom
+                  </CustomMenuItem>
+                  <CustomMenuItem
+                    id={"name"}
+                    onAction={() =>
+                      handleSortOptionChange(
+                        listId,
+                        isIncompleteTasks,
+                        "NAME",
+                        setSortOption,
+                      )
+                    }
+                  >
+                    Name
+                  </CustomMenuItem>
+                  <CustomMenuItem
+                    id={"date"}
+                    onAction={() =>
+                      handleSortOptionChange(
+                        listId,
+                        isIncompleteTasks,
+                        "DATE",
+                        setSortOption,
+                      )
+                    }
+                  >
+                    Date
+                  </CustomMenuItem>
+                </CustomMenu>
+              </CustomMenuPopOver>
+            </SubmenuTrigger>
+          </CustomMenuButton>
+        }
+        defaultExpanded={isIncompleteTasks}
+        title={title}
+      >
+        <DraggableList
+          items={tasks}
+          onReorder={handleReorder}
+          isDisabled={sortOption !== "CUSTOM"}
+          renderItem={(item, _isDragging) => (
+            <div
+              draggable={sortOption === "CUSTOM"}
+              className="flex flex-row items-center"
+            >
+              <MdDragIndicator />
+              <TaskComponent task={item} taskListId={listId} />
+            </div>
+          )}
+        />
+      </CustomDisclosure>
+    );
+  };
+
+function handleSortOptionChange(
+  listId: string,
+  isIncompleteTasks: boolean,
+  sortOption: SortOption,
+  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>,
+) {
+  setSortOption(sortOption);
+  if (isIncompleteTasks) {
+    localStorage.setItem(
+      `Incompleted:${listId}:SORT_OPTION`,
+      sortOption.toString(),
+    );
+  } else {
+    localStorage.setItem(
+      `Completed:${listId}:SORT_OPTION`,
+      sortOption.toString(),
+    );
+  }
+}

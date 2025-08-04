@@ -23,16 +23,6 @@ export const TaskListComponent = ({
   listName: string;
   listId: string;
 }) => {
-  const [sortOption, setSortOption] = useState<SortOption>(() => {
-    const selection = localStorage.getItem(
-      `${listId}:SORT_OPTION`,
-    ) as SortOption | null;
-    if (!selection) {
-      localStorage.setItem(`${listId}:SORT_OPTION`, "CUSTOM");
-      return "CUSTOM";
-    }
-    return selection;
-  });
   const [removeTaskList] = useRemoveTaskListMutation();
   return (
     <div className="flex h-full w-1/4 shrink-0 flex-col gap-1 p-2 shadow-lg">
@@ -50,30 +40,24 @@ export const TaskListComponent = ({
       </div>
       <TaskListInput taskListId={listId} />
       <div className="overflow-auto pt-1 shadow-lg dark:shadow-black">
-        <IncompleteTasks
-          listId={listId}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-        />
-        <CompletedTasks
-          listId={listId}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-        />
+        <IncompleteTasks listId={listId} />
+        <CompletedTasks listId={listId} />
       </div>
     </div>
   );
 };
 
-const CompletedTasks = ({
-  listId,
-  sortOption,
-  setSortOption,
-}: {
-  listId: string;
-  sortOption: SortOption;
-  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
-}) => {
+const CompletedTasks = ({ listId }: { listId: string }) => {
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    const selection = localStorage.getItem(
+      `Completed:${listId}:SORT_OPTION`,
+    ) as SortOption | null;
+    if (!selection) {
+      localStorage.setItem(`Completed:${listId}:SORT_OPTION`, "CUSTOM");
+      return "CUSTOM";
+    }
+    return selection;
+  });
   const {
     data: taskOrderData,
     isLoading: isOrderLoading,
@@ -104,15 +88,17 @@ const CompletedTasks = ({
     />
   );
 };
-const IncompleteTasks = ({
-  listId,
-  sortOption,
-  setSortOption,
-}: {
-  listId: string;
-  sortOption: SortOption;
-  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
-}) => {
+const IncompleteTasks = ({ listId }: { listId: string }) => {
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    const selection = localStorage.getItem(
+      `Incompleted:${listId}:SORT_OPTION`,
+    ) as SortOption | null;
+    if (!selection) {
+      localStorage.setItem(`Incompleted:${listId}:SORT_OPTION`, "CUSTOM");
+      return "CUSTOM";
+    }
+    return selection;
+  });
   const {
     data: tasks,
     isLoading,
