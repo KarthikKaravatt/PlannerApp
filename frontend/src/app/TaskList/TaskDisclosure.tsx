@@ -24,7 +24,15 @@ export const TasksDisclosure: React.FC<{
   tasks: Task[];
   isIncompleteTasks?: boolean;
   sortOption: SortOption;
-}> = ({ title, tasks, listId, isIncompleteTasks = false, sortOption }) => {
+  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
+}> = ({
+  title,
+  tasks,
+  listId,
+  isIncompleteTasks = false,
+  sortOption,
+  setSortOption,
+}) => {
   const [moveTaskIncomplete] = useMoveIncompleteTaskOrderMutation();
   const [moveTaskCompelte] = useMoveCompleteTaskOrderMutation();
   const handleReorder = (
@@ -69,10 +77,28 @@ export const TasksDisclosure: React.FC<{
           <SubmenuTrigger>
             <CustomMenuItem>SortOption</CustomMenuItem>
             <CustomMenuPopOver>
-              <CustomMenu>
-                <CustomMenuItem>Custom</CustomMenuItem>
-                <CustomMenuItem>Name</CustomMenuItem>
-                <CustomMenuItem>Date</CustomMenuItem>
+              <CustomMenu
+                selectionMode="single"
+                selectedKeys={[sortOption.toString().toLowerCase()]}
+              >
+                <CustomMenuItem
+                  id={"custom"}
+                  onAction={() => setSortOption("CUSTOM")}
+                >
+                  Custom
+                </CustomMenuItem>
+                <CustomMenuItem
+                  id={"name"}
+                  onAction={() => setSortOption("NAME")}
+                >
+                  Name
+                </CustomMenuItem>
+                <CustomMenuItem
+                  id={"date"}
+                  onAction={() => setSortOption("DATE")}
+                >
+                  Date
+                </CustomMenuItem>
               </CustomMenu>
             </CustomMenuPopOver>
           </SubmenuTrigger>

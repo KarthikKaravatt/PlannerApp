@@ -23,7 +23,7 @@ export const TaskListComponent = ({
   listName: string;
   listId: string;
 }) => {
-  const [sortOption, _setSortOption] = useState<SortOption>(() => {
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
     const selection = localStorage.getItem(
       `${listId}:SORT_OPTION`,
     ) as SortOption | null;
@@ -50,8 +50,16 @@ export const TaskListComponent = ({
       </div>
       <TaskListInput taskListId={listId} />
       <div className="overflow-auto pt-1 shadow-lg dark:shadow-black">
-        <IncompleteTasks listId={listId} sortOption={sortOption} />
-        <CompletedTasks listId={listId} sortOption={sortOption} />
+        <IncompleteTasks
+          listId={listId}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+        />
+        <CompletedTasks
+          listId={listId}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+        />
       </div>
     </div>
   );
@@ -60,9 +68,11 @@ export const TaskListComponent = ({
 const CompletedTasks = ({
   listId,
   sortOption,
+  setSortOption,
 }: {
   listId: string;
   sortOption: SortOption;
+  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
 }) => {
   const {
     data: taskOrderData,
@@ -90,15 +100,18 @@ const CompletedTasks = ({
       listId={listId}
       isIncompleteTasks={false}
       sortOption={sortOption}
+      setSortOption={setSortOption}
     />
   );
 };
 const IncompleteTasks = ({
   listId,
   sortOption,
+  setSortOption,
 }: {
   listId: string;
   sortOption: SortOption;
+  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
 }) => {
   const {
     data: tasks,
@@ -127,6 +140,7 @@ const IncompleteTasks = ({
         listId={listId}
         isIncompleteTasks={true}
         sortOption={sortOption}
+        setSortOption={setSortOption}
       />
     );
   }
@@ -137,11 +151,13 @@ const TaskDisclosureWithOptions = ({
   listId,
   isIncompleteTasks,
   sortOption,
+  setSortOption,
 }: {
   finalList: Task[];
   listId: string;
   isIncompleteTasks: boolean;
   sortOption: SortOption;
+  setSortOption: React.Dispatch<React.SetStateAction<SortOption>>;
 }) => {
   return (
     <div className="flex place-content-between">
@@ -151,6 +167,7 @@ const TaskDisclosureWithOptions = ({
         listId={listId}
         isIncompleteTasks={isIncompleteTasks}
         sortOption={sortOption}
+        setSortOption={setSortOption}
       />
     </div>
   );

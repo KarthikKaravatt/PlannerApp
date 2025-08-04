@@ -33,7 +33,7 @@ export function CustomMenu<T extends object>({
 
 interface CustomMenuButtonProps<T>
   extends MenuProps<T>,
-  Omit<MenuTriggerProps, "children"> {
+    Omit<MenuTriggerProps, "children"> {
   label?: string;
   icon?: IconType;
   hoverMessage?: string;
