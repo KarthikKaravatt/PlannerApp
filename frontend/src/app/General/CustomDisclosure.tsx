@@ -22,13 +22,13 @@ export const CustomDisclosure = ({
   return (
     <Disclosure {...props} className="group w-full">
       <Heading className="">
-        <Button slot="trigger" className="flex w-full items-center gap-1">
-          <div className="transition-transform duration-300 ease-in-out group-data-[expanded]:rotate-90">
+        <div className="flex w-full items-center gap-1">
+          <Button slot="trigger" className="transition-transform duration-300 ease-in-out group-data-[expanded]:rotate-90">
             <MdOutlineArrowForwardIos />
-          </div>
+          </Button>
           {title}
           <div className="ml-auto p-2">{headingItems}</div>
-        </Button>
+        </div>
       </Heading>
       <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out group-data-[expanded]:grid-rows-[1fr]">
         <div className="min-h-0 overflow-hidden">

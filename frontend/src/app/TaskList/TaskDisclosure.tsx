@@ -14,7 +14,7 @@ import {
   CustomMenuItem,
   CustomMenuPopOver,
 } from "../General/CustomMenu.tsx";
-import { CustomDisclosure } from "../General/Disclosure.tsx";
+import { CustomDisclosure } from "../General/CustomDisclosure.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
 import { TaskComponent } from "./TaskComponent.tsx";
 
