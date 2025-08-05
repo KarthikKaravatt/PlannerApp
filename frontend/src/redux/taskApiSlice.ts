@@ -1,5 +1,6 @@
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
+import type { Tag } from "@/schemas/tag.ts";
 import {
   type Task,
   type TaskOrder,
@@ -19,7 +20,7 @@ import { apiSlice } from "./apiSlice.ts";
 const taskApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getIncompleteTasks: builder.query<Record<string, Task>, string>({
-      query: (id) => `/${id}/tasks/incomplete`,
+      query: (id) => `/taskLists/${id}/tasks/incomplete`,
       rawResponseSchema: z.array(taskResponseSchema),
       transformResponse: (response: Task[]) => {
         const transformedTaskSchema = z
@@ -49,13 +50,13 @@ const taskApiSlice = apiSlice.injectEndpoints({
     }),
     getIncompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
-        url: `${listId}/tasks/incomplete/order`,
+        url: `/taskLists/${listId}/tasks/incomplete/order`,
       }),
       responseSchema: z.array(taskOrderSchema),
       providesTags: ["IncompleteTasks"],
     }),
     getCompleteTasks: builder.query<Record<string, Task>, string>({
-      query: (id) => `/${id}/tasks/complete`,
+      query: (id) => `/taskLists/${id}/tasks/complete`,
       rawResponseSchema: z.array(taskResponseSchema),
       transformResponse: (response: Task[]) => {
         const transformedTaskSchema = z
@@ -85,7 +86,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     }),
     getCompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
-        url: `${listId}/tasks/complete/order`,
+        url: `/taskLists/${listId}/tasks/complete/order`,
       }),
       responseSchema: z.array(taskOrderSchema),
       providesTags: ["CompleteTasksOrder"],
@@ -95,7 +96,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
       { request: NewTaskRequest; listId: string } // arg type
     >({
       query: ({ request, listId }) => ({
-        url: `/${listId}/tasks`,
+        url: `/taskLists/${listId}/tasks`,
         method: "POST",
         body: request,
       }),
@@ -169,7 +170,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     }),
     deleteTask: builder.mutation<void, { listId: string; taskId: string }>({
       query: (ids) => ({
-        url: `/${ids.listId}/tasks/${ids.taskId}`,
+        url: `/taskLists/${ids.listId}/tasks/${ids.taskId}`,
         method: "DELETE",
       }),
       async onQueryStarted(ids, { dispatch, queryFulfilled }) {
@@ -237,7 +238,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     toggleTaskCompetion: builder.mutation<void, { listId: string; task: Task }>(
       {
         query: ({ task, listId }) => ({
-          url: `/${listId}/tasks/${task.id}/toggle-completion`,
+          url: `/taskLists/${listId}/tasks/${task.id}/toggle-completion`,
           method: "PATCH",
         }),
         async onQueryStarted({ task, listId }, { dispatch, queryFulfilled }) {
@@ -325,7 +326,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     >({
       query: ({ listId, taskId, taskUpdate }) => {
         return {
-          url: `/${listId}/tasks/${taskId}`,
+          url: `/taskLists/${listId}/tasks/${taskId}`,
           method: "PATCH",
           body: taskUpdate,
         };
@@ -368,7 +369,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     moveCompleteTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
         return {
-          url: `${moveTasks.listId}/tasks/complete/move/${moveTasks.id1}`,
+          url: `/taskLists${moveTasks.listId}/tasks/complete/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
             targetTaskId: moveTasks.id2,
@@ -420,7 +421,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     moveIncompleteTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
         return {
-          url: `${moveTasks.listId}/tasks/incomplete/move/${moveTasks.id1}`,
+          url: `/taskLists${moveTasks.listId}/tasks/incomplete/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
             targetTaskId: moveTasks.id2,
@@ -471,7 +472,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     }),
     clearCompletedTasks: builder.mutation<void, string>({
       query: (listId) => ({
-        url: `/${listId}/clear`,
+        url: `/taskLists/${listId}/clear`,
         method: "DELETE",
       }),
       async onQueryStarted(listId, { dispatch, queryFulfilled }) {
@@ -502,6 +503,13 @@ const taskApiSlice = apiSlice.injectEndpoints({
           taskOrderPatchResult.undo();
         });
       },
+    }),
+    getTaskTags: builder.query<Tag[], { listId: string; taskId: string }>({
+      query: (taskData) => ({
+        url: `/taskLists/${taskData.listId}/${taskData.taskId}/tags`,
+        method: "GET",
+      }),
+      providesTags: ["Tags"],
     }),
   }),
   overrideExisting: false,

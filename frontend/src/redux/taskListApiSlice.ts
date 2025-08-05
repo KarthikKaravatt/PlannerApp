@@ -18,7 +18,7 @@ const taskListApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getTaskLists: builder.query<Record<string, TaskList>, void>({
       query: () => ({
-        url: "",
+        url: "/taskLists",
         method: "GET",
       }),
       rawResponseSchema: z.array(taskListSchema),
@@ -33,7 +33,7 @@ const taskListApiSlice = apiSlice.injectEndpoints({
     }),
     getTaskListOrder: builder.query<TaskListOrder[], void>({
       query: () => ({
-        url: "/order",
+        url: "/taskLists/order",
         method: "GET",
       }),
       responseSchema: z.array(taskListOrderSchema),
@@ -41,7 +41,7 @@ const taskListApiSlice = apiSlice.injectEndpoints({
     }),
     addNewTaskList: builder.mutation<TaskList, NewTaskListRequest>({
       query: (request) => ({
-        url: "",
+        url: "/taskLists",
         method: "PUT",
         body: request,
       }),
@@ -105,7 +105,7 @@ const taskListApiSlice = apiSlice.injectEndpoints({
     }),
     removeTaskList: builder.mutation<void, string>({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/taskLists/${id}`,
         method: "DELETE",
       }),
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
@@ -139,7 +139,7 @@ const taskListApiSlice = apiSlice.injectEndpoints({
       { listId: string; request: TaskListUpdateRequest }
     >({
       query: (data) => ({
-        url: `/${data.listId}`,
+        url: `/taskLists/${data.listId}`,
         method: "PATCH",
         body: data.request,
       }),
@@ -166,7 +166,7 @@ const taskListApiSlice = apiSlice.injectEndpoints({
       { moveId: string; request: MoveTaskListRequest }
     >({
       query: (data) => ({
-        url: `/move/${data.moveId}`,
+        url: `/taskLists/move/${data.moveId}`,
         method: "PATCH",
         body: data.request,
       }),
