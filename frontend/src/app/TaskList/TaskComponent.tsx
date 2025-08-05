@@ -28,7 +28,12 @@ import type {
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
-import { CustomMenu, CustomMenuButton, CustomMenuItem, CustomMenuPopOver } from "../General/CustomMenu.tsx";
+import {
+  CustomMenu,
+  CustomMenuButton,
+  CustomMenuItem,
+  CustomMenuPopOver,
+} from "../General/CustomMenu.tsx";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
 
 export const TaskComponent = ({
@@ -128,8 +133,8 @@ const CheckBox = ({
       onClick={
         isInteractive
           ? () => {
-            handleClick();
-          }
+              handleClick();
+            }
           : undefined
       }
       className={`${state.isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
@@ -137,8 +142,8 @@ const CheckBox = ({
       onKeyDown={
         isInteractive
           ? (event) => {
-            handleKeyDown(event);
-          }
+              handleKeyDown(event);
+            }
           : undefined
       }
       role="checkbox"
@@ -251,10 +256,13 @@ const MoreOptions = ({
       <CustomMenuButton hoverMessage={"More options"} icon={BsThreeDots}>
         <SubmenuTrigger>
           <CustomMenuItem
-            //@ts-ignore 
+            //@ts-expect-error
             //HACK: Its not exposed yet but will be soon https://github.com/adobe/react-spectrum/pull/8315
-            //TODO: Change name to shouldCloseOnSelect
-            closeOnSelect={false} >Tags</CustomMenuItem>
+            //TODO: Change name to shouldCloseOnSelect after pr is accepted
+            closeOnSelect={false}
+          >
+            Tags
+          </CustomMenuItem>
           <CustomMenuPopOver>
             <CustomMenu selectionMode="multiple">
               <CustomMenuItem>
@@ -291,4 +299,3 @@ const MoreOptions = ({
     </div>
   );
 };
-

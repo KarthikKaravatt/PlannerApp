@@ -68,25 +68,24 @@ const CompletedTasks = ({ listId }: { listId: string }) => {
     isLoading: isTasksLoading,
     isSuccess: isTasksSuccess,
   } = useGetCompleteTasksQuery(listId);
-  const isLoading =
-    isOrderLoading || isTasksLoading || !(taskOrderData && tasksData);
-  const isSuccess = isOrderSuccess || isTasksSuccess;
-  if (isLoading) {
+  if (isTasksLoading || isOrderLoading) {
     return <FaSpinner className="animate-spin" />;
   }
-  if (!isSuccess) {
+  if (!isTasksSuccess || !isOrderSuccess) {
     return <p>Error loading completed tasks</p>;
   }
-  const finalList = getFinalList(tasksData, taskOrderData, sortOption);
-  return (
-    <TaskDisclosureWithOptions
-      finalList={finalList}
-      listId={listId}
-      isIncompleteTasks={false}
-      sortOption={sortOption}
-      setSortOption={setSortOption}
-    />
-  );
+  if (tasksData && taskOrderData) {
+    const finalList = getFinalList(tasksData, taskOrderData, sortOption);
+    return (
+      <TaskDisclosureWithOptions
+        finalList={finalList}
+        listId={listId}
+        isIncompleteTasks={false}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+      />
+    );
+  }
 };
 const IncompleteTasks = ({ listId }: { listId: string }) => {
   const [sortOption, setSortOption] = useState<SortOption>(() => {
@@ -116,7 +115,7 @@ const IncompleteTasks = ({ listId }: { listId: string }) => {
   }
   if (isError || isOrderError) {
     logError("Error fetching tasks");
-    return <p>Error: Failed to fetch tasks or task order</p>;
+    return <p>Error: failed to fetch incomplete tasks</p>;
   }
   if (isSuccess && isOrderSuccess && tasks && order) {
     const finalList = getFinalList(tasks, order, sortOption);
