@@ -134,10 +134,14 @@ export const TasksDisclosure: React.FC<{
           isDisabled={sortOption !== "CUSTOM"}
           renderItem={(item, _isDragging) => (
             <div
-              draggable={sortOption === "CUSTOM"}
               className="flex flex-row items-center"
             >
-              <MdDragIndicator />
+              <div
+                draggable={sortOption === "CUSTOM"}
+              >
+                <MdDragIndicator />
+
+              </div>
               <TaskComponent task={item} taskListId={listId} />
             </div>
           )}

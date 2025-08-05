@@ -8,6 +8,7 @@ import {
   DialogTrigger,
   Heading,
   Popover,
+  SubmenuTrigger,
 } from "react-aria-components";
 import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
@@ -27,7 +28,7 @@ import type {
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
-import { CustomMenuButton, CustomMenuItem } from "../General/CustomMenu.tsx";
+import { CustomMenu, CustomMenuButton, CustomMenuItem, CustomMenuPopOver } from "../General/CustomMenu.tsx";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
 
 export const TaskComponent = ({
@@ -77,7 +78,6 @@ export const TaskComponent = ({
         }
       }}
       className={`${isLoading ? "dark:text-gray-300" : "dark:text-white"} ${isLoading ? "text-gray-400" : "text-blue-950"} w-full bg-sky-100 dark:border-b-white dark:bg-dark-background-c`}
-      draggable={!state.isEditing}
     >
       <div>
         <div className="flex flex-row items-center gap-2 pr-2 pl-2">
@@ -128,8 +128,8 @@ const CheckBox = ({
       onClick={
         isInteractive
           ? () => {
-              handleClick();
-            }
+            handleClick();
+          }
           : undefined
       }
       className={`${state.isEditing ? "opacity-0" : "opacity-100"} ${task.completed ? "bg-green-500" : "dark:bg-dark-background-c"} ${task.completed ? "border-green-900" : "border-gray-500"} ${isInteractive ? "cursor-pointer" : "cursor-default"} ${isLoading ? "opacity-50" : ""} h-3.5 w-4.5 rounded-full border-2 `}
@@ -137,8 +137,8 @@ const CheckBox = ({
       onKeyDown={
         isInteractive
           ? (event) => {
-              handleKeyDown(event);
-            }
+            handleKeyDown(event);
+          }
           : undefined
       }
       role="checkbox"
@@ -249,6 +249,20 @@ const MoreOptions = ({
   return (
     <div className=" flex flex-row items-center gap-1">
       <CustomMenuButton hoverMessage={"More options"} icon={BsThreeDots}>
+        <SubmenuTrigger>
+          <CustomMenuItem
+            //@ts-ignore 
+            //HACK: Its not exposed yet but will be soon https://github.com/adobe/react-spectrum/pull/8315
+            //TODO: Change name to shouldCloseOnSelect
+            closeOnSelect={false} >Tags</CustomMenuItem>
+          <CustomMenuPopOver>
+            <CustomMenu selectionMode="multiple">
+              <CustomMenuItem>
+                <AutoResizeTextArea placeholder="LOL"></AutoResizeTextArea>
+              </CustomMenuItem>
+            </CustomMenu>
+          </CustomMenuPopOver>
+        </SubmenuTrigger>
         <CustomMenuItem onAction={handleAddDateButtonClicked}>
           Add Date
         </CustomMenuItem>
@@ -277,3 +291,4 @@ const MoreOptions = ({
     </div>
   );
 };
+
