@@ -194,7 +194,7 @@ public static class TaskEndpoints
                 await db.SaveChangesAsync();
                 return Results.Ok();
             }); ;
-        tasksApi.MapGet("/tags/", async (PlannerDbContext db, Guid taskId) =>
+        tasksApi.MapGet("/{taskId:guid}/tags", async (PlannerDbContext db, Guid taskId) =>
         {
             var task = await db.Tasks.FindAsync(taskId);
             return task is not null ? Results.Ok(task.Tags.ToList()) : Results.Ok(Results.Empty);
