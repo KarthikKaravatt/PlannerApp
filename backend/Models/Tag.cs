@@ -6,9 +6,10 @@ namespace backend.Models;
 public class Tag()
 {
     //default is white
-    public Colour Colour = new(100, 0, 0);
+    public Colour Colour { get; set; } = new Colour(100, 0, 0);
 
-    [StringLength(256)] public string Name = "";
+    [StringLength(256)] public string Name { get; set; } = "";
+    [Key] public Guid Id { get; init; } = Guid.CreateVersion7();
 
     public Tag(string name, Colour colour) : this()
     {
@@ -16,5 +17,9 @@ public class Tag()
         Colour = colour;
     }
 
-    [Key] public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Tag(string name) : this()
+    {
+        Name = name;
+        // Use default colour
+    }
 }
