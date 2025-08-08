@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend;
 
@@ -10,9 +11,11 @@ using backend;
 namespace backend.Migrations
 {
     [DbContext(typeof(PlannerDbContext))]
-    partial class PlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250808075743_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -90,19 +93,13 @@ namespace backend.Migrations
                                 .HasColumnType("TEXT");
 
                             b1.Property<float>("C")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("REAL")
-                                .HasDefaultValue(0f);
+                                .HasColumnType("REAL");
 
                             b1.Property<float>("H")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("REAL")
-                                .HasDefaultValue(0f);
+                                .HasColumnType("REAL");
 
                             b1.Property<float>("L")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("REAL")
-                                .HasDefaultValue(100f);
+                                .HasColumnType("REAL");
 
                             b1.HasKey("TagId");
 
