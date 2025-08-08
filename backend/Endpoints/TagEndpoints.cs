@@ -1,3 +1,4 @@
+using System.Text.Json;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,13 +10,18 @@ public static class TagEndpoints
     {
         var tagApi = app.MapGroup("/api/tags");
         //Get all tags
-        tagApi.MapGet("/", async (PlannerDbContext db) => await db.Tags.ToListAsync());
+        tagApi.MapGet("/", async (PlannerDbContext db) =>
+        {
+            var tags  = await db.Tags.ToListAsync();
+            return Results.Ok(tags);
+        });
         //Add a tag
         tagApi.MapPut("/", async (PlannerDbContext db, TagRequest request) =>
         {
-            await db.Tags.AddAsync(new Tag(request.Name, request.Colour));
+            var tag = new Tag(request.Name, request.Colour);
+            await db.Tags.AddAsync(tag);
             await db.SaveChangesAsync();
-            await db.SaveChangesAsync();
+            return Results.Ok(tag.Id);
         });
         // remove a tag
         tagApi.MapDelete("/{tagId:guid}", async (PlannerDbContext db, Guid tagId) =>
