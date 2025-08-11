@@ -176,7 +176,6 @@ const TaskListItem = ({ taskList }: { taskList: TaskList }) => {
     <div
       className=" flex w-full flex-row items-center justify-between rounded-md pr-2 pl-2"
       ref={listRef}
-      draggable={!isEditing}
       onBlur={(event) => {
         if (listRef.current && !listRef.current.contains(event.relatedTarget)) {
           if (isEditing) {
