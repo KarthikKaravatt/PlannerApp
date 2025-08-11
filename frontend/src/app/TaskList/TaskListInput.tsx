@@ -21,23 +21,21 @@ const MemoizedButton = React.memo(
 
 export const TaskListInput = ({ taskListId }: { taskListId: string }) => {
   const [inputTask, setInputTask] = useState<string>("");
+  // Have a ref so the even handlers don't depend on the input state
   const inputTaskRef = useRef(inputTask);
   const [addNewTask, { isLoading }] = useAddNewTaskMutation();
 
-  const onInputChanged = useCallback(
-    (event: ChangeEvent<HTMLTextAreaElement>) => {
-      const newValue = event.target.value.replace(/\s+/g, " ");
-      if (newValue.length < MAX_TASK_LENGTH) {
-        setInputTask(newValue);
-        inputTaskRef.current = newValue;
-      }
-    },
-    [],
-  );
+  const onInputChanged = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = event.target.value.replace(/\s+/g, " ");
+    if (newValue.length < MAX_TASK_LENGTH) {
+      setInputTask(newValue);
+      inputTaskRef.current = newValue;
+    }
+  };
 
   const onAddButtonClick = useCallback(() => {
     const currentTask = inputTaskRef.current.trim();
-    if (!currentTask) return; // Skip empty tasks
+    if (!currentTask) return;
 
     addNewTask({
       listId: taskListId,
