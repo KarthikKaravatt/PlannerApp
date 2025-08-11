@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend;
 
@@ -10,27 +11,14 @@ using backend;
 namespace backend.Migrations
 {
     [DbContext(typeof(PlannerDbContext))]
-    partial class PlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250809153121_addGetterAndSetterToTag")]
+    partial class addGetterAndSetterToTag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
-
-            modelBuilder.Entity("TagTask", b =>
-                {
-                    b.Property<Guid>("TagsId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TasksId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("TagsId", "TasksId");
-
-                    b.HasIndex("TasksId");
-
-                    b.ToTable("TagTask");
-                });
 
             modelBuilder.Entity("backend.Models.Tag", b =>
                 {
@@ -43,7 +31,12 @@ namespace backend.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("TaskId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TaskId");
 
                     b.ToTable("Tags");
                 });
@@ -97,23 +90,12 @@ namespace backend.Migrations
                     b.ToTable("TaskLists");
                 });
 
-            modelBuilder.Entity("TagTask", b =>
-                {
-                    b.HasOne("backend.Models.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("TagsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.Task", null)
-                        .WithMany()
-                        .HasForeignKey("TasksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("backend.Models.Tag", b =>
                 {
+                    b.HasOne("backend.Models.Task", null)
+                        .WithMany("Tags")
+                        .HasForeignKey("TaskId");
+
                     b.OwnsOne("backend.Utilities.Colour", "Colour", b1 =>
                         {
                             b1.Property<Guid>("TagId")
@@ -153,6 +135,11 @@ namespace backend.Migrations
                         .HasForeignKey("TaskListId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("backend.Models.Task", b =>
+                {
+                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("backend.Models.TaskList", b =>
