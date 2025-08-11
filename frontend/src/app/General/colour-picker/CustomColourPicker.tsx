@@ -13,17 +13,19 @@ import { CustomColorSlider } from "./CustomColourSlider.tsx";
 interface MyColorPickerProps extends ColorPickerProps {
   label?: string;
   children?: React.ReactNode;
+  onConfirm?: () => void;
 }
 
 export function CustomColorPicker({
   label,
   children,
+  onConfirm,
   ...props
 }: MyColorPickerProps) {
   return (
     <ColorPicker {...props}>
       <DialogTrigger>
-        <Button className={"w-5 h-5"}>
+        <Button className={"w-3.5 h-3.5"}>
           <CustomColorSwatch className={"w-full h-full"} />
           <span>{label}</span>
         </Button>
@@ -40,6 +42,19 @@ export function CustomColorPicker({
                   yChannel="brightness"
                 />
                 <CustomColorSlider colorSpace="hsb" channel="hue" />
+                {onConfirm && (
+                  <Button
+                    slot={"close"}
+                    onPress={() => {
+                      onConfirm();
+                    }}
+                    className={
+                      "dark:bg-dark-background-sub-c dark:text-white bg-sky-100 text-shadow-blue-950"
+                    }
+                  >
+                    Confirm
+                  </Button>
+                )}
               </>
             )}
           </Dialog>
