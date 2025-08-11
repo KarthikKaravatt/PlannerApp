@@ -1,5 +1,7 @@
+import { lazy, Suspense } from "react";
 import { SubmenuTrigger } from "react-aria-components";
 import { BiDotsVertical } from "react-icons/bi";
+import { FaSpinner } from "react-icons/fa6";
 import { MdDragIndicator } from "react-icons/md";
 import {
   useMoveCompleteTaskOrderMutation,
@@ -16,7 +18,12 @@ import {
   CustomMenuPopOver,
 } from "../General/CustomMenu.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
-import { TaskComponent } from "./TaskComponent.tsx";
+
+const TaskComponent = lazy(() =>
+  import("@/app/TaskList/TaskComponent").then((module) => ({
+    default: module.TaskComponent,
+  })),
+);
 
 export const TasksDisclosure: React.FC<{
   title: string;
@@ -137,7 +144,9 @@ export const TasksDisclosure: React.FC<{
             <div draggable={sortOption === "CUSTOM"}>
               <MdDragIndicator />
             </div>
-            <TaskComponent task={item} taskListId={listId} />
+            <Suspense fallback={<FaSpinner className="animate-spin" />}>
+              <TaskComponent task={item} taskListId={listId} />
+            </Suspense>
           </div>
         )}
       />

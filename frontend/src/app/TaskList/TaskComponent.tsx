@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { useReducer, useRef } from "react";
+import { useReducer, useRef, useState } from "react";
 import {
   Button,
   Calendar,
@@ -8,18 +8,22 @@ import {
   DialogTrigger,
   Heading,
   Popover,
+  parseColor,
   SubmenuTrigger,
 } from "react-aria-components";
 import { BsThreeDots } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
-import { FaCheck } from "react-icons/fa6";
+import { FaCheck, FaSpinner } from "react-icons/fa6";
 import { useMoreOptions } from "@/hooks/taslkList/useMoreOptions";
 import { useTaskDueDate } from "@/hooks/taslkList/useTaskDueDate";
 import { taskComponentReducer } from "@/reducers/taskReducer";
+import { useAddTagMutation, useGetTagsQuery } from "@/redux/tagApiSlice.ts";
 import {
+  useGetTaskTagsQuery,
   useToggleTaskCompetionMutation,
   useUpdateTaskMutation,
 } from "@/redux/taskApiSlice.ts";
+import type { Colour } from "@/schemas/tag.ts";
 import type { Task } from "@/schemas/task";
 import type { TaskUpdate } from "@/types/api.ts";
 import type {
@@ -27,6 +31,7 @@ import type {
   TaskComponentState,
 } from "@/types/taskReducer";
 import { logError } from "@/util/console.ts";
+import { rgbToOklch } from "@/util/rgb-to-okclh.ts";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import {
   CustomMenu,
@@ -35,6 +40,8 @@ import {
   CustomMenuPopOver,
 } from "../General/CustomMenu.tsx";
 import { CustomTooltip } from "../General/CustomToolTip.tsx";
+import { CustomColorPicker } from "../General/colour-picker/CustomColourPicker.tsx";
+import { TAG_MAX_LENGTH, TagComponent } from "./TagComponent.tsx";
 
 export const TaskComponent = ({
   task,
@@ -54,7 +61,6 @@ export const TaskComponent = ({
     initalTaskComponentState,
   );
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
-  // const [getTags, {isTagsLoading}] = useGetTag
   const taskRef = useRef<HTMLDivElement>(null);
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: This is not a static element
@@ -265,8 +271,8 @@ const MoreOptions = ({
           </CustomMenuItem>
           <CustomMenuPopOver>
             <CustomMenu selectionMode="multiple">
-              <CustomMenuItem>
-                <AutoResizeTextArea placeholder="LOL"></AutoResizeTextArea>
+              <CustomMenuItem className="rounded-sm bg-sky-100 p-0.5 dark:bg-dark-background-sub-c">
+                <TagDisplay listId={state.taskListId} taskId={task.id} />
               </CustomMenuItem>
             </CustomMenu>
           </CustomMenuPopOver>
@@ -296,6 +302,80 @@ const MoreOptions = ({
           {state.isEditing ? <FaCheck /> : <CiEdit />}
         </Button>
       </CustomTooltip>
+    </div>
+  );
+};
+const TagDisplay = ({ listId, taskId }: { listId: string; taskId: string }) => {
+  const {
+    data: tags,
+    isLoading: isLoadingTags,
+    isError: isErrorTags,
+  } = useGetTagsQuery();
+  const {
+    data: taskTags,
+    isLoading: isLoadingTaskTags,
+    isError: isErrorTaskTags,
+  } = useGetTaskTagsQuery({ listId: listId, taskId: taskId });
+  //TODO: Loading state
+  const [addTag] = useAddTagMutation();
+  const isLoading = isLoadingTags || isLoadingTaskTags;
+  const isError = isErrorTags || isErrorTaskTags;
+  const [inputColour, setInputColour] = useState(
+    parseColor("rgb(255, 255, 255)"),
+  );
+  const [inputTagName, setInputTagName] = useState("");
+  const handleAddTag = () => {
+    if (inputTagName.length === 0) {
+      //TODO: Maybe use a toast here
+      return;
+    }
+    const rgb = inputColour.toFormat("rgb");
+    const colour = rgbToOklch({
+      r: rgb.getChannelValue("red"),
+      g: rgb.getChannelValue("green"),
+      b: rgb.getChannelValue("blue"),
+    }) satisfies Colour;
+    addTag({ name: inputTagName, colour: colour });
+  };
+  if (isLoading) {
+    return <FaSpinner className="animate-spin" />;
+  }
+  if (isError || !tags || !taskTags) {
+    //TODO: Not sure if I want to display error information to the user?
+    if (!tags) {
+      return <p>Error loading tags</p>;
+    }
+    if (!taskTags) {
+      return <p>Error loading task tags</p>;
+    }
+  }
+
+  return (
+    <div className="p-1">
+      <div className="flex flex-row items-center gap-1 pb-1">
+        <AutoResizeTextArea
+          className="w-35"
+          value={inputTagName}
+          onChange={(event) => {
+            setInputTagName(
+              event.target.value.replace("/\s+g", "").slice(0, TAG_MAX_LENGTH),
+            );
+          }}
+          placeholder="tag name"
+        ></AutoResizeTextArea>
+        <CustomColorPicker value={inputColour} onChange={setInputColour} />
+        <Button
+          onPress={handleAddTag}
+          className="rounded-md bg-blue-200 p-0.5 pr-1.5 pl-1.5 text-blue-950 dark:bg-white dark:text-black"
+        >
+          Add
+        </Button>
+      </div>
+      <div className="flex flex-col">
+        {tags.map((t) => {
+          return <TagComponent key={t.id} tag={t} />;
+        })}
+      </div>
     </div>
   );
 };
