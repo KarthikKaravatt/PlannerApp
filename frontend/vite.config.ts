@@ -1,8 +1,9 @@
 import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
-import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from '@vitejs/plugin-react-swc'
+// import react from "@vitejs/plugin-react";
 
 
 
@@ -51,16 +52,14 @@ export default defineConfig({
     },
   },
   plugins: [
-    // unstableRolldownAdapter(analyzer()),
     tanstackRouter({
       target: "react",
       autoCodeSplitting: true,
     }),
-    viteReact({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
-    }),
+    react(),
+    // react({
+    //   babel: { plugins: ["babel-plugin-react-compiler"], },
+    // }),
     tailwindcss(),
   ],
   resolve: {
