@@ -6,27 +6,26 @@
   --color-dark-background-sub-c: oklch(0.27 0 0);
 }
 
-/* Custom scrollbar styles for Chrome/Webkit */
 ::-webkit-scrollbar {
-  width: 4px; /* Very thin vertical scrollbar */
-  height: 4px; /* Very thin horizontal scrollbar */
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; /* Invisible track */
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.3); /* Light gray thumb */
+  background: rgba(128, 128, 128, 0.3);
   border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.5); /* Slightly darker on hover */
+  background: rgba(128, 128, 128, 0.5);
 }
 
 ::-webkit-scrollbar-corner {
-  background: transparent; /* Hide corner where scrollbars meet */
+  background: transparent;
 }
 
 body {
