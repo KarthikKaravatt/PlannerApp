@@ -369,7 +369,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     moveCompleteTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
         return {
-          url: `/taskLists${moveTasks.listId}/tasks/complete/move/${moveTasks.id1}`,
+          url: `/taskLists/${moveTasks.listId}/tasks/complete/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
             targetTaskId: moveTasks.id2,
@@ -421,7 +421,7 @@ const taskApiSlice = apiSlice.injectEndpoints({
     moveIncompleteTaskOrder: builder.mutation<void, MoveTaskOrderPayload>({
       query: (moveTasks) => {
         return {
-          url: `/taskLists${moveTasks.listId}/tasks/incomplete/move/${moveTasks.id1}`,
+          url: `/taskLists/${moveTasks.listId}/tasks/incomplete/move/${moveTasks.id1}`,
           method: "PATCH",
           body: {
             targetTaskId: moveTasks.id2,
@@ -506,10 +506,25 @@ const taskApiSlice = apiSlice.injectEndpoints({
     }),
     getTaskTags: builder.query<Tag[], { listId: string; taskId: string }>({
       query: (taskData) => ({
-        url: `/taskLists/${taskData.listId}/${taskData.taskId}/tags`,
+        url: `/taskLists/${taskData.listId}/tasks/${taskData.taskId}/tags`,
         method: "GET",
       }),
-      providesTags: ["Tags"],
+      providesTags: (_tags, _error, taskData) => [
+        { type: "TaskTags", id: taskData.taskId },
+      ],
+    }),
+    addTaskTag: builder.mutation<
+      void,
+      { listId: string; taskId: string; tagId: string }
+    >({
+      query: ({ listId, taskId, tagId }) => ({
+        url: `/taskLists/${listId}/tasks/${taskId}/tags/${tagId}`,
+        method: "PATCH",
+      }),
+      //TODO: Optimistic update
+      invalidatesTags: (_result, _err, { taskId }) => [
+        { type: "TaskTags", id: taskId },
+      ],
     }),
   }),
   overrideExisting: false,
@@ -527,4 +542,6 @@ export const {
   useMoveIncompleteTaskOrderMutation,
   useGetIncompleteTaskOrderQuery,
   useToggleTaskCompetionMutation,
+  useAddTaskTagMutation,
+  useGetTaskTagsQuery,
 } = taskApiSlice;

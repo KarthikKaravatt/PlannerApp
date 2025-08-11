@@ -12,6 +12,7 @@ export const apiSlice = createApi({
     "TaskList",
     "TaskListOrder",
     "Tags",
+    "TaskTags",
   ],
   endpoints: () => ({}),
 });
