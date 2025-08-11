@@ -23,7 +23,7 @@
         "noEmptyBlockStatements": "warn"
       },
       "nursery": {
-        "noUnresolvedImports": "off",
+        "noImplicitCoercion": "warn",
         "noFloatingPromises": "error",
         "useExhaustiveSwitchCases": "error",
         "useUnifiedTypeSignature": "error",
