@@ -10,6 +10,7 @@ public class Tag()
 
     [StringLength(256)] public string Name { get; set; } = "";
     [Key] public Guid Id { get; init; } = Guid.CreateVersion7();
+    public ICollection<Task> Tasks { get; set; } = new List<Task>();
 
     public Tag(string name, Colour colour) : this()
     {

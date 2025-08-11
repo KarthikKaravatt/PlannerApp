@@ -14,7 +14,7 @@ public class TaskComparer : IComparer<Task>
 
 public class Task()
 {
-    public ICollection<Tag> Tags = new List<Tag>();
+    public ICollection<Tag> Tags { get; set; }= new List<Tag>();
 
     public Task(string label, bool completed, DateTimeOffset? dueDate, uint orderIndex, Guid id,
         Guid taskListId) : this()

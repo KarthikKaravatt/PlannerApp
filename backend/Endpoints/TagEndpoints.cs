@@ -44,5 +44,6 @@ public static class TagEndpoints
             await db.SaveChangesAsync();
             return Results.Ok();
         });
+        //get all taskId's belonging to a tag (used for deleting a tag and removing it from all tasks)
     }
 }
