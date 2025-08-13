@@ -18,6 +18,7 @@ import {
   CustomMenuPopOver,
 } from "../General/CustomMenu.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
+import React from "react";
 
 const TaskComponent = lazy(() =>
   import("@/app/TaskList/TaskComponent").then((module) => ({
@@ -141,9 +142,7 @@ export const TasksDisclosure: React.FC<{
         isDisabled={sortOption !== "CUSTOM"}
         renderItem={(item, _isDragging) => (
           <div className="flex flex-row items-center">
-            <div draggable={sortOption === "CUSTOM"}>
-              <MdDragIndicator />
-            </div>
+            <DragIconMemo draggable={sortOption === "CUSTOM"} />
             <Suspense fallback={<FaSpinner className="animate-spin" />}>
               <TaskComponent task={item} taskListId={listId} />
             </Suspense>
@@ -153,6 +152,11 @@ export const TasksDisclosure: React.FC<{
     </CustomDisclosure>
   );
 };
+const DragIconMemo = React.memo(({ draggable }: { draggable: boolean }) => (
+  <div draggable={draggable}>
+    <MdDragIndicator />
+  </div>
+));
 
 function handleSortOptionChange(
   listId: string,
