@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { SubmenuTrigger } from "react-aria-components";
 import { BiDotsVertical } from "react-icons/bi";
 import { FaSpinner } from "react-icons/fa6";
@@ -18,7 +18,6 @@ import {
   CustomMenuPopOver,
 } from "../General/CustomMenu.tsx";
 import { DraggableList } from "../General/DraggableList.tsx";
-import React from "react";
 
 const TaskComponent = lazy(() =>
   import("@/app/TaskList/TaskComponent").then((module) => ({
