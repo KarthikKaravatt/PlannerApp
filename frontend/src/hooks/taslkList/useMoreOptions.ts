@@ -4,44 +4,33 @@ import {
   useUpdateTaskMutation,
 } from "@/redux/taskApiSlice";
 import type { Task } from "@/schemas/task";
-import type {
-  TaskComponentAction,
-  TaskComponentState,
-} from "@/types/taskReducer";
 import { logError } from "@/util/console";
 
 export const useMoreOptions = (
   task: Task,
-  state: TaskComponentState,
-  dispatch: (action: TaskComponentAction) => void,
+  taskListId: string,
+  inputTaskName: string,
 ) => {
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const [deleteTask, { isLoading: isDeleteLoading }] = useDeleteTaskMutation();
   const handleConfirmButtonClick = () => {
-    if (task.label !== state.inputTaskName) {
+    if (task.label !== inputTaskName) {
       updateTask({
         taskId: task.id,
         taskUpdate: {
           dueDate: task.kind === "withDate" ? task.dueDate : null,
-          label: state.inputTaskName,
+          label: inputTaskName,
         },
-        listId: state.taskListId,
-      })
-        .finally(() => {
-          dispatch({ type: "MUTATE_EDITING", payload: false });
-        })
-        .catch((err: unknown) => {
-          dispatch({ type: "MUTATE_INPUT", payload: task.label });
-          if (err instanceof Error) {
-            logError(`Error updating task: ${err}`);
-          }
-        });
-    } else {
-      dispatch({ type: "MUTATE_EDITING", payload: false });
+        listId: taskListId,
+      }).catch((err: unknown) => {
+        if (err instanceof Error) {
+          logError(`Error updating task: ${err}`);
+        }
+      });
     }
   };
   const handleDeleteButtonClick = () => {
-    deleteTask({ taskId: task.id, listId: state.taskListId }).catch(
+    deleteTask({ taskId: task.id, listId: taskListId }).catch(
       (err: unknown) => {
         if (err instanceof Error) {
           logError(`Error removing tasks:${err}`);
@@ -54,7 +43,7 @@ export const useMoreOptions = (
       case "withDate": {
         updateTask({
           taskUpdate: { dueDate: null, label: task.label },
-          listId: state.taskListId,
+          listId: taskListId,
           taskId: task.id,
         }).catch((err: unknown) => {
           if (err instanceof Error) {
@@ -76,7 +65,7 @@ export const useMoreOptions = (
           dueDate: now(getLocalTimeZone()).toAbsoluteString(),
           label: task.label,
         },
-        listId: state.taskListId,
+        listId: taskListId,
         taskId: task.id,
       }).catch((err: unknown) => {
         if (err instanceof Error) {

@@ -1,22 +1,18 @@
 import type { ZonedDateTime } from "@internationalized/date";
 import { useUpdateTaskMutation } from "@/redux/taskApiSlice";
 import type { Task } from "@/schemas/task";
-import type { TaskComponentState } from "@/types/taskReducer";
 import { logError } from "@/util/console";
 
-export const useTaskDueDate = (task: Task, state: TaskComponentState) => {
+export const useTaskDueDate = (task: Task, taskListId: string) => {
   const [updateTask, { isLoading }] = useUpdateTaskMutation();
   const onDateButtonClicked = (inputDate: ZonedDateTime) => {
-    if (state.isEditing) {
-      return;
-    }
     if (task.kind === "withDate") {
       updateTask({
         taskUpdate: {
           dueDate: inputDate.toAbsoluteString(),
           label: task.label,
         },
-        listId: state.taskListId,
+        listId: taskListId,
         taskId: task.id,
       }).catch((err: unknown) => {
         if (err instanceof Error) {
