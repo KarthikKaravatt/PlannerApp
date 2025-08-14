@@ -46,14 +46,22 @@ const taskApiSlice = apiSlice.injectEndpoints({
         return {};
       },
       responseSchema: z.record(z.uuidv7(), taskSchemea),
-      providesTags: ["IncompleteTasks"],
+      providesTags: (tasks) => {
+        if (tasks) {
+          const tags = Object.entries(tasks).map(([id, _task]) => {
+            return { type: "IncompleteTasks" as const, id: id };
+          });
+          return tags;
+        }
+        return ["IncompleteTasks"];
+      },
     }),
     getIncompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
         url: `/taskLists/${listId}/tasks/incomplete/order`,
       }),
       responseSchema: z.array(taskOrderSchema),
-      providesTags: ["IncompleteTasks"],
+      providesTags: ["IncompleteTasksOrder"],
     }),
     getCompleteTasks: builder.query<Record<string, Task>, string>({
       query: (id) => `/taskLists/${id}/tasks/complete`,
@@ -82,7 +90,15 @@ const taskApiSlice = apiSlice.injectEndpoints({
         return {};
       },
       responseSchema: z.record(z.uuidv7(), taskSchemea),
-      providesTags: ["CompleteTasks"],
+      providesTags: (tasks) => {
+        if (tasks) {
+          const tags = Object.entries(tasks).map(([id, _task]) => {
+            return { type: "CompleteTasks" as const, id: id };
+          });
+          return tags;
+        }
+        return ["CompleteTasks"];
+      },
     }),
     getCompleteTaskOrder: builder.query<TaskOrder[], string>({
       query: (listId) => ({
