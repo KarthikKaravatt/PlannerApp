@@ -1,5 +1,5 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import { FaRegTrashCan } from "react-icons/fa6";
 import {
@@ -16,7 +16,13 @@ import { CustomDialog } from "../General/CustomDialog.tsx";
 import { TasksDisclosure } from "./TaskDisclosure.tsx";
 import { TaskListInput } from "./TaskListInput.tsx";
 
-export const TaskListComponent = ({
+export const TaskListComponent = memo(
+  ({ listName, listId }: { listName: string; listId: string }) => (
+    <TaskListComponentBase listId={listId} listName={listName} />
+  ),
+);
+
+const TaskListComponentBase = ({
   listName,
   listId,
 }: {
