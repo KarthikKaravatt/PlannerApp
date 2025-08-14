@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { Button } from "react-aria-components";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck, FaRegTrashCan, FaSpinner } from "react-icons/fa6";
@@ -29,43 +29,7 @@ export const TaskListSideBar = () => {
   return (
     <SideBar title="Task Lists" textColor="text-blue-950 dark:text-white">
       <div className="flex h-[calc(100vh-2rem)] flex-col">
-        <div className="ml-1 flex flex-row justify-between border-b-1 border-gray-300 p-1 dark:border-white">
-          <AutoResizeTextArea
-            value={newListName}
-            onChange={(event) => {
-              // no colons for local storage sort order persistence
-              const newValue = event.target.value
-                .replace(/\s+/g, " ")
-                .replace(/:/g, "");
-              setNewListName(
-                newValue.length > INPUT_LIMIT
-                  ? newValue.slice(0, INPUT_LIMIT)
-                  : newValue,
-              );
-            }}
-            placeholder="Add new task list"
-            className="m-1 outline-1 outline-transparent"
-          />
-          <Button
-            type="button"
-            className="rounded-md bg-blue-200 p-1 text-sm dark:bg-white dark:text-black"
-            onClick={() => {
-              if (!(newListName === "" || newListName === " ")) {
-                addTaskList({ name: newListName })
-                  .then(() => {
-                    setNewListName("");
-                  })
-                  .catch((err: unknown) => {
-                    if (err instanceof Error) {
-                      logError("Error adding task list", err);
-                    }
-                  });
-              }
-            }}
-          >
-            Add
-          </Button>
-        </div>
+        <TaskListSidebarInput />
         <div className="flex-1 overflow-auto">
           <TaskListsOrder />
         </div>
@@ -74,6 +38,50 @@ export const TaskListSideBar = () => {
         </div>
       </div>
     </SideBar>
+  );
+};
+
+const TaskListSidebarInput = () => {
+  const [addTaskList] = useAddNewTaskListMutation();
+  const [newListName, setNewListName] = useState("");
+  return (
+    <div className="ml-1 flex flex-row justify-between border-b-1 border-gray-300 p-1 dark:border-white">
+      <AutoResizeTextArea
+        value={newListName}
+        onChange={(event) => {
+          // no colons for local storage sort order persistence
+          const newValue = event.target.value
+            .replace(/\s+/g, " ")
+            .replace(/:/g, "");
+          setNewListName(
+            newValue.length > INPUT_LIMIT
+              ? newValue.slice(0, INPUT_LIMIT)
+              : newValue,
+          );
+        }}
+        placeholder="Add new task list"
+        className="m-1 outline-1 outline-transparent"
+      />
+      <Button
+        type="button"
+        className="rounded-md bg-blue-200 p-1 text-sm dark:bg-white dark:text-black"
+        onClick={() => {
+          if (!(newListName === "" || newListName === " ")) {
+            addTaskList({ name: newListName })
+              .then(() => {
+                setNewListName("");
+              })
+              .catch((err: unknown) => {
+                if (err instanceof Error) {
+                  logError("Error adding task list", err);
+                }
+              });
+          }
+        }}
+      >
+        Add
+      </Button>
+    </div>
   );
 };
 
@@ -120,7 +128,7 @@ const TaskListsOrder = () => {
       <div className="flex flex-col items-center justify-center p-2">
         <p>Error loading task list data, press button to retry</p>
         <Button
-          className=" dark:bg-dark-background-sub-c text-blue-950 dark:text-white rounded-md bg-blue-200 p-1 font-bold "
+          className=" rounded-md bg-blue-200 p-1 font-bold text-blue-950 dark:bg-dark-background-sub-c dark:text-white "
           onClick={() => {
             refetch().catch(() => {
               logError("Error fetching task list data");
@@ -155,9 +163,7 @@ const TaskListsOrder = () => {
       aria-label="Side bar task lists"
       renderItem={(item) => (
         <div className="flex flex-row items-center">
-          <div className="flex cursor-move items-center p-1" draggable={true}>
-            <MdDragIndicator />
-          </div>
+          <DragIcon />
           <TaskListItem taskList={item.taskList} />
         </div>
       )}
@@ -165,7 +171,17 @@ const TaskListsOrder = () => {
   );
 };
 
-const TaskListItem = ({ taskList }: { taskList: TaskList }) => {
+const DragIcon = memo(() => (
+  <div className="flex cursor-move items-center p-1" draggable={true}>
+    <MdDragIndicator />
+  </div>
+));
+
+const TaskListItem = memo(({ taskList }: { taskList: TaskList }) => (
+  <TaskListItemBase taskList={taskList} />
+));
+
+const TaskListItemBase = ({ taskList }: { taskList: TaskList }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [input, setInput] = useState(taskList.name);
   const [updateTaskList, { isLoading }] = useUpdateTaskListMutation();
