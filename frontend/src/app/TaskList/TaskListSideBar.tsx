@@ -24,8 +24,6 @@ const INPUT_LIMIT = 25;
 
 export const TaskListSideBar = () => {
   //TODO: add a loading state
-  const [addTaskList] = useAddNewTaskListMutation();
-  const [newListName, setNewListName] = useState("");
   return (
     <SideBar title="Task Lists" textColor="text-blue-950 dark:text-white">
       <div className="flex h-[calc(100vh-2rem)] flex-col">
