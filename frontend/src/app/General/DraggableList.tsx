@@ -1,9 +1,7 @@
-import { type ReactNode, useState } from "react";
-
+import { memo, type ReactNode, useState } from "react";
 export interface DraggableItem {
   id: string;
 }
-
 interface DraggableListProps<T extends DraggableItem> {
   items: T[];
   onReorder?: (
@@ -17,19 +15,20 @@ interface DraggableListProps<T extends DraggableItem> {
   "aria-label"?: string;
 }
 
-export function DraggableList<T extends DraggableItem>({
+const MemoizedDraggableList = <T extends DraggableItem>({
   items,
   onReorder,
   renderItem,
   isDisabled = false,
   className = "",
   "aria-label": ariaLabel,
-}: DraggableListProps<T>) {
+}: DraggableListProps<T>) => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<"before" | "after" | null>(
     null,
   );
+
   const handleDragStart = (e: React.DragEvent, item: T) => {
     if (isDisabled) return;
     setDraggedId(item.id);
@@ -45,14 +44,11 @@ export function DraggableList<T extends DraggableItem>({
 
   const handleDragOver = (e: React.DragEvent, targetItem: T) => {
     if (isDisabled || !draggedId || draggedId === targetItem.id) return;
-
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-
     const rect = e.currentTarget.getBoundingClientRect();
     const midpoint = rect.top + rect.height / 2;
     const position = e.clientY < midpoint ? "before" : "after";
-
     setDragOverId(targetItem.id);
     setDropPosition(position);
   };
@@ -60,7 +56,6 @@ export function DraggableList<T extends DraggableItem>({
   const handleDragLeave = (e: React.DragEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const { clientX, clientY } = e;
-
     if (
       clientX < rect.left ||
       clientX > rect.right ||
@@ -74,22 +69,17 @@ export function DraggableList<T extends DraggableItem>({
 
   const handleDrop = (e: React.DragEvent, targetItem: T) => {
     if (isDisabled || !draggedId || !dropPosition) return;
-
     e.preventDefault();
-
     if (draggedId !== targetItem.id && onReorder) {
       onReorder(draggedId, targetItem.id, dropPosition);
     }
-
     handleDragEnd();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, item: T, index: number) => {
     if (isDisabled) return;
-
     const isFirst = index === 0;
     const isLast = index === items.length - 1;
-
     switch (e.key) {
       case "ArrowUp":
         if (!isFirst && onReorder) {
@@ -111,6 +101,7 @@ export function DraggableList<T extends DraggableItem>({
         break;
     }
   };
+
   return (
     <ul className={className} aria-label={ariaLabel}>
       {items.map((item, index) => {
@@ -129,7 +120,7 @@ export function DraggableList<T extends DraggableItem>({
               onKeyDown={(e) => handleKeyDown(e, item, index)}
               tabIndex={isDisabled ? -1 : 0}
               role="button"
-              className={` ${isDragging && "opacity-60"} ${!isDisabled && "cursor-move"} ${showDropIndicator && dropPosition === "after" && "border-b-2"} ${showDropIndicator && dropPosition === "before" && "border-t-2"} border-gray-400 antialiased outline-gray-300 focus:rounded-xs focus:outline dark:border-white dark:outline-white`}
+              className={`${isDragging && "opacity-60"} ${!isDisabled && "cursor-move"} ${showDropIndicator && dropPosition === "after" && "border-b-2"} ${showDropIndicator && dropPosition === "before" && "border-t-2"} border-gray-400 antialiased outline-gray-300 focus:rounded-xs focus:outline dark:border-white dark:outline-white`}
               aria-describedby={isDragging ? "dragging-item" : undefined}
             >
               {renderItem(item, isDragging)}
@@ -139,4 +130,8 @@ export function DraggableList<T extends DraggableItem>({
       })}
     </ul>
   );
-}
+};
+
+export const DraggableList = memo(
+  MemoizedDraggableList,
+) as typeof MemoizedDraggableList;

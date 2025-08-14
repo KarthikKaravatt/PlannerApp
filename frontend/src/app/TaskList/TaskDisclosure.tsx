@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useCallback } from "react";
 import { SubmenuTrigger } from "react-aria-components";
 import { BiDotsVertical } from "react-icons/bi";
 import { FaSpinner } from "react-icons/fa6";
@@ -42,38 +42,56 @@ export const TasksDisclosure: React.FC<{
 }) => {
   const [moveTaskIncomplete] = useMoveIncompleteTaskOrderMutation();
   const [moveTaskCompelte] = useMoveCompleteTaskOrderMutation();
-  const handleReorder = (
-    draggedId: string,
-    targetId: string,
-    position: "before" | "after",
-  ) => {
-    if (!(sortOption === "CUSTOM")) {
-      return;
-    }
-    if (isIncompleteTasks) {
-      moveTaskIncomplete({
-        id1: draggedId,
-        id2: targetId,
-        pos: position === "before" ? "Before" : "After",
-        listId: listId,
-      }).catch((err: unknown) => {
-        if (err instanceof Error) {
-          logError("Error moving task", err);
-        }
-      });
-    } else {
-      moveTaskCompelte({
-        id1: draggedId,
-        id2: targetId,
-        pos: position === "before" ? "Before" : "After",
-        listId: listId,
-      }).catch((err: unknown) => {
-        if (err instanceof Error) {
-          logError("Error moving task", err);
-        }
-      });
-    }
-  };
+  const handleReorder = useCallback(
+    (draggedId: string, targetId: string, position: "before" | "after") => {
+      if (!(sortOption === "CUSTOM")) {
+        return;
+      }
+      if (isIncompleteTasks) {
+        moveTaskIncomplete({
+          id1: draggedId,
+          id2: targetId,
+          pos: position === "before" ? "Before" : "After",
+          listId: listId,
+        }).catch((err: unknown) => {
+          if (err instanceof Error) {
+            logError("Error moving task", err);
+          }
+        });
+      } else {
+        moveTaskCompelte({
+          id1: draggedId,
+          id2: targetId,
+          pos: position === "before" ? "Before" : "After",
+          listId: listId,
+        }).catch((err: unknown) => {
+          if (err instanceof Error) {
+            logError("Error moving task", err);
+          }
+        });
+      }
+    },
+    [
+      isIncompleteTasks,
+      sortOption,
+      moveTaskIncomplete,
+      moveTaskCompelte,
+      listId,
+    ],
+  );
+  const renderItem = useCallback(
+    (item: Task, _isDragging: boolean) => {
+      return (
+        <div className="flex flex-row items-center">
+          <DragIconMemo draggable={sortOption === "CUSTOM"} />
+          <Suspense fallback={<FaSpinner className="animate-spin" />}>
+            <TaskComponent task={item} taskListId={listId} />
+          </Suspense>
+        </div>
+      );
+    },
+    [listId, sortOption],
+  );
   return (
     <CustomDisclosure
       headingItems={
@@ -139,14 +157,7 @@ export const TasksDisclosure: React.FC<{
         items={tasks}
         onReorder={handleReorder}
         isDisabled={sortOption !== "CUSTOM"}
-        renderItem={(item, _isDragging) => (
-          <div className="flex flex-row items-center">
-            <DragIconMemo draggable={sortOption === "CUSTOM"} />
-            <Suspense fallback={<FaSpinner className="animate-spin" />}>
-              <TaskComponent task={item} taskListId={listId} />
-            </Suspense>
-          </div>
-        )}
+        renderItem={renderItem}
       />
     </CustomDisclosure>
   );

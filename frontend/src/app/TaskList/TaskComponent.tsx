@@ -1,5 +1,11 @@
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import React, { type ChangeEvent, useCallback, useRef, useState } from "react";
+import React, {
+  type ChangeEvent,
+  memo,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import {
   Button,
   Calendar,
@@ -33,8 +39,12 @@ import {
 import { TagDisplay } from "./TagDisplayComponent.tsx";
 
 const INPUT_LIMIT = 512;
-//
-export const TaskComponent = ({
+export const TaskComponent = memo(
+  ({ task, taskListId }: { task: Task; taskListId: string }) => (
+    <TaskComponentBase task={task} taskListId={taskListId} />
+  ),
+);
+const TaskComponentBase = ({
   task,
   taskListId,
 }: {
@@ -64,7 +74,7 @@ interface TaskCheckBoxProps {
   task: Task;
 }
 const TaskCheckBox = ({ isCompleted, listId, task }: TaskCheckBoxProps) => {
-  //TODO:Loading state
+  //TODO: Add Toast on error
   const [toggleCompletion] = useToggleTaskCompetionMutation();
   return (
     <Checkbox
