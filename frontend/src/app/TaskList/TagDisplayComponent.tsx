@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Button, Input, parseColor, TextField } from "react-aria-components";
 import { CiEdit } from "react-icons/ci";
 import { FaCheck, FaSpinner } from "react-icons/fa6";
@@ -33,9 +33,34 @@ export const TagDisplay = ({
     isError: isErrorTaskTags,
   } = useGetTaskTagsQuery({ listId: listId, taskId: taskId });
   //TODO: Loading state
-  const [addTag] = useAddTagMutation();
   const isLoading = isLoadingTags || isLoadingTaskTags;
   const isError = isErrorTags || isErrorTaskTags;
+  if (isLoading) {
+    return <FaSpinner className="animate-spin" />;
+  }
+  if (isError || !tags || !taskTags) {
+    //TODO: Not sure if I want to display error information to the user?
+    if (!tags) {
+      return <p>Error loading tags</p>;
+    }
+    if (!taskTags) {
+      return <p>Error loading task tags</p>;
+    }
+  }
+
+  return (
+    <div className="p-1">
+      <TagInput />
+      <div className="flex flex-col">
+        {tags.map((t) => {
+          return <TagComponent key={t.id} tag={t} />;
+        })}
+      </div>
+    </div>
+  );
+};
+const TagInput = () => {
+  const [addTag] = useAddTagMutation();
   const [inputColour, setInputColour] = useState(
     parseColor("rgb(255, 255, 255)"),
   );
@@ -53,50 +78,34 @@ export const TagDisplay = ({
     }) satisfies Colour;
     addTag({ name: inputTagName, colour: colour });
   };
-  if (isLoading) {
-    return <FaSpinner className="animate-spin" />;
-  }
-  if (isError || !tags || !taskTags) {
-    //TODO: Not sure if I want to display error information to the user?
-    if (!tags) {
-      return <p>Error loading tags</p>;
-    }
-    if (!taskTags) {
-      return <p>Error loading task tags</p>;
-    }
-  }
-
   return (
-    <div className="p-1">
-      <div className="flex flex-row items-center gap-1 pb-1">
-        <AutoResizeTextArea
-          className="w-35"
-          value={inputTagName}
-          onChange={(event) => {
-            setInputTagName(
-              event.target.value.replace("/\s+g", "").slice(0, TAG_MAX_LENGTH),
-            );
-          }}
-          placeholder="tag name"
-        ></AutoResizeTextArea>
-        <CustomColorPicker value={inputColour} onChange={setInputColour} />
-        <Button
-          onPress={handleAddTag}
-          className="rounded-md bg-blue-200 p-0.5 pr-1.5 pl-1.5 text-blue-950 dark:bg-white dark:text-black"
-        >
-          Add
-        </Button>
-      </div>
-      <div className="flex flex-col">
-        {tags.map((t) => {
-          return <TagComponent key={t.id} tag={t} />;
-        })}
-      </div>
+    <div className="flex flex-row items-center gap-1 pb-1">
+      <AutoResizeTextArea
+        className="w-35"
+        value={inputTagName}
+        onChange={(event) => {
+          setInputTagName(
+            event.target.value.replace("/\s+g", "").slice(0, TAG_MAX_LENGTH),
+          );
+        }}
+        placeholder="tag name"
+      ></AutoResizeTextArea>
+      <CustomColorPicker value={inputColour} onChange={setInputColour} />
+      <Button
+        onPress={handleAddTag}
+        className="rounded-md bg-blue-200 p-0.5 pr-1.5 pl-1.5 text-blue-950 dark:bg-white dark:text-black"
+      >
+        Add
+      </Button>
     </div>
   );
 };
 
-const TagComponent = ({ tag }: { tag: Tag }) => {
+const TagComponent = memo(({ tag }: { tag: Tag }) => (
+  <TagComponentBase tag={tag} />
+));
+
+const TagComponentBase = ({ tag }: { tag: Tag }) => {
   const [inputTagName, setInputTagName] = useState(tag.name);
   const [isEditable, setIsEditable] = useState(false);
   const [inputColour, setInputColour] = useState(() => {
