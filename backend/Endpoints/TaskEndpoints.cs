@@ -196,8 +196,30 @@ public static class TaskEndpoints
             }); ;
         tasksApi.MapGet("/{taskId:guid}/tags", async (PlannerDbContext db, Guid taskId) =>
         {
-            var task = await db.Tasks.FindAsync(taskId);
-            return task is not null ? Results.Ok(task.Tags.ToList()) : Results.Ok(Results.Empty);
+            var task = await db.Tasks
+                .Include(t => t.Tags)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+            return task is not null ? Results.Ok(task.Tags.Select(tag => new TagRequest(tag.Id, tag.Name, tag.Colour)).ToList()) : Results.Ok(Results.Empty);
+        });
+        tasksApi.MapPatch("/{taskId:guid}/tags/{tagId:guid}", async (Guid taskId, Guid tagId, PlannerDbContext db) =>
+        {
+            var task = await db.Tasks
+                .Include(t => t.Tags)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            var tag = await db.Tags.FindAsync(tagId);
+
+            if (task is null || tag is null) return Results.NotFound();
+
+            if (task.Tags.Any(t => t.Id == tagId))
+            {
+                return Results.Ok();
+            }
+
+            task.Tags.Add(tag);
+            await db.SaveChangesAsync();
+            return Results.Ok();
+
         });
     }
 }

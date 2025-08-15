@@ -16,7 +16,7 @@ public static class TagEndpoints
             return Results.Ok(tags);
         });
         //Add a tag
-        tagApi.MapPut("/", async (PlannerDbContext db, TagRequest request) =>
+        tagApi.MapPut("/", async (PlannerDbContext db, NewTagRequest request) =>
         {
             var tag = new Tag(request.Name, request.Colour);
             await db.Tags.AddAsync(tag);
@@ -33,7 +33,7 @@ public static class TagEndpoints
             return Results.Ok();
         });
         // change a tag
-        tagApi.MapPatch("/{tagId:guid}", async (PlannerDbContext db, Guid tagId, TagRequest request) =>
+        tagApi.MapPatch("/{tagId:guid}", async (PlannerDbContext db, Guid tagId, NewTagRequest request) =>
         {
             var tag = await db.Tags.FindAsync(tagId);
             if (tag is null) return Results.NotFound();
