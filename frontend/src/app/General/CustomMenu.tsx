@@ -31,6 +31,17 @@ export function CustomMenu<T extends object>({
   );
 }
 
+const MenuButton = ({
+  icon: Icon,
+  label,
+}: {
+  icon?: IconType | undefined;
+  label?: string | undefined;
+}) => {
+  const buttonContent = Icon ? <Icon>{label}</Icon> : label;
+  return <Button>{buttonContent}</Button>;
+};
+
 interface CustomMenuButtonProps<T>
   extends MenuProps<T>,
     Omit<MenuTriggerProps, "children"> {
@@ -41,20 +52,16 @@ interface CustomMenuButtonProps<T>
 
 export function CustomMenuButton<T extends object>({
   label,
-  icon: Icon,
+  icon,
   hoverMessage,
   children,
   ...props
 }: CustomMenuButtonProps<T>) {
-  const MenuButton = () => {
-    const buttonContent = Icon ? <Icon>{label}</Icon> : label;
-    return <Button>{buttonContent}</Button>;
-  };
   return (
     <MenuTrigger {...props}>
       {hoverMessage ? (
         <CustomTooltip message={hoverMessage}>
-          <MenuButton />
+          <MenuButton icon={icon} label={label} />
         </CustomTooltip>
       ) : (
         <MenuButton />

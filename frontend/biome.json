@@ -20,25 +20,29 @@
       "suspicious": {
         "noConsole": "error",
         "useAwait": "error",
-        "noEmptyBlockStatements": "warn"
+        "noEmptyBlockStatements": "warn",
+        "noTsIgnore": "error"
+      },
+      "correctness": {
+        "noReactPropAssignments": "error"
+      },
+      "complexity": {
+        "noImplicitCoercions": "error"
       },
       "nursery": {
-        "noImplicitCoercion": "warn",
         "noFloatingPromises": "error",
         "useExhaustiveSwitchCases": "error",
-        "useUnifiedTypeSignature": "error",
-        "useReadonlyClassProperties": "error",
-        "noMisusedPromises": "error",
-        "noMagicNumbers": "warn",
-        "noTsIgnore": "error",
-        "noReactPropAssign": "error"
+        "noMisusedPromises": "error"
       },
       "style": {
+        "useUnifiedTypeSignatures": "error",
+        "useReadonlyClassProperties": "error",
         "useForOf": "warn",
         "useAsConstAssertion": "error",
         "noInferrableTypes": "error",
         "useNamingConvention": "warn",
-        "useConsistentArrayType": "warn"
+        "useConsistentArrayType": "warn",
+        "noMagicNumbers": "warn"
       },
       "performance": {
         "noDelete": "error"

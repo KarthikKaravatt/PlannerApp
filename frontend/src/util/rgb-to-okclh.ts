@@ -9,7 +9,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-/** biome-ignore-all lint/nursery/noMagicNumbers: Not my code*/
+/** biome-ignore-all lint/style/noMagicNumbers: Not my code*/
 export function rgbToOklch(rgb: { r: number; g: number; b: number }): {
   l: number;
   c: number;

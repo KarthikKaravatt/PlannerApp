@@ -6,6 +6,7 @@ import {
   DialogTrigger,
   Popover,
 } from "react-aria-components";
+import type { IconType } from "react-icons";
 import { CustomColorArea } from "./CusotmColourArea.tsx";
 import { CustomColorSwatch } from "./CustomColorSwatch.tsx";
 import { CustomColorSlider } from "./CustomColourSlider.tsx";
@@ -13,10 +14,12 @@ import { CustomColorSlider } from "./CustomColourSlider.tsx";
 interface MyColorPickerProps extends ColorPickerProps {
   label?: string;
   children?: React.ReactNode;
+  triggerIcon?: IconType;
   onConfirm?: () => void;
 }
 
 export function CustomColorPicker({
+  triggerIcon: TriggerIcon,
   label,
   children,
   onConfirm,
@@ -25,8 +28,12 @@ export function CustomColorPicker({
   return (
     <ColorPicker {...props}>
       <DialogTrigger>
-        <Button className={"w-3.5 h-3.5"}>
-          <CustomColorSwatch className={"w-full h-full"} />
+        <Button className={`h-full w-full`}>
+          {TriggerIcon ? (
+            <TriggerIcon />
+          ) : (
+            <CustomColorSwatch className={"w-full h-full"} />
+          )}
           <span>{label}</span>
         </Button>
         <Popover
