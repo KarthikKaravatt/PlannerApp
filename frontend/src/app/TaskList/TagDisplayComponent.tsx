@@ -1,19 +1,23 @@
 import { memo, useState } from "react";
-import { Button, Input, parseColor, TextField } from "react-aria-components";
-import { CiEdit } from "react-icons/ci";
+import { Button, Checkbox, parseColor } from "react-aria-components";
+import { BiCheckCircle, BiCircle } from "react-icons/bi";
+import { CiEdit, CiPickerEmpty } from "react-icons/ci";
 import { FaCheck, FaSpinner } from "react-icons/fa6";
 import {
   useAddTagMutation,
   useGetTagsQuery,
   useModifyTagMutation,
 } from "@/redux/tagApiSlice";
-import { useGetTaskTagsQuery } from "@/redux/taskApiSlice";
+import {
+  useAddTaskTagMutation,
+  useGetTaskTagsQuery,
+} from "@/redux/taskApiSlice";
 import type { Colour, Tag } from "@/schemas/tag";
 import { oklchToRgb, rgbToOklch } from "@/util/rgb-to-okclh";
 import { AutoResizeTextArea } from "../General/AutoResizeTextArea.tsx";
 import { CustomColorPicker } from "../General/colour-picker/CustomColourPicker.tsx";
 
-export const TAG_MAX_LENGTH = 15;
+export const TAG_MAX_LENGTH = 10;
 
 export const TagDisplay = ({
   listId,
@@ -27,42 +31,36 @@ export const TagDisplay = ({
     isLoading: isLoadingTags,
     isError: isErrorTags,
   } = useGetTagsQuery();
-  const {
-    data: taskTags,
-    isLoading: isLoadingTaskTags,
-    isError: isErrorTaskTags,
-  } = useGetTaskTagsQuery({ listId: listId, taskId: taskId });
   //TODO: Loading state
-  const isLoading = isLoadingTags || isLoadingTaskTags;
-  const isError = isErrorTags || isErrorTaskTags;
+  const isLoading = isLoadingTags;
+  const isError = isErrorTags;
   if (isLoading) {
     return <FaSpinner className="animate-spin" />;
   }
-  if (isError || !tags || !taskTags) {
+  if (isError || !tags) {
     //TODO: Not sure if I want to display error information to the user?
     if (!tags) {
       return <p>Error loading tags</p>;
     }
-    if (!taskTags) {
-      return <p>Error loading task tags</p>;
-    }
   }
 
   return (
-    <div className="p-1">
+    <div className="flex w-fit flex-col gap-1">
       <TagInput />
-      <div className="flex flex-col">
+      <div className="flex h-40 flex-col overflow-auto">
         {tags.map((t) => {
-          return <TagComponent key={t.id} tag={t} />;
+          return (
+            <TagComponent key={t.id} tag={t} listId={listId} taskId={taskId} />
+          );
         })}
       </div>
     </div>
   );
 };
 const TagInput = () => {
-  const [addTag] = useAddTagMutation();
+  const [addTag, { isLoading }] = useAddTagMutation();
   const [inputColour, setInputColour] = useState(
-    parseColor("rgb(255, 255, 255)"),
+    parseColor("rgb(255, 255, 255)").toFormat("rgb"),
   );
   const [inputTagName, setInputTagName] = useState("");
   const handleAddTag = () => {
@@ -70,30 +68,38 @@ const TagInput = () => {
       //TODO: Maybe use a toast here
       return;
     }
-    const rgb = inputColour.toFormat("rgb");
     const colour = rgbToOklch({
-      r: rgb.getChannelValue("red"),
-      g: rgb.getChannelValue("green"),
-      b: rgb.getChannelValue("blue"),
+      r: inputColour.getChannelValue("red"),
+      g: inputColour.getChannelValue("green"),
+      b: inputColour.getChannelValue("blue"),
     }) satisfies Colour;
     addTag({ name: inputTagName, colour: colour });
   };
   return (
-    <div className="flex flex-row items-center gap-1 pb-1">
+    <div className="flex flex-row items-center gap-1 p-1">
       <AutoResizeTextArea
-        className="w-35"
         value={inputTagName}
         onChange={(event) => {
           setInputTagName(
-            event.target.value.replace("/\s+g", "").slice(0, TAG_MAX_LENGTH),
+            event.target.value.replace("/s+g", "").slice(0, TAG_MAX_LENGTH),
           );
         }}
         placeholder="tag name"
-      ></AutoResizeTextArea>
-      <CustomColorPicker value={inputColour} onChange={setInputColour} />
+      />
+      <div
+        className={"h-5 w-5 border border-gray-300 dark:border-none"}
+        style={{ color: inputColour.toString("rgb") }}
+      >
+        <CustomColorPicker
+          triggerIcon={CiPickerEmpty}
+          value={inputColour}
+          onChange={(val) => setInputColour(() => val.toFormat("rgb"))}
+        />
+      </div>
       <Button
+        className="rounded-md bg-blue-200 p-0.5 dark:bg-white dark:text-black"
+        isDisabled={isLoading}
         onPress={handleAddTag}
-        className="rounded-md bg-blue-200 p-0.5 pr-1.5 pl-1.5 text-blue-950 dark:bg-white dark:text-black"
       >
         Add
       </Button>
@@ -101,11 +107,26 @@ const TagInput = () => {
   );
 };
 
-const TagComponent = memo(({ tag }: { tag: Tag }) => (
-  <TagComponentBase tag={tag} />
-));
+const TagComponent = memo(
+  ({ tag, listId, taskId }: { tag: Tag; listId: string; taskId: string }) => (
+    <TagComponentBase tag={tag} listId={listId} taskId={taskId} />
+  ),
+);
 
-const TagComponentBase = ({ tag }: { tag: Tag }) => {
+const TagComponentBase = ({
+  tag,
+  listId,
+  taskId,
+}: {
+  tag: Tag;
+  listId: string;
+  taskId: string;
+}) => {
+  const {
+    data: taskTags,
+    isLoading: isLoadingTaskTags,
+    isError: isErrorTaskTags,
+  } = useGetTaskTagsQuery({ listId: listId, taskId: taskId });
   const [inputTagName, setInputTagName] = useState(tag.name);
   const [isEditable, setIsEditable] = useState(false);
   const [inputColour, setInputColour] = useState(() => {
@@ -115,6 +136,7 @@ const TagComponentBase = ({ tag }: { tag: Tag }) => {
   });
   //TODO:Loading state
   const [updateTag] = useModifyTagMutation();
+  const [addTaskTag] = useAddTaskTagMutation();
   const handleUpdateTag = () => {
     const newRgb = inputColour.toFormat("rgb");
     const colour = rgbToOklch({
@@ -130,43 +152,67 @@ const TagComponentBase = ({ tag }: { tag: Tag }) => {
       setInputColour(parseColor(rgbString));
     });
   };
+  if (isLoadingTaskTags) {
+    return <FaSpinner className="animate-spin" />;
+  }
+  if (isErrorTaskTags || !taskTags) {
+    return <p>Error loading task tags</p>;
+  }
+  const taskTagsSet = new Set(taskTags.map((t) => t.id));
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: this is intractable
     <div
+      className="m-1 flex flex-row items-center justify-between rounded-md "
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) {
           setIsEditable(false);
           handleUpdateTag();
         }
       }}
-      className="flex items-center gap-1.5"
     >
-      <TextField aria-label="tag name">
-        <Input
-          className={`${!isEditable ? "caret-transparent outline-none" : ""} w-40`}
+      <div className=" flex flex-row items-center gap-1">
+        <Checkbox>
+          <Button
+            onPress={() =>
+              addTaskTag({ listId: listId, taskId: taskId, tagId: tag.id })
+            }
+          >
+            {taskTagsSet.has(tag.id) ? (
+              <BiCheckCircle className="text-xs" />
+            ) : (
+              <BiCircle className="text-xs" />
+            )}
+          </Button>
+        </Checkbox>
+        <AutoResizeTextArea
+          className={"w-fit rounded-md"}
           onDoubleClick={() => setIsEditable(true)}
           readOnly={!isEditable}
           value={inputTagName}
           onChange={(event) => {
             setInputTagName(
-              event.target.value.replace("/\s+g", "").slice(0, TAG_MAX_LENGTH),
+              event.target.value.replace("/s+g", "").slice(0, TAG_MAX_LENGTH),
             );
           }}
         />
-      </TextField>
-      <CustomColorPicker
-        onConfirm={() => handleUpdateTag()}
-        value={inputColour}
-        onChange={setInputColour}
-      />
-      <Button
-        onClick={() => {
-          setIsEditable((prev) => !prev);
-          handleUpdateTag();
-        }}
-      >
-        {isEditable ? <FaCheck /> : <CiEdit />}
-      </Button>
+      </div>
+      <div className="flex flex-row items-center gap-1">
+        <div className="h-5 w-5">
+          <CustomColorPicker
+            onConfirm={() => handleUpdateTag()}
+            value={inputColour}
+            onChange={setInputColour}
+          />
+        </div>
+        <Button
+          onClick={() => {
+            setIsEditable((prev) => !prev);
+            handleUpdateTag();
+          }}
+        >
+          {isEditable ? <FaCheck /> : <CiEdit />}
+        </Button>
+      </div>
     </div>
   );
 };

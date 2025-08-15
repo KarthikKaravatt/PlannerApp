@@ -96,6 +96,8 @@ const TaskLists = ({ className }: { className: string }) => {
             />
           );
         }
+        logError("Sync error between tasks and order");
+        return undefined;
       })}
     </div>
   );

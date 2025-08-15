@@ -185,7 +185,7 @@ const DueDateDisplay = ({ task, listId }: { task: Task; listId: string }) => {
     >
       <DialogTrigger>
         <Button type="button">{`${date.day.toString()} ${monthAbbr}`}</Button>
-        <Popover>
+        <Popover className={"shadow-md"}>
           <Calendar
             value={date}
             defaultValue={date}
